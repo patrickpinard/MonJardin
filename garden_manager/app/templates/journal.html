@@ -18,10 +18,15 @@
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;">Zone</span>
       <button class="filter-chip active" data-zone="all" onclick="setZone(this,'all')">Toutes</button>
-      <button class="filter-chip" data-zone="1" onclick="setZone(this,'1')"><i class="bi bi-house-door-fill text-green"></i> Serre</button>
-      <button class="filter-chip" data-zone="2" onclick="setZone(this,'2')"><i class="bi bi-sun-fill text-orange"></i> Soleil</button>
-      <button class="filter-chip" data-zone="3" onclick="setZone(this,'3')"><i class="bi bi-cloud-sun-fill text-blue"></i> Mi-ombre</button>
-      <button class="filter-chip" data-zone="4" onclick="setZone(this,'4')"><i class="bi bi-flower3" style="color:var(--purple)"></i> Aromates</button>
+      {% for z in zones_nav %}
+      <button class="filter-chip" data-zone="{{ z.zone_id }}" onclick="setZone(this,'{{ z.zone_id }}')">
+        {% if z.zone_id == 1 %}<i class="bi bi-house-door-fill text-green"></i>
+        {% elif z.zone_id == 2 %}<i class="bi bi-sun-fill text-orange"></i>
+        {% elif z.zone_id == 3 %}<i class="bi bi-cloud-sun-fill text-blue"></i>
+        {% else %}<i class="bi bi-flower3" style="color:var(--purple)"></i>{% endif %}
+        {{ z.name }}
+      </button>
+      {% endfor %}
       <button class="filter-chip" data-zone="roof" onclick="setZone(this,'roof')"><i class="bi bi-house"></i> Lucarne</button>
     </div>
     <div style="width:1px;height:24px;background:var(--border);margin:0 4px;"></div>
