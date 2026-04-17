@@ -167,7 +167,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .nav-chevron-btn:hover { background: var(--bg-secondary); color: var(--text-primary); }
 .nav-sub { max-height: 0; overflow: hidden; transition: max-height .25s var(--ease); }
-.nav-sub.open { max-height: 200px; }
+.nav-sub.open { max-height: 320px; }
 .nav-sub-item {
   display: flex; align-items: center; gap: 8px;
   padding: 7px 10px 7px 36px; border-radius: var(--r-sm);
@@ -442,6 +442,10 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .btn i { font-size: 14px; }
 .btn:hover  { opacity: .85; transform: translateY(-1px); }
 .btn:active { transform: none; opacity: 1; }
+.btn:disabled, .btn[disabled] {
+  opacity: .35; cursor: not-allowed; pointer-events: none;
+  transform: none; filter: grayscale(.5);
+}
 .btn-primary   { background: var(--green); color: #000; }
 .btn-secondary { background: var(--bg-secondary); color: var(--text-primary);
   border: 1px solid var(--border-md); }
