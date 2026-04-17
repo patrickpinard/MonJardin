@@ -17,6 +17,10 @@ Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite · Simulation intégré
   <br><em>Interface mobile (iPhone)</em>
 </p>
 
+## Architecture matérielle
+
+![Schéma de connexion](docs/schema_connexion.png)
+
 ---
 
 ## Aperçu
