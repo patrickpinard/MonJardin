@@ -92,39 +92,19 @@
     </div>
   </div>
 
-  <!-- ── Stockage + Réseau ── -->
+  <!-- ── Stockage ── -->
   <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-hdd-fill"></i> Stockage &amp; Réseau</div>
-    <div class="diag-grid">
+    <div class="card-title"><i class="bi bi-hdd-fill"></i> Stockage</div>
+    <div class="diag-ch-body" id="rpi-disk-list" style="padding:4px 0;">
+      <div class="diag-label">Chargement…</div>
+    </div>
+  </div>
 
-      <!-- Disques -->
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z1"><i class="bi bi-hdd-fill"></i></div>
-          <div>
-            <div class="diag-ch-name">Stockage</div>
-            <div class="diag-ch-sub">Partitions montées</div>
-          </div>
-        </div>
-        <div class="diag-ch-body" id="rpi-disk-list">
-          <div class="diag-label">Chargement…</div>
-        </div>
-      </div>
-
-      <!-- Réseau -->
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z4"><i class="bi bi-ethernet"></i></div>
-          <div>
-            <div class="diag-ch-name">Réseau</div>
-            <div class="diag-ch-sub">Interfaces actives</div>
-          </div>
-        </div>
-        <div class="diag-ch-body" id="rpi-net-list">
-          <div class="diag-label">Chargement…</div>
-        </div>
-      </div>
-
+  <!-- ── Réseau ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-ethernet"></i> Réseau</div>
+    <div class="diag-ch-body" id="rpi-net-list" style="padding:4px 0;">
+      <div class="diag-label">Chargement…</div>
     </div>
   </div>
 
@@ -230,25 +210,24 @@ async function refreshRpi() {
 
     // Disks
     document.getElementById('rpi-disk-list').innerHTML = d.disks.map(disk => `
-      <div style="margin-bottom:8px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:12px;font-weight:600;">${disk.mountpoint}</span>
-          <span style="font-size:11px;color:var(--text-secondary);">${fmt(disk.used)} / ${fmt(disk.total)} · ${disk.percent.toFixed(1)}%</span>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:600;min-width:80px;">${disk.mountpoint}</span>
+        <div style="flex:1;min-width:100px;">
+          <div class="diag-bar-track">
+            <div class="diag-bar-fill ${barColor(disk.percent)}" style="width:${disk.percent}%"></div>
+          </div>
         </div>
-        <div class="diag-bar-track">
-          <div class="diag-bar-fill ${barColor(disk.percent)}" style="width:${disk.percent}%"></div>
-        </div>
-        <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">${disk.fstype} · ${fmt(disk.free)} libres</div>
+        <span style="font-size:12px;font-weight:700;min-width:36px;text-align:right;">${disk.percent.toFixed(0)}%</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">${fmt(disk.free)} libres / ${fmt(disk.total)}</span>
       </div>
     `).join('');
 
     // Network
     document.getElementById('rpi-net-list').innerHTML = d.network.map(nic => `
-      <div style="margin-bottom:8px;">
-        <div class="diag-label">${nic.interface}</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin:2px 0;">${nic.address || '—'}</div>
-        ${nic.address6 ? `<div style="font-size:10px;color:var(--text-tertiary);word-break:break-all;">${nic.address6}</div>` : ''}
-        <div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;">↓ ${fmt(nic.bytes_recv)} · ↑ ${fmt(nic.bytes_sent)}</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
+        <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);min-width:50px;">${nic.interface}</span>
+        <span style="font-size:14px;font-weight:700;color:var(--text-primary);">${nic.address || '—'}</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">↓ ${fmt(nic.bytes_recv)} · ↑ ${fmt(nic.bytes_sent)}</span>
       </div>
     `).join('');
 
