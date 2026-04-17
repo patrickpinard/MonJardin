@@ -14,6 +14,10 @@ def update_zone(zone_id: int):
     zone = Zone.query.get_or_404(zone_id)
     form = request.form
 
+    name = form.get("zone_name", "").strip()
+    if name:
+        zone.name = name[:40]
+
     mode = form.get("irrigation_mode", zone.irrigation_mode)
     if mode in ("auto", "manual", "disabled"):
         zone.irrigation_mode = mode

@@ -40,6 +40,11 @@
       </div>
       <form action="{{ url_for('config.update_zone', zone_id=zone.zone_id) }}" method="post">
         <div class="form-group">
+          <label class="form-label">Nom de la zone</label>
+          <input type="text" name="zone_name" class="form-control"
+                 value="{{ zone.name }}" maxlength="40" placeholder="Ex: Serre, Potager…">
+        </div>
+        <div class="form-group">
           <label class="form-label">Mode arrosage</label>
           <select name="irrigation_mode" class="form-select">
             <option value="auto"     {% if zone.irrigation_mode == 'auto'     %}selected{% endif %}>Automatique</option>
