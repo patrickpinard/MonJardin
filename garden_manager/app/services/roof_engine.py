@@ -106,7 +106,7 @@ def execute_roof_decision(decision: RoofDecision, arduino_client, db) -> None:
 
     entry = JournalEntry(
         level=level,
-        message=f"Toit serre — {decision.action}{status_txt} : {decision.reason}",
+        message=f"Lucarne — {decision.action}{status_txt} : {decision.reason}",
     )
     db.session.add(entry)
 
@@ -119,4 +119,4 @@ def execute_roof_decision(decision: RoofDecision, arduino_client, db) -> None:
         db.session.add(log_entry)
 
     db.session.commit()
-    log.info("Toit %s : %s", decision.action, decision.reason)
+    log.info("Lucarne %s : %s", decision.action, decision.reason)

@@ -152,7 +152,12 @@
       <div class="weather-stat">
         <div class="weather-stat-icon">💨</div>
         <div class="weather-stat-value">{{ weather.wind_kmh }}km/h</div>
-        <div class="weather-stat-label">Vent</div>
+        <div class="weather-stat-label">Vent prévu</div>
+      </div>
+      <div class="weather-stat">
+        <div class="weather-stat-icon">🌬️</div>
+        <div class="weather-stat-value" id="dash-wind-arduino">—</div>
+        <div class="weather-stat-label">Vent mesuré</div>
       </div>
     </div>
 
@@ -161,7 +166,7 @@
       <i class="bi bi-snow" style="color:var(--blue);"></i>
       <div>
         <div class="gn-title" style="color:var(--blue);">Risque de gel</div>
-        <div class="gn-body">Vannes et toit seront fermés automatiquement.</div>
+        <div class="gn-body">Vannes et lucarne seront fermées automatiquement.</div>
       </div>
     </div>
     {% endif %}

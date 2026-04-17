@@ -22,7 +22,7 @@
       <button class="filter-chip" data-zone="2" onclick="setZone(this,'2')"><i class="bi bi-sun-fill text-orange"></i> Soleil</button>
       <button class="filter-chip" data-zone="3" onclick="setZone(this,'3')"><i class="bi bi-cloud-sun-fill text-blue"></i> Mi-ombre</button>
       <button class="filter-chip" data-zone="4" onclick="setZone(this,'4')"><i class="bi bi-flower3" style="color:var(--purple)"></i> Aromates</button>
-      <button class="filter-chip" data-zone="roof" onclick="setZone(this,'roof')"><i class="bi bi-house"></i> Toit</button>
+      <button class="filter-chip" data-zone="roof" onclick="setZone(this,'roof')"><i class="bi bi-house"></i> Lucarne</button>
     </div>
     <div style="width:1px;height:24px;background:var(--border);margin:0 4px;"></div>
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -42,7 +42,7 @@
       <i class="bi bi-droplet-fill"></i> Arrosage
     </button>
     <button class="time-tab" id="tab-roof" onclick="switchTab('roof')">
-      <i class="bi bi-house"></i> Toit
+      <i class="bi bi-house"></i> Lucarne
     </button>
     <button class="time-tab" id="tab-system" onclick="switchTab('system')">
       <i class="bi bi-cpu"></i> Système
@@ -156,7 +156,7 @@
       </table>
     </div>
     {% else %}
-    <div class="empty-state"><i class="bi bi-house"></i><p>Aucun événement de toit enregistré.</p></div>
+    <div class="empty-state"><i class="bi bi-house"></i><p>Aucun événement de lucarne enregistré.</p></div>
     {% endif %}
   </div>
 

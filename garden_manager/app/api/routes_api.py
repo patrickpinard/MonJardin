@@ -53,9 +53,12 @@ def current_data():
         })
 
     temp = sensor_data.get("temperature_c", 15.0) if sensor_data else 15.0
+    wind = sensor_data.get("wind_speed_kmh") if sensor_data else None
     return jsonify({
         "zones": result,
         "temperature_c": temp,
+        "temp_serre_c": sensor_data.get("temp_serre_c") if sensor_data else None,
+        "wind_speed_kmh": wind,
         "roof_state": actuator_status.get("roof_state", "close"),
         "arduino_reachable": sensor_data is not None,
         "timestamp": datetime.utcnow().isoformat(),
@@ -141,13 +144,13 @@ def control_roof():
     if success:
         from ..models import RoofLog
         db.session.add(RoofLog(action=state, trigger_type="manual", reason="Commande manuelle utilisateur"))
-        db.session.add(JournalEntry(level="info", message=f"Toit serre — {state} (commande manuelle)"))
+        db.session.add(JournalEntry(level="info", message=f"Lucarne — {state} (commande manuelle)"))
         db.session.commit()
 
     action_fr = "ouvert" if state == "open" else "fermé"
     return jsonify({
         "ok": success,
-        "message": f"Toit {action_fr}" if success else "Échec commande Arduino",
+        "message": f"Lucarne {action_fr}" if success else "Échec commande Arduino",
     })
 
 

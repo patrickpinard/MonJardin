@@ -89,11 +89,11 @@
     </div>
   </div>
 
-  <!-- ── Temperature sensors ── -->
+  <!-- ── Temperature + Wind sensors ── -->
   <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-thermometer-half"></i> Capteurs de température (DS18B20)</div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;">
-      <div class="diag-channel" style="flex:1;min-width:200px;">
+    <div class="card-title"><i class="bi bi-thermometer-half"></i> Capteurs température &amp; vent</div>
+    <div class="diag-grid">
+      <div class="diag-channel">
         <div class="diag-ch-header">
           <div class="diag-ch-icon z2"><i class="bi bi-thermometer-half"></i></div>
           <div>
@@ -106,7 +106,7 @@
           <div class="diag-label">°C</div>
         </div>
       </div>
-      <div class="diag-channel" style="flex:1;min-width:200px;">
+      <div class="diag-channel">
         <div class="diag-ch-header">
           <div class="diag-ch-icon z1"><i class="bi bi-house-door-fill"></i></div>
           <div>
@@ -119,6 +119,25 @@
           <div class="diag-label">°C</div>
         </div>
       </div>
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z4"><i class="bi bi-wind"></i></div>
+          <div>
+            <div class="diag-ch-name">Anémomètre</div>
+            <div class="diag-ch-sub">Impulsions · pin D5</div>
+          </div>
+        </div>
+        <div class="diag-ch-body">
+          <div class="diag-val-lg" id="wind-kmh">—</div>
+          <div class="diag-label">km/h</div>
+          <div class="diag-bar-wrap" style="margin-top:8px;">
+            <div class="diag-bar-track">
+              <div class="diag-bar-fill ok" id="wind-bar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="diag-label" id="wind-beaufort" style="margin-top:4px;font-size:10px;">—</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -126,19 +145,19 @@
   <div class="card mb-3">
     <div class="card-title"><i class="bi bi-toggles"></i> Relais de sortie (vannes 24V latching)</div>
     <div class="diag-relay-grid" id="relay-grid">
-      {% for z in range(1, 5) %}
-      <div class="diag-relay" id="relay-card-{{ z }}">
+      {% for z in zones_nav %}
+      <div class="diag-relay" id="relay-card-{{ z.zone_id }}">
         <div class="diag-relay-header">
-          <span class="diag-relay-id">Relais {{ z }}</span>
-          <div class="diag-relay-led" id="relay-led-{{ z }}"></div>
+          <span class="diag-relay-id">Relais {{ z.zone_id }}</span>
+          <div class="diag-relay-led" id="relay-led-{{ z.zone_id }}"></div>
         </div>
-        <div class="diag-relay-name">Zone {{ z }} — {{ ['Serre','Soleil','Mi-ombre','Aromates'][z-1] }}</div>
-        <div class="diag-relay-state" id="relay-state-{{ z }}">—</div>
+        <div class="diag-relay-name">Zone {{ z.zone_id }} — {{ z.name }}</div>
+        <div class="diag-relay-state" id="relay-state-{{ z.zone_id }}">—</div>
         <div style="display:flex;gap:6px;margin-top:10px;">
-          <button class="btn btn-blue btn-xs" onclick="manualValve({{ z }}, 'open')">
+          <button class="btn btn-blue btn-xs" onclick="manualValve({{ z.zone_id }}, 'open')">
             <i class="bi bi-droplet-fill"></i> Ouvrir
           </button>
-          <button class="btn btn-secondary btn-xs" onclick="manualValve({{ z }}, 'close')">
+          <button class="btn btn-secondary btn-xs" onclick="manualValve({{ z.zone_id }}, 'close')">
             <i class="bi bi-stop-circle"></i> Fermer
           </button>
         </div>
@@ -149,7 +168,7 @@
 
   <!-- ── Linear actuator (roof) ── -->
   <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-arrows-vertical"></i> Vérin linéaire (toit serre)</div>
+    <div class="card-title"><i class="bi bi-arrows-vertical"></i> Vérin linéaire (lucarne serre)</div>
     <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
       <div style="display:flex;flex-direction:column;gap:8px;">
         <div class="diag-stat">
@@ -224,6 +243,21 @@ async function fetchSensors() {
     const tempSerre = d.temp_serre_c;
     document.getElementById('temp-ext').textContent = tempExt != null ? tempExt.toFixed(1) : '—';
     document.getElementById('temp-serre').textContent = tempSerre != null ? tempSerre.toFixed(1) : '—';
+
+    // Anémomètre
+    const wind = d.wind_speed_kmh;
+    if (wind != null) {
+      document.getElementById('wind-kmh').textContent = wind.toFixed(1);
+      const beaufort = wind < 1 ? 'Calme' : wind < 6 ? 'Très légère brise' : wind < 12 ? 'Légère brise'
+        : wind < 20 ? 'Petite brise' : wind < 29 ? 'Jolie brise' : wind < 39 ? 'Brise fraîche'
+        : wind < 50 ? 'Vent frais' : wind < 62 ? 'Grand frais' : wind < 75 ? 'Coup de vent'
+        : wind < 89 ? 'Fort coup de vent' : 'Tempête';
+      document.getElementById('wind-beaufort').textContent = beaufort;
+      const windBar = document.getElementById('wind-bar');
+      const windPct = Math.min(wind / 90 * 100, 100);
+      windBar.style.width = windPct + '%';
+      windBar.className = 'diag-bar-fill ' + (wind > 40 ? 'high' : wind > 20 ? 'low' : 'ok');
+    }
 
     const latEl = document.getElementById('ard-latency');
     if (latEl) latEl.textContent = d.latency_ms != null ? d.latency_ms + ' ms' : '—';

@@ -54,6 +54,12 @@ function updateZoneCards(data) {
       badge.innerHTML = `<i class="bi bi-droplet${open ? '-fill' : ''}"></i> ${open ? 'Arrosage' : 'Fermé'}`;
     }
   });
+
+  // Vent mesuré par l'Arduino
+  const windEl = document.getElementById('dash-wind-arduino');
+  if (windEl && data.wind_speed_kmh != null) {
+    windEl.textContent = data.wind_speed_kmh.toFixed(1) + 'km/h';
+  }
 }
 
 function switchTab(btn, hours) {

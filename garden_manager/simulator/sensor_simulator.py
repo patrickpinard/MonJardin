@@ -30,6 +30,17 @@ ROOF_EVAP_TEMP_THRESHOLD = 28.0
 # Humidités initiales par zone (%)
 INITIAL_MOISTURE: dict[int, float] = {1: 62.0, 2: 70.0, 3: 55.0, 4: 42.0}
 
+# Vent : vitesse de base par profil (km/h)
+WIND_BASE: dict[str, float] = {
+    "printemps_normal": 12.0,
+    "ete_chaud":        8.0,
+    "ete_orageux":      35.0,
+    "automne_humide":   22.0,
+    "gel_tardif":       6.0,
+    "canicule":         5.0,
+}
+WIND_NOISE = 3.5   # écart-type des rafales (km/h)
+
 # Profils météo : ajustement du drain selon conditions
 WEATHER_DRAIN_MULTIPLIERS: dict[str, float] = {
     "printemps_normal": 1.0,
@@ -52,6 +63,7 @@ class SensorSimulator:
         self._temp_serre_c: float = T_BASE + T_SERRE_OFFSET_BASE
         self._valve_open: dict[int, bool] = {z: False for z in range(1, 5)}
         self._roof_open: bool = False
+        self._wind_speed_kmh: float = WIND_BASE.get(weather_profile, 12.0)
         self._last_tick: float = time.monotonic()
         self._offline_sensors: set[int] = set()
         self._start_time: float = time.time()
@@ -82,6 +94,13 @@ class SensorSimulator:
             self._temperature_c + (T_SERRE_OFFSET_BASE + sun_boost) * roof_factor
             + random.gauss(0, T_SERRE_NOISE), 2
         )
+
+        # Vent : base + variabilité horaire (plus fort l'après-midi) + rafales
+        wind_base = WIND_BASE.get(self._weather_profile, 12.0)
+        wind_daily = 1.0 + 0.4 * max(0.0, math.sin((hour - 14.0) * math.pi / 12.0))
+        self._wind_speed_kmh = max(0.0, round(
+            wind_base * wind_daily + random.gauss(0, WIND_NOISE), 1
+        ))
 
         drain_mult = WEATHER_DRAIN_MULTIPLIERS.get(self._weather_profile, 1.0)
         # Facteur chaleur supplémentaire
@@ -118,6 +137,7 @@ class SensorSimulator:
         return {
             "temperature_c": self._temperature_c,
             "temp_serre_c": self._temp_serre_c,
+            "wind_speed_kmh": self._wind_speed_kmh,
             "zones": zones,
         }
 

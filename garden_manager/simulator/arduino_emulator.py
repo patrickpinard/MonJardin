@@ -47,6 +47,7 @@ def get_sensors():
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "temperature_c": data["temperature_c"],
         "temp_serre_c": data.get("temp_serre_c"),
+        "wind_speed_kmh": data.get("wind_speed_kmh"),
         "zones": data["zones"],
     })
 
