@@ -1,0 +1,8 @@
+{
+  "zones": {
+    "1": {"v_dry": 0.0, "v_wet": 3.0, "offset_pct": 0.0},
+    "2": {"v_dry": 0.0, "v_wet": 3.0, "offset_pct": 0.0},
+    "3": {"v_dry": 0.0, "v_wet": 3.0, "offset_pct": 0.0},
+    "4": {"v_dry": 0.0, "v_wet": 3.0, "offset_pct": 0.0}
+  }
+}

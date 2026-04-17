@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Paramètres{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <div class="page-title">Paramètres</div>
+      <div class="page-subtitle">Configuration des zones et du système</div>
+    </div>
+    {% if simulation_mode %}
+    <span class="badge" style="background:rgba(255,159,10,.1);color:var(--orange);border:1px solid rgba(255,159,10,.25);font-size:12px;">
+      <i class="bi bi-cpu-fill"></i> SIMULATION ×{{ sim_speed }}
+    </span>
+    {% else %}
+    <span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.25);font-size:12px;">
+      <i class="bi bi-broadcast"></i> PRODUCTION
+    </span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- Zone configs -->
+  <div class="card-title mb-2" style="padding-left:2px;">
+    <i class="bi bi-sliders"></i> Configuration des zones
+  </div>
+  <div class="grid-2 mb-4">
+    {% for zone in zones %}
+    <div class="card">
+      <div class="card-title">
+        <div class="zone-icon z{{ zone.zone_id }}" style="width:28px;height:28px;font-size:14px;">
+          {% if zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+          {% elif zone.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+          {% elif zone.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+          {% else %}<i class="bi bi-flower3"></i>{% endif %}
+        </div>
+        Zone {{ zone.zone_id }} — {{ zone.name }}
+      </div>
+      <form action="{{ url_for('config.update_zone', zone_id=zone.zone_id) }}" method="post">
+        <div class="form-group">
+          <label class="form-label">Mode arrosage</label>
+          <select name="irrigation_mode" class="form-select">
+            <option value="auto"     {% if zone.irrigation_mode == 'auto'     %}selected{% endif %}>Automatique</option>
+            <option value="manual"   {% if zone.irrigation_mode == 'manual'   %}selected{% endif %}>Manuel</option>
+            <option value="disabled" {% if zone.irrigation_mode == 'disabled' %}selected{% endif %}>Désactivé</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group mb-0">
+            <label class="form-label">Seuil bas (%)</label>
+            <input type="number" name="moisture_threshold_low" class="form-control"
+                   value="{{ zone.moisture_threshold_low | int }}" min="5" max="80">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">Seuil haut (%)</label>
+            <input type="number" name="moisture_threshold_high" class="form-control"
+                   value="{{ zone.moisture_threshold_high | int }}" min="20" max="95">
+          </div>
+        </div>
+        <div class="form-group mt-2">
+          <label class="form-label">Durée arrosage (min)</label>
+          <input type="number" name="irrigation_duration_min" class="form-control"
+                 value="{{ zone.irrigation_duration_min }}" min="1" max="120">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Système -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-cpu"></i> État du système</div>
+    <div class="grid-3" style="gap:12px;margin-bottom:16px;">
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
+        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Mode</div>
+        <div style="font-weight:700;">{% if simulation_mode %}Simulation{% else %}Production{% endif %}</div>
+      </div>
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
+        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Météo</div>
+        <div style="font-weight:700;">{{ weather.source }}</div>
+      </div>
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
+        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Dernière MAJ</div>
+        <div style="font-weight:700;font-size:13px;">{{ weather.timestamp[:16] if weather.timestamp else '—' }}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm" onclick="checkHealth()">
+        <i class="bi bi-heart-pulse"></i> Vérifier Arduino
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="forceCycle()">
+        <i class="bi bi-arrow-clockwise"></i> Forcer cycle
+      </button>
+    </div>
+    <div id="healthResult" class="mt-2"></div>
+  </div>
+
+  <!-- Simulation controls -->
+  {% if simulation_mode %}
+  <div class="card">
+    <div class="card-title"><i class="bi bi-cpu-fill" style="color:var(--orange);"></i> Contrôles simulation</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
+      <div style="flex:1;min-width:200px;">
+        <label class="form-label">Profil météo</label>
+        <select id="weatherProfileSelect" class="form-select">
+          {% for p in sim_profiles %}
+          <option value="{{ p.id }}">{{ p.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-warning btn-sm" onclick="applyWeatherProfile()">
+        <i class="bi bi-cloud-lightning"></i> Appliquer
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="resetSimulation()">
+        <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+      </button>
+    </div>
+    <div>
+      <label class="form-label mb-2">Sécher une zone (test déclenchement arrosage)</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        {% for z in range(1, 5) %}
+        <button class="btn btn-warning btn-sm" onclick="dryZone({{ z }})">
+          <i class="bi bi-droplet-slash"></i> Zone {{ z }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script>
+async function checkHealth() {
+  const resp = await fetch('/api/system/health');
+  const data = await resp.json();
+  const el = document.getElementById('healthResult');
+  el.innerHTML = data.arduino_reachable
+    ? '<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle me-1"></i>Arduino accessible</span>'
+    : '<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);"><i class="bi bi-x-circle me-1"></i>Arduino inaccessible</span>';
+}
+async function applyWeatherProfile() {
+  const profile = document.getElementById('weatherProfileSelect').value;
+  await fetch('http://127.0.0.1:8081/admin/inject_failure', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({weather_profile: profile}),
+  }).catch(() => {});
+  showToast('Profil météo appliqué : ' + profile, 'success');
+}
+async function resetSimulation() {
+  await fetch('http://127.0.0.1:8081/admin/reset', {method: 'POST'}).catch(() => {});
+  showToast('Simulation réinitialisée', 'success');
+}
+async function dryZone(zoneId) {
+  await fetch('http://127.0.0.1:8081/admin/inject_failure', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({dry_zone: zoneId}),
+  }).catch(() => {});
+  showToast(`Zone ${zoneId} asséchée — arrosage devrait se déclencher`, 'info');
+}
+</script>
+{% endblock %}

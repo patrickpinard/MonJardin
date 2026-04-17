@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block title %}MonJardin{% endblock %} — MonJardin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR (desktop) ═══════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon"><i class="bi bi-tree" style="color:#fff;"></i></div>
+        <div>
+          <div class="brand-name">MonJardin</div>
+          <div class="brand-sub">Vullierens · Vaud</div>
+        </div>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' or request.path == '/' %}active{% endif %}">
+        <i class="bi bi-grid-1x2-fill"></i> Tableau de bord
+      </a>
+      <div class="nav-section-label">Jardin</div>
+      <a href="/plants" class="nav-item {% if '/plants' in request.path %}active{% endif %}">
+        <i class="bi bi-flower1"></i> Encyclopédie
+      </a>
+      <a href="/planting" class="nav-item {% if '/planting' in request.path %}active{% endif %}">
+        <i class="bi bi-calendar3"></i> Plantation
+      </a>
+      <a href="/history" class="nav-item {% if '/history' in request.path %}active{% endif %}">
+        <i class="bi bi-graph-up"></i> Graphiques
+      </a>
+      <a href="/journal" class="nav-item {% if '/journal' in request.path %}active{% endif %}">
+        <i class="bi bi-journal-text"></i> Journal
+      </a>
+      <a href="/zones" class="nav-item {% if request.path == '/zones' %}active{% endif %}">
+        <i class="bi bi-grid-3x3-gap-fill"></i> Vue des zones
+      </a>
+      <div class="nav-section-label">Système</div>
+      <a href="/system/arduino" class="nav-item {% if '/system/arduino' in request.path %}active{% endif %}">
+        <i class="bi bi-cpu-fill"></i> Arduino
+      </a>
+      <a href="/system/raspberry" class="nav-item {% if '/system/raspberry' in request.path %}active{% endif %}">
+        <i class="bi bi-hdd-rack-fill"></i> Raspberry Pi
+      </a>
+      <a href="/settings" class="nav-item {% if '/settings' in request.path %}active{% endif %}">
+        <i class="bi bi-gear-fill"></i> Paramètres
+      </a>
+    </nav>
+
+    <!-- Zone live moisture -->
+    <div class="sidebar-zones" id="sidebar-zones">
+      <a href="/zones/1" class="zone-mini">
+        <div class="zone-dot" id="sdot-1"></div>
+        <span>Serre</span>
+        <span class="zone-mini-m" id="smoist-1">—</span>
+      </a>
+      <a href="/zones/2" class="zone-mini">
+        <div class="zone-dot" id="sdot-2"></div>
+        <span>Soleil</span>
+        <span class="zone-mini-m" id="smoist-2">—</span>
+      </a>
+      <a href="/zones/3" class="zone-mini">
+        <div class="zone-dot" id="sdot-3"></div>
+        <span>Mi-ombre</span>
+        <span class="zone-mini-m" id="smoist-3">—</span>
+      </a>
+      <a href="/zones/4" class="zone-mini">
+        <div class="zone-dot" id="sdot-4"></div>
+        <span>Aromates</span>
+        <span class="zone-mini-m" id="smoist-4">—</span>
+      </a>
+    </div>
+
+    <!-- Arduino connection status -->
+    <div class="sidebar-footer">
+      <div class="connection-widget">
+        <div class="conn-dot checking" id="conn-dot"></div>
+        <span class="conn-label" id="conn-label">Vérification...</span>
+        <span class="conn-latency" id="conn-latency"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN CONTENT ════════════════════════════════════ -->
+  <div class="main-content">
+
+    <!-- Mobile topbar -->
+    <header class="mobile-topbar">
+      <div class="mobile-brand">
+        <div class="brand-icon"><i class="bi bi-tree" style="color:#fff;"></i></div>
+        <span class="brand-name">MonJardin</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="mobile-conn-dot checking" id="mobile-conn-dot"></div>
+        <a href="/settings" style="color:var(--text-secondary);font-size:20px">
+          <i class="bi bi-gear-fill"></i>
+        </a>
+      </div>
+    </header>
+
+    <!-- Simulation banner -->
+    {% if simulation_mode %}
+    <div class="sim-banner">
+      <i class="bi bi-cpu-fill"></i>
+      <span>Mode simulation — vitesse ×{{ sim_speed }} — profil météo : <strong id="sim-profile-label">{{ weather_profile | default('') }}</strong></span>
+      <div class="sim-banner-actions">
+        <button class="btn btn-warning btn-xs" onclick="resetSim()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+      </div>
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+  </div><!-- /.main-content -->
+</div><!-- /.app-layout -->
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <a href="/dashboard" class="mobile-nav-item {% if request.path in ('/', '/dashboard') %}active{% endif %}">
+      <i class="bi bi-grid-1x2-fill"></i><span>Bord</span>
+    </a>
+    <a href="/plants" class="mobile-nav-item {% if '/plants' in request.path %}active{% endif %}">
+      <i class="bi bi-flower1"></i><span>Plantes</span>
+    </a>
+    <a href="/planting" class="mobile-nav-item {% if '/planting' in request.path %}active{% endif %}">
+      <i class="bi bi-calendar3"></i><span>Plantation</span>
+    </a>
+    <a href="/zones" class="mobile-nav-item {% if request.path == '/zones' %}active{% endif %}">
+      <i class="bi bi-grid-3x3-gap-fill"></i><span>Zones</span>
+    </a>
+    <a href="/history" class="mobile-nav-item {% if '/history' in request.path or '/journal' in request.path %}active{% endif %}">
+      <i class="bi bi-graph-up"></i><span>Graphiques</span>
+    </a>
+    <a href="/settings" class="mobile-nav-item {% if '/settings' in request.path %}active{% endif %}">
+      <i class="bi bi-gear-fill"></i><span>Réglages</span>
+    </a>
+  </div>
+</nav>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirm-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon" id="confirm-icon"><i class="bi bi-trash3-fill"></i></div>
+      <div class="modal-title" id="confirm-title">Confirmation</div>
+      <div class="modal-body" id="confirm-body"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeConfirm()">Annuler</button>
+      <button class="modal-btn confirm-danger" id="confirm-ok">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Toast ────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const icons = {
+    success: 'bi-check-circle-fill',
+    error:   'bi-x-circle-fill',
+    warning: 'bi-exclamation-circle-fill',
+    info:    'bi-info-circle-fill'
+  };
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast-item ${type}`;
+  t.innerHTML = `<i class="bi ${icons[type]||icons.info}" style="font-size:16px;flex-shrink:0"></i><span>${msg}</span>`;
+  container.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(8px)';
+    t.style.transition='all .2s'; setTimeout(() => t.remove(), 220); }, 3800);
+}
+
+// ── Arduino connection monitor ───────────────────────────
+let _lastConnOk = null;
+
+async function checkArduino() {
+  const dot    = document.getElementById('conn-dot');
+  const label  = document.getElementById('conn-label');
+  const latEl  = document.getElementById('conn-latency');
+  const mDot   = document.getElementById('mobile-conn-dot');
+  if (dot) dot.className = 'conn-dot checking';
+  if (mDot) mDot.className = 'mobile-conn-dot checking';
+  try {
+    const d = await fetch('/api/system/ping').then(r => r.json());
+    if (d.ok) {
+      if (dot)   { dot.className   = 'conn-dot'; }
+      if (mDot)  { mDot.className  = 'mobile-conn-dot'; }
+      if (label) label.textContent = 'Arduino connecté';
+      if (latEl) latEl.textContent = d.latency_ms + ' ms';
+      if (_lastConnOk === false) showToast('Arduino reconnecté', 'success');
+      _lastConnOk = true;
+    } else {
+      if (dot)   { dot.className   = 'conn-dot offline'; }
+      if (mDot)  { mDot.className  = 'mobile-conn-dot offline'; }
+      if (label) label.textContent = 'Arduino hors ligne';
+      if (latEl) latEl.textContent = '';
+      if (_lastConnOk === true) showToast('Arduino déconnecté', 'error');
+      _lastConnOk = false;
+    }
+  } catch(e) {
+    if (dot)   dot.className   = 'conn-dot offline';
+    if (mDot)  mDot.className  = 'mobile-conn-dot offline';
+    if (label) { label.textContent = 'Erreur réseau'; }
+    _lastConnOk = false;
+  }
+}
+
+// ── Sidebar zone live update ─────────────────────────────
+async function updateSidebarZones() {
+  try {
+    const d = await fetch('/api/data/current').then(r => r.json());
+    for (const z of d.zones || []) {
+      const dot   = document.getElementById(`sdot-${z.zone_id}`);
+      const moist = document.getElementById(`smoist-${z.zone_id}`);
+      if (!dot) continue;
+      const m = z.soil_moisture_pct;
+      const cls = m < (z.moisture_threshold_low || 30) ? 'low'
+               : m > (z.moisture_threshold_high || 65) ? 'high' : 'ok';
+      dot.className = `zone-dot ${cls}`;
+      if (moist) moist.textContent = Math.round(m) + '%';
+    }
+  } catch(e) {}
+}
+
+// ── Sim reset ────────────────────────────────────────────
+async function resetSim() {
+  await fetch('http://127.0.0.1:8081/admin/reset', {method:'POST'}).catch(()=>{});
+  showToast('Simulation réinitialisée', 'success');
+}
+
+// Init
+checkArduino();
+updateSidebarZones();
+setInterval(checkArduino, 15000);
+setInterval(updateSidebarZones, 30000);
+
+// ── Custom confirm modal ─────────────────────────────────
+let _confirmCallback = null;
+
+function showConfirm({ title, body, okLabel = 'Supprimer', okClass = 'confirm-danger', icon = 'bi-trash3-fill', iconClass = '' } = {}, cb) {
+  document.getElementById('confirm-title').textContent = title || 'Confirmation';
+  document.getElementById('confirm-body').textContent  = body  || '';
+  const iconEl = document.getElementById('confirm-icon');
+  iconEl.innerHTML = `<i class="bi ${icon}"></i>`;
+  iconEl.className = 'modal-icon' + (iconClass ? ' ' + iconClass : '');
+  const okBtn = document.getElementById('confirm-ok');
+  okBtn.textContent = okLabel;
+  okBtn.className = 'modal-btn ' + okClass;
+  _confirmCallback = cb;
+  document.getElementById('confirm-overlay').classList.add('visible');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('visible');
+  _confirmCallback = null;
+}
+
+document.getElementById('confirm-ok').addEventListener('click', () => {
+  closeConfirm();
+  if (_confirmCallback) _confirmCallback();
+});
+
+document.getElementById('confirm-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeConfirm();
+});
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <div class="page-title">Tableau de bord</div>
+      <div class="page-subtitle">Vullierens · {{ temperature_c }}°C extérieur</div>
+    </div>
+    <div class="d-flex align-center gap-2">
+      <span class="stat-badge {% if arduino_reachable %}connected{% else %}offline{% endif %}">
+        <i class="bi bi-{% if arduino_reachable %}wifi{% else %}wifi-off{% endif %}"></i>
+        {% if arduino_reachable %}Arduino connecté{% else %}Hors ligne{% endif %}
+      </span>
+      <button class="btn btn-ghost btn-icon" onclick="forceCycle()" title="Forcer cycle">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- ── Zone cards ── -->
+  <div class="zones-grid mb-3">
+    {% for zd in zones_data %}
+    {% set mc = 'low' if zd.moisture_class == 'moisture-low' else ('high' if zd.moisture_class == 'moisture-high' else 'ok') %}
+    {% set dash = (zd.moisture / 100 * 175.9) | round(1) %}
+    <div class="zone-card">
+
+      <div class="zone-card-header">
+        <div class="zone-icon z{{ zd.zone.zone_id }}">
+          {% if zd.zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+          {% elif zd.zone.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+          {% elif zd.zone.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+          {% else %}<i class="bi bi-flower3"></i>{% endif %}
+        </div>
+        <div class="zone-card-meta">
+          <div class="zone-card-name">{{ zd.zone.name }}</div>
+          <div class="zone-card-desc">Zone {{ zd.zone.zone_id }}{% if zd.zone.has_roof %} · Serre vitrée{% endif %}</div>
+        </div>
+        <div class="zone-mode-badge {{ zd.zone.irrigation_mode }}">{{ zd.zone.irrigation_mode }}</div>
+      </div>
+
+      <div class="zone-card-body">
+        <div class="moisture-row">
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" width="68" height="68" viewBox="0 0 68 68">
+              <circle class="g-bg" cx="34" cy="34" r="28"/>
+              <circle class="g-fill {{ mc }}" cx="34" cy="34" r="28"
+                data-zone-fill="{{ zd.zone.zone_id }}"
+                stroke-dasharray="{{ dash }} 175.9"/>
+            </svg>
+            <div class="gauge-center {{ mc }}" data-zone-text="{{ zd.zone.zone_id }}">
+              {{ zd.moisture | int }}%
+            </div>
+          </div>
+          <div class="moisture-meta">
+            <div class="moisture-value {{ mc }}">{{ zd.moisture }}%</div>
+            <div class="moisture-sub">Seuil {{ zd.zone.moisture_threshold_low | int }}–{{ zd.zone.moisture_threshold_high | int }}%</div>
+            {% if zd.zone.has_roof %}
+            <div class="moisture-sub mt-1">
+              🏠 {% if temp_serre_c is not none %}<strong style="color:var(--orange);">{{ temp_serre_c }}°C</strong>{% else %}—{% endif %} · Lucarne <span class="{% if roof_state == 'open' %}text-orange{% else %}text-dim{% endif %}">{{ 'ouverte' if roof_state == 'open' else 'fermée' }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="zone-badges">
+          <span class="badge {% if zd.valve_state == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}"
+                data-valve-badge="{{ zd.zone.zone_id }}">
+            <i class="bi bi-droplet{% if zd.valve_state == 'open' %}-fill{% endif %}"></i>
+            {% if zd.valve_state == 'open' %}Arrosage{% else %}Fermé{% endif %}
+          </span>
+          {% if zd.zone.has_roof %}
+          <span class="badge {% if roof_state == 'open' %}badge-roof-open{% else %}badge-roof-close{% endif %}">
+            <i class="bi bi-house{% if roof_state == 'open' %}-door{% endif %}"></i>
+            Lucarne {{ 'ouverte' if roof_state == 'open' else 'fermée' }}
+          </span>
+          {% endif %}
+          {% for p in zd.plantings[:2] %}
+          <span class="badge badge-plant"><i class="bi bi-flower1"></i>{{ p.vegetable_name }}</span>
+          {% endfor %}
+          {% if zd.plantings | length > 2 %}
+          <span class="badge">+{{ zd.plantings | length - 2 }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="zone-actions">
+        <div class="zone-actions-row">
+          <button class="btn btn-blue btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'open')">
+            <i class="bi bi-droplet-fill"></i> <span>Arroser</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'close')">
+            <i class="bi bi-stop-circle"></i> <span>Arrêter</span>
+          </button>
+        </div>
+        {% if zd.zone.has_roof %}
+        <div class="zone-actions-row">
+          <button class="btn btn-warning btn-sm" onclick="setRoof('open')">
+            <i class="bi bi-chevron-up"></i> <span>Ouvrir lucarne</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="setRoof('close')">
+            <i class="bi bi-chevron-down"></i> <span>Fermer lucarne</span>
+          </button>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Météo (full width) ── -->
+  <div class="card">
+    <div class="card-title">
+      <i class="bi bi-cloud-sun-fill"></i>
+      Météo — Vullierens
+      <span class="badge" style="margin-left:4px;font-weight:500;font-size:10px;">{{ weather.source }}</span>
+      {% if temp_serre_c is not none %}
+      <span class="badge badge-plant" style="margin-left:4px;font-size:10px;">🏠 Serre {{ temp_serre_c }}°C</span>
+      {% endif %}
+    </div>
+
+    <div class="weather-stats-row">
+      <div class="weather-stat">
+        <div class="weather-stat-icon">🌡️</div>
+        <div class="weather-stat-value">{{ weather.temperature }}°</div>
+        <div class="weather-stat-label">Extérieur</div>
+      </div>
+      {% if temp_serre_c is not none %}
+      <div class="weather-stat">
+        <div class="weather-stat-icon">🏠</div>
+        <div class="weather-stat-value">{{ temp_serre_c }}°</div>
+        <div class="weather-stat-label">Serre</div>
+      </div>
+      {% endif %}
+      <div class="weather-stat">
+        <div class="weather-stat-icon">🌧️</div>
+        <div class="weather-stat-value">{{ weather.precip_mm_6h }}mm</div>
+        <div class="weather-stat-label">Pluie 6h</div>
+      </div>
+      <div class="weather-stat">
+        <div class="weather-stat-icon">💧</div>
+        <div class="weather-stat-value">{{ weather.precip_prob_pct | int }}%</div>
+        <div class="weather-stat-label">Prob. pluie</div>
+      </div>
+      <div class="weather-stat">
+        <div class="weather-stat-icon">💨</div>
+        <div class="weather-stat-value">{{ weather.wind_kmh }}km/h</div>
+        <div class="weather-stat-label">Vent</div>
+      </div>
+    </div>
+
+    {% if weather.frost_risk %}
+    <div class="greenhouse-note" style="margin:12px 0 8px;">
+      <i class="bi bi-snow" style="color:var(--blue);"></i>
+      <div>
+        <div class="gn-title" style="color:var(--blue);">Risque de gel</div>
+        <div class="gn-body">Vannes et toit seront fermés automatiquement.</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="forecast-strip" id="forecastStrip"></div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+  loadForecast();
+</script>
+{% endblock %}

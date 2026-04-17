@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% block title %}Plantation{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <div class="page-title">Plantation</div>
+      <div class="page-subtitle">Gestion des légumes et compagnonnage — mois {{ current_month }}</div>
+    </div>
+    <a href="/plants" class="btn btn-secondary btn-sm">
+      <i class="bi bi-book"></i> Encyclopédie
+    </a>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- Associations d'or -->
+  {% if golden_associations %}
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-stars" style="color:var(--yellow);"></i> Associations d'or pour Vullierens</div>
+    <div class="grid-2" style="gap:8px;">
+      {% for a in golden_associations %}
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(48,209,88,.06);border:1px solid rgba(48,209,88,.14);border-radius:var(--r-md);">
+        <span class="badge badge-plant">{{ a.plant_a }}</span>
+        <i class="bi bi-heart-fill text-green" style="font-size:11px;"></i>
+        <span class="badge badge-plant">{{ a.plant_b }}</span>
+        <span style="font-size:12px;color:var(--text-tertiary);flex:1;">{{ a.reason }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Conseils du mois -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-calendar3" style="color:var(--blue);"></i> À planter ce mois-ci</div>
+    {% for zone in zones %}
+    {% set advice = advice_by_zone.get(zone.zone_id, []) %}
+    {% if advice %}
+    <div class="mb-3">
+      <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
+        Zone {{ zone.zone_id }} — {{ zone.name }}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        {% for veg in advice %}
+        <a href="/plants/{{ veg.name }}" style="display:inline-flex;align-items:center;gap:7px;padding:7px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--r-md);transition:all var(--t);" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:18px;">{{ veg.emoji if veg.emoji else '🌱' }}</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;">{{ veg.name }}</div>
+            <div style="font-size:10px;color:var(--text-tertiary);">{{ veg.water_need }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Plantations par zone -->
+  {% for zone in zones %}
+  <div class="card mb-3">
+    <div class="card-title">
+      <div class="zone-icon z{{ zone.zone_id }}" style="width:28px;height:28px;font-size:14px;">
+        {% if zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+        {% elif zone.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+        {% elif zone.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+        {% else %}<i class="bi bi-flower3"></i>{% endif %}
+      </div>
+      Zone {{ zone.zone_id }} — {{ zone.name }}
+      {% set active_count = plantings_by_zone.get(zone.zone_id, []) | selectattr('status','eq','active') | list | length %}
+      {% if active_count > 0 %}
+      <span class="badge badge-plant" style="margin-left:4px;">{{ active_count }} actif(s)</span>
+      {% endif %}
+      {% set warnings = warnings_by_zone.get(zone.zone_id, []) %}
+      {% if warnings %}
+      <span class="badge badge-warning" style="margin-left:4px;">⚠️ {{ warnings | length }} conflit(s)</span>
+      {% endif %}
+    </div>
+
+    {% if warnings_by_zone.get(zone.zone_id) %}
+    <div class="greenhouse-note" style="background:rgba(255,69,58,.06);border-color:rgba(255,69,58,.2);margin-bottom:14px;">
+      <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);"></i>
+      <div>
+        <div class="gn-title" style="color:var(--red);">Incompatibilités détectées</div>
+        {% for w in warnings_by_zone[zone.zone_id] %}
+        <div class="gn-body">{{ w }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Formulaire ajout -->
+    <form action="{{ url_for('config.add_planting') }}" method="post" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:16px;">
+      <input type="hidden" name="zone_id" value="{{ zone.zone_id }}">
+      <div>
+        <label class="form-label">Légume</label>
+        <select name="vegetable_name" class="form-select" required>
+          <option value="">Choisir...</option>
+          {% for veg in all_vegetables %}
+          <option value="{{ veg.name }}">{{ veg.emoji if veg.emoji else '' }} {{ veg.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Variété</label>
+        <input type="text" name="variety" class="form-control" placeholder="Optionnel">
+      </div>
+      <div>
+        <label class="form-label">Planté le</label>
+        <input type="date" name="planted_date" class="form-control"
+               value="{{ now().strftime('%Y-%m-%d') if now is defined else '' }}">
+      </div>
+      <div>
+        <label class="form-label">Récolte prévue</label>
+        <input type="date" name="expected_harvest_date" class="form-control">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-plus"></i> Ajouter
+        </button>
+      </div>
+    </form>
+
+    <!-- Tableau plantations -->
+    {% set zone_plantings = plantings_by_zone.get(zone.zone_id, []) %}
+    {% if zone_plantings %}
+    <div style="overflow-x:auto;">
+      <table class="table-modern">
+        <thead><tr>
+          <th>Légume</th><th>Variété</th><th>Planté</th><th>Récolte</th>
+          <th>Eau</th><th>Statut</th><th></th>
+        </tr></thead>
+        <tbody>
+          {% for p in zone_plantings %}
+          <tr>
+            <td style="color:var(--text-primary);font-weight:600;">{{ p.vegetable_name }}</td>
+            <td>{{ p.variety or '—' }}</td>
+            <td>{{ p.planted_date.strftime('%d.%m.%y') if p.planted_date else '—' }}</td>
+            <td>{{ p.expected_harvest_date.strftime('%d.%m.%y') if p.expected_harvest_date else '—' }}</td>
+            <td>
+              <span class="attr {% if p.water_need == 'high' %}water-high{% elif p.water_need == 'low' %}water-low{% else %}water-medium{% endif %}">
+                {{ p.water_need }}
+              </span>
+            </td>
+            <td>
+              <span class="badge {% if p.status == 'active' %}badge-plant{% elif p.status == 'harvested' %}badge-roof-open{% else %}badge-valve-close{% endif %}">
+                {{ {'active':'Active','harvested':'Récoltée','planned':'Planifiée','removed':'Supprimée'}.get(p.status, p.status) }}
+              </span>
+            </td>
+            <td style="display:flex;gap:5px;">
+              <button type="button" class="btn btn-secondary btn-xs" title="Modifier"
+                onclick="openEditModal({{ p.id }}, '{{ p.vegetable_name|e }}', '{{ (p.variety or '')|e }}', '{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}', '{{ p.status }}', '{{ p.water_need }}', '{{ (p.notes or '')|e }}', 'planting')">
+                <i class="bi bi-pencil"></i>
+              </button>
+              {% if p.status == 'active' %}
+              <form action="{{ url_for('config.harvest_planting', planting_id=p.id) }}" method="post">
+                <button class="btn btn-secondary btn-xs" title="Marquer récoltée">
+                  <i class="bi bi-check2-circle"></i>
+                </button>
+              </form>
+              {% endif %}
+              <form id="del-planting-{{ p.id }}" action="{{ url_for('config.delete_planting', planting_id=p.id) }}" method="post">
+                <button type="button" class="btn btn-danger btn-xs"
+                  onclick="showConfirm({title:'Supprimer la plantation',body:'Supprimer {{ p.vegetable_name }}{% if p.variety %} ({{ p.variety }}){% endif %} ?',okLabel:'Supprimer'},()=>document.getElementById('del-planting-{{ p.id }}').submit())">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:20px;">
+      <i class="bi bi-flower1" style="font-size:28px;display:block;margin-bottom:6px;"></i>
+      <p>Aucune plantation enregistrée dans cette zone.</p>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- Edit planting modal -->
+<div class="modal-overlay" id="edit-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-icon warning"><i class="bi bi-pencil-fill"></i></div>
+      <div class="modal-title">Modifier la plantation</div>
+      <div class="modal-body" id="ep-name" style="font-weight:600;color:var(--text-primary);margin-top:-4px;"></div>
+    </div>
+    <form id="edit-planting-form" method="post" style="padding:0 20px 20px;">
+      <input type="hidden" name="redirect_to" id="ep-redirect" value="planting">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Variété</label>
+          <input type="text" name="variety" id="ep-variety" placeholder="ex. Cœur de bœuf, Nantaise…"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Date de récolte prévue</label>
+          <input type="date" name="expected_harvest_date" id="ep-harvest"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Statut</label>
+            <select name="status" id="ep-status"
+              style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+              <option value="planned">Planifiée</option>
+              <option value="active">Active</option>
+              <option value="harvested">Récoltée</option>
+              <option value="removed">Supprimée</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Besoin en eau</label>
+            <select name="water_need" id="ep-water"
+              style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+              <option value="low">Faible 💧</option>
+              <option value="medium">Moyen 💧💧</option>
+              <option value="high">Élevé 💧💧💧</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Notes</label>
+          <textarea name="notes" id="ep-notes" rows="2" placeholder="Observations, remarques…"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);resize:vertical;"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin:16px -20px -20px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <button type="button" class="modal-btn cancel" onclick="closeEditModal()">Annuler</button>
+        <button type="submit" class="modal-btn" style="color:var(--green);">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const _editForm = document.getElementById('edit-planting-form');
+function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo) {
+  document.getElementById('ep-name').textContent   = name;
+  document.getElementById('ep-variety').value      = variety;
+  document.getElementById('ep-harvest').value      = harvest;
+  document.getElementById('ep-status').value       = status;
+  document.getElementById('ep-water').value        = waterNeed;
+  document.getElementById('ep-notes').value        = notes;
+  document.getElementById('ep-redirect').value     = redirectTo || 'planting';
+  _editForm.action = `/planting/${id}/edit`;
+  document.getElementById('edit-overlay').classList.add('visible');
+}
+function closeEditModal() {
+  document.getElementById('edit-overlay').classList.remove('visible');
+}
+document.getElementById('edit-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeEditModal();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Arduino{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <div class="page-title">Arduino Edge Control</div>
+      <div class="page-subtitle">Diagnostic matériel · interfaces I/O · actionneurs</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="refreshAll()">
+      <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+    </button>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- ── Connection status ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-wifi"></i> État de la connexion</div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;" id="conn-status-row">
+      <div class="diag-stat">
+        <div class="diag-label">Statut</div>
+        <div class="diag-val" id="ard-status">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Latence</div>
+        <div class="diag-val" id="ard-latency">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Uptime</div>
+        <div class="diag-val" id="ard-uptime">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Firmware</div>
+        <div class="diag-val" id="ard-firmware">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">RSSI WiFi</div>
+        <div class="diag-val" id="ard-rssi">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Mode</div>
+        <div class="diag-val" id="ard-mode">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Analog inputs ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-activity"></i> Entrées analogiques (capteurs sol)</div>
+    <div class="diag-grid" id="analog-grid">
+      {% for z in range(1, 5) %}
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon {% if z == 1 %}z1{% elif z == 2 %}z2{% elif z == 3 %}z3{% else %}z4{% endif %}">
+            {% if z == 1 %}<i class="bi bi-house-door-fill"></i>
+            {% elif z == 2 %}<i class="bi bi-sun-fill"></i>
+            {% elif z == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+            {% else %}<i class="bi bi-flower3"></i>{% endif %}
+          </div>
+          <div>
+            <div class="diag-ch-name">Zone {{ z }} — {{ ['Serre','Soleil','Mi-ombre','Aromates'][z-1] }}</div>
+            <div class="diag-ch-sub">ADC canal {{ z }} · SoilWatch 10</div>
+          </div>
+        </div>
+        <div class="diag-ch-body">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Humidité</div>
+            <div class="diag-val-lg" id="adc-pct-{{ z }}">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Valeur brute ADC</div>
+            <div class="diag-val" id="adc-raw-{{ z }}">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Tension estimée</div>
+            <div class="diag-val" id="adc-v-{{ z }}">—</div>
+          </div>
+          <div class="diag-bar-wrap">
+            <div class="diag-bar-track">
+              <div class="diag-bar-fill" id="adc-bar-{{ z }}" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── Temperature sensors ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-thermometer-half"></i> Capteurs de température (DS18B20)</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+      <div class="diag-channel" style="flex:1;min-width:200px;">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z2"><i class="bi bi-thermometer-half"></i></div>
+          <div>
+            <div class="diag-ch-name">Température extérieure</div>
+            <div class="diag-ch-sub">DS18B20 · bus OneWire</div>
+          </div>
+        </div>
+        <div class="diag-ch-body">
+          <div class="diag-val-lg" id="temp-ext">—</div>
+          <div class="diag-label">°C</div>
+        </div>
+      </div>
+      <div class="diag-channel" style="flex:1;min-width:200px;">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z1"><i class="bi bi-house-door-fill"></i></div>
+          <div>
+            <div class="diag-ch-name">Température serre</div>
+            <div class="diag-ch-sub">DS18B20 · sonde intérieure</div>
+          </div>
+        </div>
+        <div class="diag-ch-body">
+          <div class="diag-val-lg" id="temp-serre">—</div>
+          <div class="diag-label">°C</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Relays / Valves ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-toggles"></i> Relais de sortie (vannes 24V latching)</div>
+    <div class="diag-relay-grid" id="relay-grid">
+      {% for z in range(1, 5) %}
+      <div class="diag-relay" id="relay-card-{{ z }}">
+        <div class="diag-relay-header">
+          <span class="diag-relay-id">Relais {{ z }}</span>
+          <div class="diag-relay-led" id="relay-led-{{ z }}"></div>
+        </div>
+        <div class="diag-relay-name">Zone {{ z }} — {{ ['Serre','Soleil','Mi-ombre','Aromates'][z-1] }}</div>
+        <div class="diag-relay-state" id="relay-state-{{ z }}">—</div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button class="btn btn-blue btn-xs" onclick="manualValve({{ z }}, 'open')">
+            <i class="bi bi-droplet-fill"></i> Ouvrir
+          </button>
+          <button class="btn btn-secondary btn-xs" onclick="manualValve({{ z }}, 'close')">
+            <i class="bi bi-stop-circle"></i> Fermer
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── Linear actuator (roof) ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-arrows-vertical"></i> Vérin linéaire (toit serre)</div>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="diag-stat">
+          <div class="diag-label">Position</div>
+          <div class="diag-val" id="roof-pos" style="font-size:20px;font-weight:700;">—</div>
+        </div>
+        <div class="diag-stat">
+          <div class="diag-label">Fin de course ouvert</div>
+          <div class="diag-val" id="roof-endstop-open">—</div>
+        </div>
+        <div class="diag-stat">
+          <div class="diag-label">Fin de course fermé</div>
+          <div class="diag-val" id="roof-endstop-close">—</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-warning btn-sm" onclick="manualRoof('open')">
+          <i class="bi bi-chevron-up"></i> Ouvrir lucarne
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="manualRoof('close')">
+          <i class="bi bi-chevron-down"></i> Fermer lucarne
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Raw JSON dump ── -->
+  <div class="card">
+    <div class="card-title">
+      <i class="bi bi-code-slash"></i> Réponse brute API Arduino
+      <button class="btn btn-secondary btn-xs" style="margin-left:auto;" onclick="toggleRaw()">
+        <i class="bi bi-eye"></i> Afficher/masquer
+      </button>
+    </div>
+    <pre id="raw-dump" style="display:none;font-size:11px;color:var(--text-secondary);background:var(--bg-secondary);padding:12px;border-radius:var(--r-md);overflow-x:auto;line-height:1.6;"></pre>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script>
+let _rawData = {};
+
+async function refreshAll() {
+  await Promise.all([fetchHealth(), fetchSensors(), fetchActuators()]);
+}
+
+async function fetchHealth() {
+  try {
+    const d = await fetch('/api/system/health').then(r => r.json());
+    document.getElementById('ard-status').innerHTML =
+      `<span style="color:${d.arduino_reachable ? 'var(--green)' : 'var(--red)'}">${d.arduino_reachable ? '✓ Connecté' : '✗ Hors ligne'}</span>`;
+    document.getElementById('ard-mode').textContent = d.simulation_mode ? 'Simulation' : 'Production';
+    if (d.arduino_health) {
+      const h = d.arduino_health;
+      document.getElementById('ard-uptime').textContent = formatUptime(h.uptime_s);
+      document.getElementById('ard-firmware').textContent = h.firmware_version || '—';
+      document.getElementById('ard-rssi').textContent = h.wifi_rssi ? h.wifi_rssi + ' dBm' : '—';
+    }
+  } catch(e) {}
+}
+
+async function fetchSensors() {
+  try {
+    const d = await fetch('/api/data/current').then(r => r.json());
+    _rawData.sensors = d;
+    document.getElementById('raw-dump').textContent = JSON.stringify(_rawData, null, 2);
+
+    const tempExt = d.temperature_c;
+    const tempSerre = d.temp_serre_c;
+    document.getElementById('temp-ext').textContent = tempExt != null ? tempExt.toFixed(1) : '—';
+    document.getElementById('temp-serre').textContent = tempSerre != null ? tempSerre.toFixed(1) : '—';
+
+    const latEl = document.getElementById('ard-latency');
+    if (latEl) latEl.textContent = d.latency_ms != null ? d.latency_ms + ' ms' : '—';
+
+    for (const z of d.zones || []) {
+      const pct = z.soil_moisture_pct;
+      const raw = z.raw_adc ?? Math.round(pct / 100 * 4095);
+      const voltage = (raw / 4095 * 3.3).toFixed(2);
+      const mc = pct < (z.moisture_threshold_low || 30) ? 'low' : pct > (z.moisture_threshold_high || 65) ? 'high' : 'ok';
+
+      const el = id => document.getElementById(id);
+      if (el(`adc-pct-${z.zone_id}`)) el(`adc-pct-${z.zone_id}`).textContent = pct.toFixed(1) + ' %';
+      if (el(`adc-raw-${z.zone_id}`)) el(`adc-raw-${z.zone_id}`).textContent = raw;
+      if (el(`adc-v-${z.zone_id}`)) el(`adc-v-${z.zone_id}`).textContent = voltage + ' V';
+      const bar = el(`adc-bar-${z.zone_id}`);
+      if (bar) { bar.style.width = Math.min(pct, 100) + '%'; bar.className = `diag-bar-fill ${mc}`; }
+    }
+  } catch(e) {}
+}
+
+async function fetchActuators() {
+  try {
+    const d = await fetch('/api/data/current').then(r => r.json());
+    for (let z = 1; z <= 4; z++) {
+      const valve = (d.valves || []).find(v => v.zone_id === z);
+      const state = valve ? valve.state : 'close';
+      const open = state === 'open';
+      const led = document.getElementById(`relay-led-${z}`);
+      const st = document.getElementById(`relay-state-${z}`);
+      const card = document.getElementById(`relay-card-${z}`);
+      if (led) { led.className = `diag-relay-led${open ? ' active' : ''}`; }
+      if (st) { st.textContent = open ? 'Ouvert — arrosage actif' : 'Fermé'; st.style.color = open ? 'var(--green)' : 'var(--text-tertiary)'; }
+    }
+    const roofPos = document.getElementById('roof-pos');
+    if (roofPos) {
+      const rs = d.roof_state || 'close';
+      roofPos.textContent = rs === 'open' ? 'Ouvert' : 'Fermé';
+      roofPos.style.color = rs === 'open' ? 'var(--orange)' : 'var(--text-secondary)';
+    }
+    document.getElementById('roof-endstop-open').textContent  = d.roof_state === 'open'  ? '✓ Activé' : '— Repos';
+    document.getElementById('roof-endstop-close').textContent = d.roof_state === 'close' ? '✓ Activé' : '— Repos';
+  } catch(e) {}
+}
+
+async function manualValve(zoneId, state) {
+  await setValve(zoneId, state);
+  setTimeout(fetchActuators, 800);
+}
+async function manualRoof(state) {
+  await setRoof(state);
+  setTimeout(fetchActuators, 800);
+}
+
+function formatUptime(s) {
+  if (!s) return '—';
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return `${h}h ${m}m`;
+}
+
+function toggleRaw() {
+  const el = document.getElementById('raw-dump');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+refreshAll();
+setInterval(refreshAll, 15000);
+</script>
+{% endblock %}

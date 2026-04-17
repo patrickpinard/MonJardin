@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Zones{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <div class="page-title">Mes zones</div>
+      <div class="page-subtitle">
+        {% if temp_serre is not none %}🏠 Serre {{ temp_serre }}°C&nbsp;&nbsp;{% endif %}
+        🌡️ Extérieur {% if temp_ext is not none %}{{ temp_ext }}°C{% else %}—{% endif %}
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-icon" onclick="location.reload()" title="Rafraîchir">
+      <i class="bi bi-arrow-clockwise"></i>
+    </button>
+  </div>
+</div>
+
+<div class="page-body">
+  <div class="zones-grid zones-grid-auto">
+    {% for zd in zones_data %}
+    {% set mc = zd.mc %}
+    {% set pct = zd.moisture %}
+    {% set dash = (pct / 100 * 175.9) | round(1) %}
+
+    <div class="zone-card zo-card">
+
+      <!-- ── Header ── -->
+      <div class="zone-card-header">
+        <div class="zone-icon z{{ zd.zone.zone_id }}">
+          {% if zd.zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+          {% elif zd.zone.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+          {% elif zd.zone.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+          {% else %}<i class="bi bi-flower3"></i>{% endif %}
+        </div>
+        <div class="zone-card-meta">
+          <div class="zone-card-name">{{ zd.zone.name }}</div>
+          <div class="zone-card-desc">
+            Zone {{ zd.zone.zone_id }}{% if zd.zone.has_roof %} · Serre vitrée{% endif %}
+          </div>
+        </div>
+        <!-- Humidity badge -->
+        <div class="zo-hum-badge {{ mc }}" data-hum-badge="{{ zd.zone.zone_id }}">{{ pct | int }}%</div>
+      </div>
+
+      <!-- ── Humidity bar ── -->
+      <div class="zo-moisture-section">
+        <div class="zo-bar-wrap">
+          <div class="zo-bar-track">
+            <div class="zo-bar-fill {{ mc }}" data-bar="{{ zd.zone.zone_id }}" style="width: {{ [pct, 100] | min }}%;"></div>
+            <!-- threshold markers -->
+            <div class="zo-bar-mark" style="left: {{ zd.zone.moisture_threshold_low }}%;"></div>
+            <div class="zo-bar-mark" style="left: {{ zd.zone.moisture_threshold_high }}%;"></div>
+          </div>
+          <div class="zo-bar-labels">
+            <span>0%</span>
+            <span>{{ zd.zone.moisture_threshold_low | int }}%</span>
+            <span>{{ zd.zone.moisture_threshold_high | int }}%</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <!-- Status + valve -->
+        <div class="zo-status-row">
+          <span class="zo-status-pill {{ mc }}" data-status-pill="{{ zd.zone.zone_id }}">
+            {% if mc == 'low' %}<i class="bi bi-exclamation-triangle-fill"></i> Sol sec
+            {% elif mc == 'high' %}<i class="bi bi-droplet-fill"></i> Sol saturé
+            {% else %}<i class="bi bi-check-circle-fill"></i> Humidité optimale{% endif %}
+          </span>
+          <span class="badge {% if zd.valve_state == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}"
+                data-valve-badge="{{ zd.zone.zone_id }}">
+            <i class="bi bi-droplet{% if zd.valve_state == 'open' %}-fill{% endif %}"></i>
+            {% if zd.valve_state == 'open' %}Arrosage{% else %}Fermé{% endif %}
+          </span>
+        </div>
+
+        <!-- Temperature (zone 1 = serre, others = extérieur) -->
+        <div class="zo-temp-row">
+          {% if zd.zone.has_roof %}
+          <div class="zo-temp-item">
+            <i class="bi bi-house-door-fill" style="color:var(--green);font-size:12px;"></i>
+            <span>Serre</span>
+            <strong>{% if temp_serre is not none %}{{ temp_serre }}°C{% else %}—{% endif %}</strong>
+          </div>
+          {% endif %}
+          <div class="zo-temp-item">
+            <i class="bi bi-thermometer-half" style="color:var(--orange);font-size:12px;"></i>
+            <span>Extérieur</span>
+            <strong>{% if temp_ext is not none %}{{ temp_ext }}°C{% else %}—{% endif %}</strong>
+          </div>
+          {% if zd.zone.has_roof %}
+          <div class="zo-temp-item">
+            <i class="bi bi-house{% if roof_state == 'open' %}-door{% endif %}"
+               style="color:{% if roof_state == 'open' %}var(--orange){% else %}var(--text-tertiary){% endif %};font-size:12px;"></i>
+            <span>Toit</span>
+            <strong style="color:{% if roof_state == 'open' %}var(--orange){% else %}var(--text-tertiary){% endif %};">
+              {{ 'ouvert' if roof_state == 'open' else 'fermé' }}
+            </strong>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ── Plants ── -->
+      <div class="zo-plants-section">
+        <div class="zo-plants-label">
+          <i class="bi bi-flower1"></i>
+          Plantations actives
+          {% if zd.plantings %}
+          <span class="badge badge-plant" style="margin-left:4px;font-size:10px;">{{ zd.plantings | length }}</span>
+          {% endif %}
+        </div>
+
+        {% if zd.plantings %}
+        <div class="zo-plants-grid">
+          {% for p in zd.plantings %}
+          <a href="/plants/{{ p.vegetable_name }}" class="zo-plant-item">
+            <div class="zo-plant-emoji">{{ p.emoji }}</div>
+            <div class="zo-plant-name">{{ p.vegetable_name }}</div>
+            {% if p.variety %}
+            <div class="zo-plant-variety">{{ p.variety }}</div>
+            {% endif %}
+            <div class="zo-plant-water water-{{ p.water_need }}">
+              {% if p.water_need == 'high' %}💧💧💧
+              {% elif p.water_need == 'medium' %}💧💧
+              {% else %}💧{% endif %}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="zo-plants-empty">
+          <i class="bi bi-plus-circle"></i>
+          <a href="/planting">Ajouter une plantation</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- ── Quick actions ── -->
+      <div class="zone-actions">
+        <div class="zone-actions-row">
+          <button class="btn btn-blue btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'open')">
+            <i class="bi bi-droplet-fill"></i> <span>Arroser</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'close')">
+            <i class="bi bi-stop-circle"></i> <span>Arrêter</span>
+          </button>
+        </div>
+        {% if zd.zone.has_roof %}
+        <div class="zone-actions-row">
+          <button class="btn btn-warning btn-sm" onclick="setRoof('open')">
+            <i class="bi bi-chevron-up"></i> <span>Ouvrir lucarne</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="setRoof('close')">
+            <i class="bi bi-chevron-down"></i> <span>Fermer lucarne</span>
+          </button>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script>
+// Live update every 30s
+async function refreshZones() {
+  try {
+    const d = await fetch('/api/data/current').then(r => r.json());
+    const CIRC = 175.9;
+    (d.zones || []).forEach(z => {
+      const pct = z.soil_moisture_pct;
+      const mc  = pct < (z.moisture_threshold_low  || 30) ? 'low'
+                : pct > (z.moisture_threshold_high || 65) ? 'high' : 'ok';
+
+      // Humidity bar fill
+      const bar = document.querySelector(`[data-bar="${z.zone_id}"]`);
+      if (bar) { bar.style.width = Math.min(pct, 100) + '%'; bar.className = `zo-bar-fill ${mc}`; }
+
+      // Humidity badge
+      const hb = document.querySelector(`[data-hum-badge="${z.zone_id}"]`);
+      if (hb) { hb.textContent = Math.round(pct) + '%'; hb.className = `zo-hum-badge ${mc}`; }
+
+      // Status pill
+      const sp = document.querySelector(`[data-status-pill="${z.zone_id}"]`);
+      if (sp) {
+        sp.className = `zo-status-pill ${mc}`;
+        sp.innerHTML = mc === 'low'  ? '<i class="bi bi-exclamation-triangle-fill"></i> Sol sec'
+                     : mc === 'high' ? '<i class="bi bi-droplet-fill"></i> Sol saturé'
+                     : '<i class="bi bi-check-circle-fill"></i> Humidité optimale';
+      }
+
+      // Valve badge
+      const vb = document.querySelector(`[data-valve-badge="${z.zone_id}"]`);
+      if (vb) {
+        const open = z.valve_state === 'open';
+        vb.className = `badge ${open ? 'badge-valve-open' : 'badge-valve-close'}`;
+        vb.innerHTML = `<i class="bi bi-droplet${open ? '-fill' : ''}"></i> ${open ? 'Arrosage' : 'Fermé'}`;
+      }
+    });
+  } catch(e) {}
+}
+setInterval(refreshZones, 30000);
+</script>
+{% endblock %}

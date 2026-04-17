@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Raspberry Pi{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <div class="page-title">Raspberry Pi 5</div>
+      <div class="page-subtitle">Diagnostic système · CPU · mémoire · stockage · réseau</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="refreshRpi()">
+      <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+    </button>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- ── CPU ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-cpu-fill"></i> Processeur</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+      <div class="diag-stat">
+        <div class="diag-label">Charge CPU</div>
+        <div class="diag-val-lg" id="rpi-cpu-pct">—</div>
+        <div class="diag-bar-wrap" style="margin-top:6px;width:120px;">
+          <div class="diag-bar-track">
+            <div class="diag-bar-fill ok" id="rpi-cpu-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Température CPU</div>
+        <div class="diag-val-lg" id="rpi-cpu-temp">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Fréquence</div>
+        <div class="diag-val" id="rpi-cpu-freq">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Cœurs</div>
+        <div class="diag-val" id="rpi-cpu-cores">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Charge 1/5/15 min</div>
+        <div class="diag-val" id="rpi-load-avg">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Memory ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-memory"></i> Mémoire RAM</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="diag-stat">
+        <div class="diag-label">Utilisée</div>
+        <div class="diag-val-lg" id="rpi-mem-used">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Disponible</div>
+        <div class="diag-val" id="rpi-mem-avail">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Total</div>
+        <div class="diag-val" id="rpi-mem-total">—</div>
+      </div>
+      <div class="diag-stat" style="flex:1;min-width:160px;">
+        <div class="diag-label" id="rpi-mem-pct-label">0%</div>
+        <div class="diag-bar-wrap" style="margin-top:6px;">
+          <div class="diag-bar-track">
+            <div class="diag-bar-fill ok" id="rpi-mem-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Disk ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-hdd-fill"></i> Stockage</div>
+    <div id="rpi-disk-list" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="text-dim" style="font-size:13px;">Chargement…</div>
+    </div>
+  </div>
+
+  <!-- ── Network ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-ethernet"></i> Réseau</div>
+    <div id="rpi-net-list" style="display:flex;gap:14px;flex-wrap:wrap;">
+      <div class="text-dim" style="font-size:13px;">Chargement…</div>
+    </div>
+  </div>
+
+  <!-- ── System info ── -->
+  <div class="card">
+    <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+      <div class="diag-stat">
+        <div class="diag-label">Hostname</div>
+        <div class="diag-val" id="rpi-hostname">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Système d'exploitation</div>
+        <div class="diag-val" id="rpi-os">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Kernel</div>
+        <div class="diag-val" id="rpi-kernel">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Python</div>
+        <div class="diag-val" id="rpi-python">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Uptime</div>
+        <div class="diag-val" id="rpi-uptime">—</div>
+      </div>
+      <div class="diag-stat">
+        <div class="diag-label">Heure système</div>
+        <div class="diag-val" id="rpi-time">—</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fmt(bytes) {
+  if (bytes > 1e9) return (bytes/1e9).toFixed(1) + ' Go';
+  if (bytes > 1e6) return (bytes/1e6).toFixed(0) + ' Mo';
+  return bytes + ' o';
+}
+function fmtUptime(s) {
+  const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60);
+  return `${d}j ${h}h ${m}m`;
+}
+function barColor(pct) {
+  return pct > 85 ? 'high' : pct > 60 ? 'low' : 'ok';
+}
+
+async function refreshRpi() {
+  try {
+    const d = await fetch('/api/system/rpi').then(r => r.json());
+
+    // CPU
+    document.getElementById('rpi-cpu-pct').textContent  = d.cpu_percent.toFixed(1) + ' %';
+    document.getElementById('rpi-cpu-temp').textContent = d.cpu_temp_c != null ? d.cpu_temp_c.toFixed(1) + ' °C' : '—';
+    document.getElementById('rpi-cpu-freq').textContent = d.cpu_freq_mhz ? d.cpu_freq_mhz.toFixed(0) + ' MHz' : '—';
+    document.getElementById('rpi-cpu-cores').textContent = d.cpu_count || '—';
+    document.getElementById('rpi-load-avg').textContent = d.load_avg ? d.load_avg.join(' / ') : '—';
+    const cpuBar = document.getElementById('rpi-cpu-bar');
+    cpuBar.style.width = d.cpu_percent + '%';
+    cpuBar.className = `diag-bar-fill ${barColor(d.cpu_percent)}`;
+
+    // Memory
+    const mem = d.memory;
+    document.getElementById('rpi-mem-used').textContent  = fmt(mem.used);
+    document.getElementById('rpi-mem-avail').textContent = fmt(mem.available);
+    document.getElementById('rpi-mem-total').textContent = fmt(mem.total);
+    document.getElementById('rpi-mem-pct-label').textContent = mem.percent.toFixed(1) + '%';
+    const memBar = document.getElementById('rpi-mem-bar');
+    memBar.style.width = mem.percent + '%';
+    memBar.className = `diag-bar-fill ${barColor(mem.percent)}`;
+
+    // Disk
+    const diskEl = document.getElementById('rpi-disk-list');
+    diskEl.innerHTML = d.disks.map(disk => `
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;font-weight:600;">${disk.mountpoint}</span>
+          <span style="font-size:12px;color:var(--text-secondary);">${fmt(disk.used)} / ${fmt(disk.total)} · ${disk.percent.toFixed(1)}%</span>
+        </div>
+        <div class="diag-bar-track">
+          <div class="diag-bar-fill ${barColor(disk.percent)}" style="width:${disk.percent}%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">${disk.fstype} · ${fmt(disk.free)} libres</div>
+      </div>
+    `).join('');
+
+    // Network
+    const netEl = document.getElementById('rpi-net-list');
+    netEl.innerHTML = d.network.map(nic => `
+      <div class="diag-stat">
+        <div class="diag-label">${nic.interface}</div>
+        <div class="diag-val" style="font-weight:700;">${nic.address || '—'}</div>
+        ${nic.address6 ? `<div style="font-size:10px;color:var(--text-tertiary);">${nic.address6}</div>` : ''}
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">
+          ↓ ${fmt(nic.bytes_recv)} · ↑ ${fmt(nic.bytes_sent)}
+        </div>
+      </div>
+    `).join('');
+
+    // System
+    document.getElementById('rpi-hostname').textContent = d.hostname;
+    document.getElementById('rpi-os').textContent       = d.os;
+    document.getElementById('rpi-kernel').textContent   = d.kernel;
+    document.getElementById('rpi-python').textContent   = d.python_version;
+    document.getElementById('rpi-uptime').textContent   = fmtUptime(d.uptime_s);
+    document.getElementById('rpi-time').textContent     = new Date(d.current_time).toLocaleString('fr-CH');
+  } catch(e) {
+    console.error('Erreur RPi:', e);
+  }
+}
+
+refreshRpi();
+setInterval(refreshRpi, 10000);
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}{{ plant.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <a href="/plants" class="btn btn-ghost btn-icon"><i class="bi bi-arrow-left"></i></a>
+    <div style="flex:1;"></div>
+  </div>
+</div>
+
+<div class="page-body" style="padding-top:10px;">
+
+  <!-- Hero -->
+  <div class="plant-hero">
+    <div class="plant-hero-bg" style="background: {{ plant.bg_gradient | default('linear-gradient(135deg,#2c2c2e,#1c1c1e)') }};"></div>
+    <div class="plant-hero-overlay"></div>
+    <div class="plant-hero-emoji">{{ plant.emoji | default('🌱') }}</div>
+    <div class="plant-hero-info">
+      <div class="plant-hero-name">{{ plant.name }}</div>
+      <div class="plant-hero-sci">{{ plant.scientific_name }} · {{ plant.family }}</div>
+    </div>
+  </div>
+
+  <!-- Description -->
+  {% if plant.description %}
+  <p style="font-size:15px;color:var(--text-secondary);line-height:1.65;margin-bottom:22px;">
+    {{ plant.description }}
+  </p>
+  {% endif %}
+
+  <!-- Greenhouse note -->
+  {% if plant.greenhouse_suitable %}
+  <div class="greenhouse-note">
+    <i class="bi bi-house-door-fill"></i>
+    <div>
+      <div class="gn-title">Adapté à la serre vitrée (Zone 1)</div>
+      <div class="gn-body">
+        {% if plant.greenhouse_notes %}{{ plant.greenhouse_notes }}
+        {% else %}Ce légume se cultive bien en serre vitrée.{% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Characteristics grid -->
+  <div class="chars-grid">
+    <div class="char-item">
+      <span class="char-icon">💧</span>
+      <div class="char-label">Besoin en eau</div>
+      <div class="char-value">{{ {'high': 'Élevé', 'medium': 'Modéré', 'low': 'Faible'}.get(plant.water_need, plant.water_need) }}</div>
+    </div>
+    <div class="char-item">
+      <span class="char-icon">{% if plant.sun_need == 'full' %}☀️{% elif plant.sun_need == 'partial' %}⛅{% else %}🌥️{% endif %}</span>
+      <div class="char-label">Ensoleillement</div>
+      <div class="char-value">{% if plant.sun_need == 'full' %}Plein soleil{% elif plant.sun_need == 'partial' %}Mi-ombre{% else %}Ombre{% endif %}</div>
+    </div>
+    {% if plant.soil_moisture_ideal_pct %}
+    <div class="char-item">
+      <span class="char-icon">🌱</span>
+      <div class="char-label">Humidité idéale</div>
+      <div class="char-value">{{ plant.soil_moisture_ideal_pct }}%</div>
+    </div>
+    {% endif %}
+    {% if plant.space_cm %}
+    <div class="char-item">
+      <span class="char-icon">📏</span>
+      <div class="char-label">Espacement</div>
+      <div class="char-value">{{ plant.space_cm }} cm</div>
+    </div>
+    {% endif %}
+    {% if plant.height_cm %}
+    <div class="char-item">
+      <span class="char-icon">📐</span>
+      <div class="char-label">Hauteur</div>
+      <div class="char-value">{{ plant.height_cm }} cm</div>
+    </div>
+    {% endif %}
+    {% if plant.days_to_harvest %}
+    <div class="char-item">
+      <span class="char-icon">⏱️</span>
+      <div class="char-label">Jours à la récolte</div>
+      <div class="char-value">~{{ plant.days_to_harvest }}j</div>
+    </div>
+    {% endif %}
+    {% if plant.min_soil_temp_c %}
+    <div class="char-item">
+      <span class="char-icon">🌡️</span>
+      <div class="char-label">Temp. sol min</div>
+      <div class="char-value">{{ plant.min_soil_temp_c }}°C</div>
+    </div>
+    {% endif %}
+    {% if plant.difficulty %}
+    <div class="char-item">
+      <span class="char-icon">{% if plant.difficulty == 'easy' %}✅{% elif plant.difficulty == 'medium' %}⚡{% else %}🔥{% endif %}</span>
+      <div class="char-label">Difficulté</div>
+      <div class="char-value">{{ {'easy': 'Facile', 'medium': 'Moyen', 'hard': 'Difficile'}.get(plant.difficulty, plant.difficulty) }}</div>
+    </div>
+    {% endif %}
+    {% if plant.frost_sensitive is defined %}
+    <div class="char-item">
+      <span class="char-icon">{% if plant.frost_sensitive %}❄️{% else %}🧊{% endif %}</span>
+      <div class="char-label">Gel</div>
+      <div class="char-value">{% if plant.frost_sensitive %}Sensible{% else %}Résistant{% endif %}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="grid-2" style="gap:20px;margin-bottom:22px;">
+    <!-- Calendrier plantation -->
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
+        Calendrier suisse (Bocquet 2026)
+      </div>
+      {% set months_fr = ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'] %}
+      {% set planting = plant.planting_months_ch | default([]) | map('int') | list %}
+      {% set harvest  = plant.harvest_months_ch  | default([]) | map('int') | list %}
+      {% set indoor   = plant.indoor_start_months | default([]) | map('int') | list %}
+      <div class="cal-strip">
+        {% for m in range(1, 13) %}
+        {% set in_plant  = m in planting %}
+        {% set in_harvest= m in harvest  %}
+        {% set in_indoor = m in indoor   %}
+        <div class="cal-month {% if in_plant and in_harvest %}both{% elif in_plant %}plant{% elif in_harvest %}harvest{% elif in_indoor %}plant{% endif %}"
+             title="{{ months_fr[m] }}{% if in_indoor %} — semis sous abri{% endif %}{% if in_plant %} — plantation{% endif %}{% if in_harvest %} — récolte{% endif %}">
+          {{ months_fr[m][:1] }}
+        </div>
+        {% endfor %}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:7px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-tertiary);">
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(48,209,88,.2);"></div>
+          Plantation / semis
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-tertiary);">
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(255,159,10,.2);"></div>
+          Récolte
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-tertiary);">
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(48,209,88,.2);outline:2px solid rgba(255,159,10,.4);"></div>
+          Les deux
+        </div>
+      </div>
+      {% if indoor %}
+      <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);">
+        <i class="bi bi-house-fill text-green"></i>
+        Semis sous abri / serre : {% for m in indoor %}{{ months_fr[m] }}{% if not loop.last %}, {% endif %}{% endfor %}
+      </div>
+      {% endif %}
+      {% if plant.water_frequency %}
+      <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);">
+        <i class="bi bi-droplet-fill text-blue"></i> Fréquence d'arrosage : {{ plant.water_frequency }}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Compagnonnage -->
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
+        Compagnonnage
+      </div>
+      {% if plant.companions %}
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:6px;">✅ Bonnes associations</div>
+        <div class="companions-row">
+          {% for c in plant.companions %}
+          <a href="/plants/{{ c }}" class="companion-pill cp-good">
+            <i class="bi bi-flower1" style="font-size:11px;"></i> {{ c }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% if plant.bad_companions %}
+      <div>
+        <div style="font-size:11px;color:var(--red);font-weight:700;margin-bottom:6px;">❌ À éviter</div>
+        <div class="companions-row">
+          {% for c in plant.bad_companions %}
+          <a href="/plants/{{ c }}" class="companion-pill cp-bad">
+            <i class="bi bi-x-circle" style="font-size:11px;"></i> {{ c }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Zone suitability -->
+  {% if plant.zone_recommendations %}
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-geo-alt-fill"></i> Zones recommandées</div>
+    <div class="suit-list">
+      {% for rec in plant.zone_recommendations %}
+      {% set zone_obj = zones | selectattr('zone_id', 'eq', rec.zone_id) | first | default(None) %}
+      <div class="suit-item">
+        <div class="suit-dot {{ rec.suitability }}"></div>
+        <div class="suit-zone">Zone {{ rec.zone_id }} — {{ rec.label }}</div>
+        <div class="suit-notes">{{ rec.notes }}</div>
+        <span class="badge {% if rec.suitability == 'excellent' %}badge-plant{% elif rec.suitability == 'good' %}badge-roof-open{% elif rec.suitability == 'poor' %}badge-warning{% else %}badge-valve-close{% endif %}" style="font-size:10px;">
+          {{ {'excellent': 'Excellent', 'good': 'Bien', 'acceptable': 'Acceptable', 'poor': 'Difficile'}.get(rec.suitability, rec.suitability) }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Add to zone form -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-plus-circle-fill"></i> Planter dans une zone</div>
+    <form action="{{ url_for('config.add_planting') }}" method="post"
+          style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;align-items:end;">
+      <input type="hidden" name="vegetable_name" value="{{ plant.name }}">
+      <div>
+        <label class="form-label">Zone</label>
+        <select name="zone_id" class="form-select" required>
+          {% for z in zones %}
+          <option value="{{ z.zone_id }}">Zone {{ z.zone_id }} — {{ z.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Variété (optionnel)</label>
+        <input type="text" name="variety" class="form-control" placeholder="ex. Marmande">
+      </div>
+      <div>
+        <label class="form-label">Date de plantation</label>
+        <input type="date" name="planted_date" class="form-control"
+               value="{{ today }}">
+      </div>
+      <div>
+        <label class="form-label">Récolte prévue</label>
+        <input type="date" name="expected_harvest_date" class="form-control"
+               value="{{ harvest_date_default }}">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-plus"></i> Planter
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Notes / conseils -->
+  {% if plant.notes_fr or plant.harvest_tips or plant.fertilizer %}
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-lightbulb-fill" style="color:var(--yellow);"></i> Conseils de culture</div>
+    {% if plant.notes_fr %}
+    <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">{{ plant.notes_fr }}</p>
+    {% endif %}
+    {% if plant.harvest_tips %}
+    <div style="padding:12px;background:rgba(255,159,10,.06);border:1px solid rgba(255,159,10,.15);border-radius:var(--r-md);margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:4px;">🌾 Récolte</div>
+      <div style="font-size:13px;color:var(--text-secondary);">{{ plant.harvest_tips }}</div>
+    </div>
+    {% endif %}
+    {% if plant.fertilizer %}
+    <div style="padding:12px;background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.15);border-radius:var(--r-md);">
+      <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:4px;">🌿 Fertilisation</div>
+      <div style="font-size:13px;color:var(--text-secondary);">{{ plant.fertilizer }}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Ravageurs -->
+  {% if plant.pests %}
+  <div class="card">
+    <div class="card-title"><i class="bi bi-bug-fill" style="color:var(--red);"></i> Ravageurs & maladies</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      {% for pest in plant.pests %}
+      <span class="badge badge-warning">{{ pest }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

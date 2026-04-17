@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% block title %}{{ zone.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="/dashboard" class="btn btn-ghost btn-icon"><i class="bi bi-arrow-left"></i></a>
+      <div>
+        <div class="page-title">Zone {{ zone.zone_id }} — {{ zone.name }}</div>
+        <div class="page-subtitle">
+          {% if zone.has_roof %}Serre vitrée · {% endif %}
+          Mode <strong>{{ zone.irrigation_mode }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="zone-mode-badge {{ zone.irrigation_mode }}" style="font-size:12px;padding:6px 14px;">
+      {{ zone.irrigation_mode }}
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- Incompatibilités -->
+  {% if compatibility_warnings %}
+  <div class="greenhouse-note mb-3" style="background:rgba(255,69,58,.06);border-color:rgba(255,69,58,.2);">
+    <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);"></i>
+    <div>
+      <div class="gn-title" style="color:var(--red);">Incompatibilités de compagnonnage</div>
+      {% for w in compatibility_warnings %}
+      <div class="gn-body">{{ w }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Greenhouse advisory for Zone 1 -->
+  {% if zone.has_roof %}
+  <div class="greenhouse-note mb-3">
+    <i class="bi bi-house-door-fill"></i>
+    <div>
+      <div class="gn-title">Serre vitrée — conseils spécifiques</div>
+      <div class="gn-body">
+        En été, la température dans la serre peut dépasser 35°C. Privilégiez des légumes tolérants à la chaleur (tomate, poivron, concombre) et ventilez au-delà de 25°C. En hiver, la serre protège du gel et permet de cultiver des salades et épinards.
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="grid-2">
+    <!-- Graphique -->
+    <div class="card" style="grid-column: 1;">
+      <div class="card-title">
+        <i class="bi bi-graph-up"></i> Historique humidité
+        <div class="card-actions">
+          <div class="time-tabs">
+            <button class="time-tab active" onclick="switchZoneTab(this, {{ zone.zone_id }}, 24)">24h</button>
+            <button class="time-tab" onclick="switchZoneTab(this, {{ zone.zone_id }}, 168)">7j</button>
+            <button class="time-tab" onclick="switchZoneTab(this, {{ zone.zone_id }}, 720)">30j</button>
+          </div>
+        </div>
+      </div>
+      <div id="zoneChart" style="height:260px;"></div>
+    </div>
+
+    <!-- Config -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-sliders"></i> Configuration</div>
+      <form action="{{ url_for('config.update_zone', zone_id=zone.zone_id) }}" method="post">
+        <div class="form-group">
+          <label class="form-label">Mode arrosage</label>
+          <select name="irrigation_mode" class="form-select">
+            {% for m in ['auto','manual','disabled'] %}
+            <option value="{{ m }}" {% if zone.irrigation_mode == m %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group mb-0">
+            <label class="form-label">Seuil bas (%)</label>
+            <input type="number" name="moisture_threshold_low" class="form-control"
+                   value="{{ zone.moisture_threshold_low | int }}" min="5" max="80">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">Seuil haut (%)</label>
+            <input type="number" name="moisture_threshold_high" class="form-control"
+                   value="{{ zone.moisture_threshold_high | int }}" min="20" max="95">
+          </div>
+        </div>
+        <div class="form-group mt-2">
+          <label class="form-label">Durée arrosage (min)</label>
+          <input type="number" name="irrigation_duration_min" class="form-control"
+                 value="{{ zone.irrigation_duration_min }}" min="1" max="120">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Plantations -->
+  <div class="card mt-3">
+    <div class="card-title">
+      <i class="bi bi-flower1"></i> Plantations
+      <a href="/planting" class="btn btn-secondary btn-sm" style="margin-left:auto;">
+        <i class="bi bi-plus"></i> Ajouter
+      </a>
+    </div>
+
+    {% if plantings %}
+    <div style="overflow-x:auto;">
+      <table class="table-modern">
+        <thead><tr>
+          <th>Légume</th><th>Variété</th><th>Planté</th><th>Récolte</th>
+          <th>Besoin eau</th><th>Statut</th><th></th>
+        </tr></thead>
+        <tbody>
+          {% for p in plantings %}
+          <tr>
+            <td style="color:var(--text-primary);font-weight:600;">
+              <a href="/plants/{{ p.vegetable_name }}" style="color:inherit;">{{ p.vegetable_name }}</a>
+            </td>
+            <td>{{ p.variety or '—' }}</td>
+            <td>{{ p.planted_date.strftime('%d.%m.%Y') if p.planted_date else '—' }}</td>
+            <td>{{ p.expected_harvest_date.strftime('%d.%m.%Y') if p.expected_harvest_date else '—' }}</td>
+            <td>
+              <span class="attr {% if p.water_need == 'high' %}water-high{% elif p.water_need == 'low' %}water-low{% else %}water-medium{% endif %}">
+                {{ p.water_need }}
+              </span>
+            </td>
+            <td>
+              <span class="badge {% if p.status == 'active' %}badge-plant{% elif p.status == 'harvested' %}badge-roof-open{% else %}badge-valve-close{% endif %}">
+                {{ {'active':'Active','harvested':'Récoltée','planned':'Planifiée','removed':'Supprimée'}.get(p.status, p.status) }}
+              </span>
+            </td>
+            <td style="display:flex;gap:5px;">
+              <button type="button" class="btn btn-secondary btn-xs" title="Modifier"
+                onclick="openEditModal({{ p.id }}, '{{ p.vegetable_name|e }}', '{{ (p.variety or '')|e }}', '{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}', '{{ p.status }}', '{{ p.water_need }}', '{{ (p.notes or '')|e }}', 'zone')">
+                <i class="bi bi-pencil"></i>
+              </button>
+              {% if p.status == 'active' %}
+              <form action="{{ url_for('config.harvest_planting', planting_id=p.id) }}" method="post">
+                <button class="btn btn-secondary btn-xs" title="Marquer récoltée">
+                  <i class="bi bi-check2-circle"></i>
+                </button>
+              </form>
+              {% endif %}
+              <form id="del-z-{{ p.id }}" action="{{ url_for('config.delete_planting', planting_id=p.id) }}" method="post">
+                <button type="button" class="btn btn-danger btn-xs"
+                  onclick="showConfirm({title:'Supprimer la plantation',body:'Supprimer {{ p.vegetable_name }}{% if p.variety %} ({{ p.variety }}){% endif %} de cette zone ?',okLabel:'Supprimer'},()=>document.getElementById('del-z-{{ p.id }}').submit())">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:24px;">
+      <i class="bi bi-flower1" style="font-size:28px;display:block;margin-bottom:6px;"></i>
+      <p>Aucune plantation enregistrée.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Récoltes prochaines -->
+  {% if harvest_forecast %}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+    <span style="font-size:13px;color:var(--text-secondary);align-self:center;">Récoltes prochaines :</span>
+    {% for h in harvest_forecast %}
+    <span class="harvest-chip {% if h.days_left <= 7 %}soon{% endif %}">
+      🌾 {{ h.vegetable_name }} — {{ h.days_left }}j
+    </span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script>
+function switchZoneTab(btn, zoneId, hours) {
+  document.querySelectorAll('.time-tabs .time-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadZoneChart(zoneId, hours);
+}
+
+async function loadZoneChart(zoneId, hours) {
+  const resp = await fetch(`/api/data/history?zone_id=${zoneId}&hours=${hours}`);
+  const data = await resp.json();
+  const readings = data.zones[zoneId] || [];
+  Plotly.react('zoneChart', [{
+    x: readings.map(r => r.timestamp),
+    y: readings.map(r => r.soil_moisture_pct),
+    type: 'scatter', mode: 'lines', name: 'Humidité',
+    line: {color: '#30d158', width: 2}, fill: 'tozeroy',
+    fillcolor: 'rgba(48,209,88,0.08)',
+  }], {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    font: {color: 'rgba(255,255,255,.55)', size: 11, family: '-apple-system,system-ui'},
+    margin: {t: 6, b: 40, l: 42, r: 10},
+    xaxis: {gridcolor: 'rgba(255,255,255,.06)', tickformat: '%H:%M\n%d.%m'},
+    yaxis: {title: 'Humidité (%)', range: [0, 100], gridcolor: 'rgba(255,255,255,.06)'},
+  }, {responsive: true, displayModeBar: false});
+}
+loadZoneChart({{ zone.zone_id }}, 24);
+
+// ── Edit planting modal ──────────────────────────────────
+const _editForm = document.getElementById('edit-planting-form');
+let _editId = null;
+
+function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo) {
+  _editId = id;
+  document.getElementById('ep-name').textContent   = name;
+  document.getElementById('ep-variety').value      = variety;
+  document.getElementById('ep-harvest').value      = harvest;
+  document.getElementById('ep-status').value       = status;
+  document.getElementById('ep-water').value        = waterNeed;
+  document.getElementById('ep-notes').value        = notes;
+  document.getElementById('ep-redirect').value     = redirectTo || 'zone';
+  _editForm.action = `/planting/${id}/edit`;
+  document.getElementById('edit-overlay').classList.add('visible');
+}
+function closeEditModal() {
+  document.getElementById('edit-overlay').classList.remove('visible');
+}
+document.getElementById('edit-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeEditModal();
+});
+</script>
+
+<!-- Edit planting modal -->
+<div class="modal-overlay" id="edit-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-icon warning"><i class="bi bi-pencil-fill"></i></div>
+      <div class="modal-title">Modifier la plantation</div>
+      <div class="modal-body" id="ep-name" style="font-weight:600;color:var(--text-primary);margin-top:-4px;"></div>
+    </div>
+    <form id="edit-planting-form" method="post" style="padding:0 20px 20px;">
+      <input type="hidden" name="redirect_to" id="ep-redirect" value="zone">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Variété</label>
+          <input type="text" name="variety" id="ep-variety" placeholder="ex. Cœur de bœuf, Nantaise…"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Date de récolte prévue</label>
+          <input type="date" name="expected_harvest_date" id="ep-harvest"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Statut</label>
+            <select name="status" id="ep-status"
+              style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+              <option value="planned">Planifiée</option>
+              <option value="active">Active</option>
+              <option value="harvested">Récoltée</option>
+              <option value="removed">Supprimée</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Besoin en eau</label>
+            <select name="water_need" id="ep-water"
+              style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+              <option value="low">Faible 💧</option>
+              <option value="medium">Moyen 💧💧</option>
+              <option value="high">Élevé 💧💧💧</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Notes</label>
+          <textarea name="notes" id="ep-notes" rows="2" placeholder="Observations, remarques…"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);resize:vertical;"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin:16px -20px -20px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <button type="button" class="modal-btn cancel" onclick="closeEditModal()">Annuler</button>
+        <button type="submit" class="modal-btn" style="color:var(--green);">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

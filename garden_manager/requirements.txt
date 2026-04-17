@@ -1,0 +1,12 @@
+flask>=3.0
+flask-cors>=4.0
+flask-sqlalchemy>=3.1
+requests>=2.31
+apscheduler>=3.10
+plotly>=5.18
+pandas>=2.1
+python-dotenv>=1.0
+pyyaml>=6.0
+numpy>=1.26
+pytest>=7.0
+pytest-flask>=1.3

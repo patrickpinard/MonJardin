@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Encyclopédie{% endblock %}
+
+{% block head %}
+<style>
+.plants-count { font-size:13px; color:var(--text-tertiary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <div class="page-title">Encyclopédie</div>
+      <div class="page-subtitle">{{ plants | length }} légumes · Fiches de culture</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <i class="bi bi-search search-icon"></i>
+      <input class="search-input" type="text" id="searchInput"
+             placeholder="Rechercher un légume..." oninput="filterPlants()">
+    </div>
+    <button class="filter-chip active" data-filter="all" onclick="setFilter(this, 'all')">Tous</button>
+    <button class="filter-chip" data-filter="water-high" onclick="setFilter(this, 'water-high')">
+      💧 Gourmand
+    </button>
+    <button class="filter-chip" data-filter="sun-full" onclick="setFilter(this, 'sun-full')">
+      ☀️ Plein soleil
+    </button>
+    <button class="filter-chip" data-filter="serre" onclick="setFilter(this, 'serre')">
+      🏠 Serre
+    </button>
+    <button class="filter-chip" data-filter="easy" onclick="setFilter(this, 'easy')">
+      ✅ Facile
+    </button>
+  </div>
+
+  <!-- Grid -->
+  <div class="plants-grid" id="plantsGrid">
+    {% for p in plants %}
+    <a href="/plants/{{ p.name }}" class="plant-card"
+       data-name="{{ p.name | lower }}"
+       data-water="{{ p.water_need }}"
+       data-sun="{{ p.sun_need }}"
+       data-serre="{{ 'true' if p.greenhouse_suitable else 'false' }}"
+       data-difficulty="{{ p.difficulty }}">
+      <div class="plant-card-header" style="background: {{ p.bg_gradient | default('linear-gradient(135deg,#2c2c2e,#3a3a3c)') }};">
+        <span class="plant-emoji-big">{{ p.emoji | default('🌱') }}</span>
+      </div>
+      <div class="plant-card-body">
+        <div class="plant-name">{{ p.name }}</div>
+        <div class="plant-sci">{{ p.scientific_name }}</div>
+        <div class="plant-attrs">
+          <span class="attr water-{{ p.water_need }}">
+            💧 {{ {'high': 'Gourmand', 'medium': 'Modéré', 'low': 'Peu'}.get(p.water_need, p.water_need) }}
+          </span>
+          <span class="attr sun-{{ p.sun_need }}">
+            {% if p.sun_need == 'full' %}☀️ Plein soleil
+            {% elif p.sun_need == 'partial' %}⛅ Mi-ombre
+            {% else %}🌥️ Ombre{% endif %}
+          </span>
+          {% if p.difficulty %}
+          <span class="attr {{ p.difficulty }}">
+            {% if p.difficulty == 'easy' %}✅ Facile
+            {% elif p.difficulty == 'medium' %}⚡ Moyen
+            {% else %}🔥 Difficile{% endif %}
+          </span>
+          {% endif %}
+          {% if p.greenhouse_suitable %}
+          <span class="attr serre">🏠 Serre</span>
+          {% endif %}
+        </div>
+        {% if p.planting_months_ch %}
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">
+          Plantation :
+          {% set months_fr = ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'] %}
+          {{ p.planting_months_ch | map('int') | map('nth', months_fr) | join(' · ') if false else (p.planting_months_ch | map('string') | list | join('·')) }}
+          {# Simplified month display #}
+          {% set mfr = ['','J','F','M','A','M','J','J','A','S','O','N','D'] %}
+          {% for m in p.planting_months_ch %}{{ mfr[m] }}{% if not loop.last %}-{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </a>
+    {% else %}
+    <div class="empty-state" style="grid-column:1/-1;">
+      <i class="bi bi-flower1"></i>
+      <p>Aucun légume dans la base de données.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="empty-state" id="noResults" style="display:none;">
+    <i class="bi bi-search"></i>
+    <p>Aucun légume ne correspond à votre recherche.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let _activeFilter = 'all';
+
+function setFilter(btn, filter) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeFilter = filter;
+  filterPlants();
+}
+
+function filterPlants() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('#plantsGrid .plant-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const name = card.dataset.name || '';
+    const matchSearch = !q || name.includes(q);
+    let matchFilter = true;
+    if (_activeFilter === 'water-high')  matchFilter = card.dataset.water === 'high';
+    if (_activeFilter === 'sun-full')    matchFilter = card.dataset.sun === 'full';
+    if (_activeFilter === 'serre')       matchFilter = card.dataset.serre === 'true';
+    if (_activeFilter === 'easy')        matchFilter = card.dataset.difficulty === 'easy';
+    const show = matchSearch && matchFilter;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('noResults').style.display = visible === 0 ? '' : 'none';
+}
+</script>
+{% endblock %}
