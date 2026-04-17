@@ -244,6 +244,12 @@ def rpi_status():
             except Exception:
                 info["cpu_temp_c"] = None
 
+        # Simulated temperature in simulation mode when sensor unavailable
+        if info["cpu_temp_c"] is None and current_app.config.get("SIMULATION_MODE"):
+            import random
+            base = 42.0 + info["cpu_percent"] * 0.18
+            info["cpu_temp_c"] = round(base + random.gauss(0, 0.5), 1)
+
         # Memory
         mem = psutil.virtual_memory()
         info["memory"] = {
