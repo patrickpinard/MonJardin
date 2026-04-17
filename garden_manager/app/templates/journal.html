@@ -15,7 +15,6 @@
 
   <!-- Filtres -->
   <div class="filter-bar">
-    <!-- Zone -->
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;">Zone</span>
       <button class="filter-chip active" data-zone="all" onclick="setZone(this,'all')">Toutes</button>
@@ -25,14 +24,11 @@
       <button class="filter-chip" data-zone="4" onclick="setZone(this,'4')"><i class="bi bi-flower3" style="color:var(--purple)"></i> Aromates</button>
       <button class="filter-chip" data-zone="roof" onclick="setZone(this,'roof')"><i class="bi bi-house"></i> Toit</button>
     </div>
-
     <div style="width:1px;height:24px;background:var(--border);margin:0 4px;"></div>
-
-    <!-- Type -->
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;">Type</span>
       <button class="filter-chip active" data-type="all" onclick="setType(this,'all')">Tous</button>
-      <button class="filter-chip" data-type="auto" onclick="setType(this,'auto')">⚙️ Automatique</button>
+      <button class="filter-chip" data-type="auto" onclick="setType(this,'auto')">⚙️ Auto</button>
       <button class="filter-chip" data-type="manual" onclick="setType(this,'manual')">👤 Manuel</button>
       <button class="filter-chip" data-type="weather" onclick="setType(this,'weather')">🌦️ Météo</button>
       <button class="filter-chip" data-type="frost" onclick="setType(this,'frost')">❄️ Gel</button>
@@ -40,7 +36,7 @@
     </div>
   </div>
 
-  <!-- Tab: Irrigation / Toit / Journal système -->
+  <!-- Tabs -->
   <div class="time-tabs" style="margin-bottom:18px;">
     <button class="time-tab active" id="tab-irrigation" onclick="switchTab('irrigation')">
       <i class="bi bi-droplet-fill"></i> Arrosage
@@ -56,116 +52,111 @@
   <!-- Irrigation log -->
   <div id="section-irrigation">
     {% if irrigation_logs %}
-    <div style="overflow-x:auto;">
+    <div class="journal-table-wrap">
       <table class="table-modern" id="irrigation-table">
         <thead><tr>
-          <th>Date/Heure</th>
-          <th>Zone</th>
-          <th>Action</th>
-          <th>Déclencheur</th>
-          <th>Humidité</th>
-          <th>Raison</th>
+          <th>Date/Heure</th><th>Zone</th><th>Action</th>
+          <th>Déclencheur</th><th>Humidité</th><th>Raison</th>
         </tr></thead>
         <tbody>
           {% for log in irrigation_logs %}
           <tr data-zone="{{ log.zone_id }}" data-type="{{ log.trigger_type or 'auto' }}">
-            <td style="white-space:nowrap;color:var(--text-tertiary);">
-              {{ log.timestamp.strftime('%d.%m.%Y %H:%M') }}
+            <td class="jcol-date">
+              <span class="jdate">{{ log.timestamp.strftime('%d.%m.%y') }}</span>
+              <span class="jtime">{{ log.timestamp.strftime('%H:%M') }}</span>
             </td>
-            <td>
-              <span class="badge badge-plant">Zone {{ log.zone_id }}</span>
+            <td class="jcol-zone">
+              <span class="badge badge-plant">Z{{ log.zone_id }}</span>
             </td>
-            <td>
+            <td class="jcol-action">
               <span class="badge {% if log.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
                 <i class="bi bi-droplet{% if log.action == 'open' %}-fill{% endif %}"></i>
                 {{ 'Ouvert' if log.action == 'open' else 'Fermé' }}
               </span>
             </td>
-            <td>
-              <span class="attr
-                {%- if log.trigger_type == 'manual' %} water-medium
-                {%- elif log.trigger_type == 'weather' %} water-high
-                {%- elif log.trigger_type == 'frost' %} medium
-                {%- else %} easy{% endif %}">
-                {%- if log.trigger_type == 'auto' %}⚙️ Auto
-                {%- elif log.trigger_type == 'manual' %}👤 Manuel
-                {%- elif log.trigger_type == 'weather' %}🌦️ Météo
-                {%- elif log.trigger_type == 'frost' %}❄️ Gel
-                {%- elif log.trigger_type == 'heatwave' %}🌡️ Canicule
-                {%- else %}{{ log.trigger_type or '—' }}
-                {%- endif %}
+            <td class="jcol-trigger">
+              <span class="attr{% if log.trigger_type == 'manual' %} water-medium{% elif log.trigger_type == 'weather' %} water-high{% elif log.trigger_type == 'frost' %} medium{% else %} easy{% endif %}">
+                {%- if log.trigger_type == 'auto' %}⚙️
+                {%- elif log.trigger_type == 'manual' %}👤
+                {%- elif log.trigger_type == 'weather' %}🌦️
+                {%- elif log.trigger_type == 'frost' %}❄️
+                {%- elif log.trigger_type == 'heatwave' %}🌡️
+                {%- else %}•{%- endif %}
+                <span class="jcol-trigger-label">
+                {%- if log.trigger_type == 'auto' %} Auto
+                {%- elif log.trigger_type == 'manual' %} Manuel
+                {%- elif log.trigger_type == 'weather' %} Météo
+                {%- elif log.trigger_type == 'frost' %} Gel
+                {%- elif log.trigger_type == 'heatwave' %} Canicule
+                {%- else %} {{ log.trigger_type or '—' }}{%- endif %}
+                </span>
               </span>
             </td>
-            <td>
+            <td class="jcol-humidity">
               {% if log.moisture_at_trigger is not none %}
-              <span style="font-weight:600;color:{% if log.moisture_at_trigger < 30 %}var(--red){% elif log.moisture_at_trigger > 65 %}var(--blue){% else %}var(--green){% endif %};">
+              <span style="font-weight:600;font-size:12px;color:{% if log.moisture_at_trigger < 30 %}var(--red){% elif log.moisture_at_trigger > 65 %}var(--blue){% else %}var(--green){% endif %};">
                 {{ log.moisture_at_trigger | round(1) }}%
               </span>
-              {% else %}—{% endif %}
+              {% else %}<span style="color:var(--text-tertiary)">—</span>{% endif %}
             </td>
-            <td style="color:var(--text-secondary);max-width:280px;">{{ log.reason or '—' }}</td>
+            <td class="jcol-reason">{{ log.reason or '—' }}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
     {% else %}
-    <div class="empty-state">
-      <i class="bi bi-droplet"></i>
-      <p>Aucun événement d'arrosage enregistré.</p>
-    </div>
+    <div class="empty-state"><i class="bi bi-droplet"></i><p>Aucun événement d'arrosage enregistré.</p></div>
     {% endif %}
   </div>
 
   <!-- Roof log -->
   <div id="section-roof" style="display:none;">
     {% if roof_logs %}
-    <div style="overflow-x:auto;">
+    <div class="journal-table-wrap">
       <table class="table-modern" id="roof-table">
         <thead><tr>
-          <th>Date/Heure</th>
-          <th>Action</th>
-          <th>Déclencheur</th>
-          <th>Raison</th>
+          <th>Date/Heure</th><th>Action</th><th>Déclencheur</th><th>Raison</th>
         </tr></thead>
         <tbody>
           {% for log in roof_logs %}
           <tr data-type="{{ log.trigger_type or 'auto' }}">
-            <td style="white-space:nowrap;color:var(--text-tertiary);">
-              {{ log.timestamp.strftime('%d.%m.%Y %H:%M') }}
+            <td class="jcol-date">
+              <span class="jdate">{{ log.timestamp.strftime('%d.%m.%y') }}</span>
+              <span class="jtime">{{ log.timestamp.strftime('%H:%M') }}</span>
             </td>
-            <td>
+            <td class="jcol-action">
               <span class="badge {% if log.action == 'open' %}badge-roof-open{% else %}badge-roof-close{% endif %}">
                 <i class="bi bi-house{% if log.action == 'open' %}-door{% endif %}"></i>
                 {{ 'Ouvert' if log.action == 'open' else 'Fermé' }}
               </span>
             </td>
-            <td>
-              <span class="attr
-                {%- if log.trigger_type == 'manual' %} water-medium
-                {%- elif log.trigger_type == 'weather' %} water-high
-                {%- elif log.trigger_type == 'frost' %} medium
-                {%- else %} easy{% endif %}">
-                {%- if log.trigger_type == 'auto' %}⚙️ Auto
-                {%- elif log.trigger_type == 'manual' %}👤 Manuel
-                {%- elif log.trigger_type == 'weather' %}🌦️ Météo
-                {%- elif log.trigger_type == 'temperature' %}🌡️ Température
-                {%- elif log.trigger_type == 'frost' %}❄️ Gel
-                {%- else %}{{ log.trigger_type or '—' }}
-                {%- endif %}
+            <td class="jcol-trigger">
+              <span class="attr{% if log.trigger_type == 'manual' %} water-medium{% elif log.trigger_type == 'weather' %} water-high{% elif log.trigger_type == 'frost' %} medium{% else %} easy{% endif %}">
+                {%- if log.trigger_type == 'auto' %}⚙️
+                {%- elif log.trigger_type == 'manual' %}👤
+                {%- elif log.trigger_type == 'weather' %}🌦️
+                {%- elif log.trigger_type == 'temperature' %}🌡️
+                {%- elif log.trigger_type == 'frost' %}❄️
+                {%- else %}•{%- endif %}
+                <span class="jcol-trigger-label">
+                {%- if log.trigger_type == 'auto' %} Auto
+                {%- elif log.trigger_type == 'manual' %} Manuel
+                {%- elif log.trigger_type == 'weather' %} Météo
+                {%- elif log.trigger_type == 'temperature' %} Temp.
+                {%- elif log.trigger_type == 'frost' %} Gel
+                {%- else %} {{ log.trigger_type or '—' }}{%- endif %}
+                </span>
               </span>
             </td>
-            <td style="color:var(--text-secondary);max-width:320px;">{{ log.reason or '—' }}</td>
+            <td class="jcol-reason">{{ log.reason or '—' }}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
     {% else %}
-    <div class="empty-state">
-      <i class="bi bi-house"></i>
-      <p>Aucun événement de toit enregistré.</p>
-    </div>
+    <div class="empty-state"><i class="bi bi-house"></i><p>Aucun événement de toit enregistré.</p></div>
     {% endif %}
   </div>
 
@@ -177,23 +168,17 @@
       {% set lvl = entry.level if entry.level in ('success','warning','danger','error') else 'info' %}
       <div class="journal-item" data-type="{% if 'manuel' in entry.message | lower %}manual{% elif 'auto' in entry.message | lower %}auto{% else %}system{% endif %}">
         <div class="j-icon {{ 'danger' if lvl == 'error' else lvl }}">
-          <i class="bi bi-{% if lvl == 'warning' %}exclamation-triangle-fill
-            {% elif lvl in ('danger','error') %}x-circle-fill
-            {% elif lvl == 'success' %}check-circle-fill
-            {% else %}info-circle-fill{% endif %}"></i>
+          <i class="bi bi-{% if lvl == 'warning' %}exclamation-triangle-fill{% elif lvl in ('danger','error') %}x-circle-fill{% elif lvl == 'success' %}check-circle-fill{% else %}info-circle-fill{% endif %}"></i>
         </div>
         <div class="j-body">
           <div class="j-msg">{{ entry.message }}</div>
-          <div class="j-time">{{ entry.timestamp.strftime('%d.%m.%Y à %H:%M') if entry.timestamp else '' }}</div>
+          <div class="j-time">{{ entry.timestamp.strftime('%d.%m.%y à %H:%M') if entry.timestamp else '' }}</div>
         </div>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <div class="empty-state">
-      <i class="bi bi-journal"></i>
-      <p>Aucune entrée système.</p>
-    </div>
+    <div class="empty-state"><i class="bi bi-journal"></i><p>Aucune entrée système.</p></div>
     {% endif %}
   </div>
 
@@ -206,15 +191,11 @@ let _zone = 'all', _type = 'all', _tab = 'irrigation';
 
 function setZone(btn, val) {
   document.querySelectorAll('[data-zone]').forEach(b => { if (b.tagName==='BUTTON') b.classList.remove('active'); });
-  btn.classList.add('active');
-  _zone = val;
-  applyFilters();
+  btn.classList.add('active'); _zone = val; applyFilters();
 }
 function setType(btn, val) {
   document.querySelectorAll('[data-type]').forEach(b => { if (b.tagName==='BUTTON') b.classList.remove('active'); });
-  btn.classList.add('active');
-  _type = val;
-  applyFilters();
+  btn.classList.add('active'); _type = val; applyFilters();
 }
 function switchTab(tab) {
   _tab = tab;
@@ -224,7 +205,6 @@ function switchTab(tab) {
   });
   applyFilters();
 }
-
 function applyFilters() {
   if (_tab === 'irrigation') {
     document.querySelectorAll('#irrigation-table tbody tr').forEach(row => {
@@ -237,9 +217,7 @@ function applyFilters() {
       const typeMatch = _type === 'all' || row.dataset.type === _type;
       row.style.display = typeMatch ? '' : 'none';
     });
-    // Zone filter for roof: only "roof" or "all" show it
-    const roofVisible = _zone === 'all' || _zone === 'roof';
-    document.getElementById('section-roof').style.opacity = roofVisible ? '1' : '.4';
+    document.getElementById('section-roof').style.opacity = (_zone === 'all' || _zone === 'roof') ? '1' : '.4';
   } else if (_tab === 'system') {
     document.querySelectorAll('#system-journal-list .journal-item').forEach(item => {
       const typeMatch = _type === 'all' || item.dataset.type === _type;

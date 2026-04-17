@@ -4,12 +4,26 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from flask import Blueprint, current_app, render_template
+from flask import Blueprint, current_app, render_template, send_from_directory
 
 from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
+
+@dashboard_bp.get("/sw.js")
+def service_worker():
+    return send_from_directory(
+        Path(__file__).parent.parent / "static", "sw.js",
+        mimetype="application/javascript"
+    )
+
+@dashboard_bp.get("/manifest.json")
+def manifest():
+    return send_from_directory(
+        Path(__file__).parent.parent / "static", "manifest.json",
+        mimetype="application/manifest+json"
+    )
 
 @dashboard_bp.get("/")
 def index():

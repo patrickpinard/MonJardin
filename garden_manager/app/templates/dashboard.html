@@ -61,7 +61,7 @@
             <div class="moisture-sub">Seuil {{ zd.zone.moisture_threshold_low | int }}–{{ zd.zone.moisture_threshold_high | int }}%</div>
             {% if zd.zone.has_roof %}
             <div class="moisture-sub mt-1">
-              🏠 {% if temp_serre_c is not none %}<strong style="color:var(--orange);">{{ temp_serre_c }}°C</strong>{% else %}—{% endif %} · Lucarne <span class="{% if roof_state == 'open' %}text-orange{% else %}text-dim{% endif %}">{{ 'ouverte' if roof_state == 'open' else 'fermée' }}</span>
+              🏠 Serre {% if temp_serre_c is not none %}<strong style="color:var(--orange);">{{ temp_serre_c }}°C</strong>{% else %}—{% endif %}
             </div>
             {% endif %}
           </div>
