@@ -6,6 +6,19 @@ Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite · Simulation intégré
 
 ---
 
+## Aperçu visuel
+
+| Tableau de bord | Encyclopédie des légumes |
+|---|---|
+| ![Dashboard](docs/screenshot_dashboard.png) | ![Encyclopédie](docs/screenshot_encyclopedia.png) |
+
+<p align="center">
+  <img src="docs/screenshot_zones.png" alt="Vue mobile iPhone" width="320">
+  <br><em>Interface mobile (iPhone)</em>
+</p>
+
+---
+
 ## Aperçu
 
 MonJardin gère automatiquement l'arrosage et l'ouverture du toit de serre de 4 zones de culture, en tenant compte de l'humidité du sol, de la météo locale et des besoins spécifiques des légumes plantés.
