@@ -36,10 +36,16 @@ def dashboard():
     sensor_data = arduino.get_all_sensors()
     actuator_status = arduino.get_actuator_status() or {"valves": [], "roof_state": "close"}
     weather = current_app.extensions["weather_service"].get_current()
-    recent_entries = (JournalEntry.query
-                      .order_by(JournalEntry.timestamp.desc())
-                      .limit(10).all())
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    try:
+        recent_entries = (JournalEntry.query
+                          .order_by(JournalEntry.timestamp.desc())
+                          .limit(10).all())
+    except Exception:
+        recent_entries = []
+    try:
+        zones = Zone.query.order_by(Zone.zone_id).all()
+    except Exception:
+        zones = []
 
     # Construire les données de zones pour le template
     zones_map = {}

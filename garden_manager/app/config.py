@@ -31,10 +31,15 @@ class Config:
     GARDEN_LONGITUDE: float = float(os.environ.get("GARDEN_LONGITUDE", "6.641"))
     METEOSUISSE_STATION_ID: str = os.environ.get("METEOSUISSE_STATION_ID", "PAY")
 
-    # Base de données
+    # Base de données — chemin absolu ou relatif à BASE_DIR
     _db_path = os.environ.get("DATABASE_PATH", "data/garden.db")
-    SQLALCHEMY_DATABASE_URI: str = f"sqlite:///{BASE_DIR / _db_path}"
+    _db_abs = Path(_db_path) if Path(_db_path).is_absolute() else BASE_DIR / _db_path
+    SQLALCHEMY_DATABASE_URI: str = f"sqlite:///{_db_abs}"
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
+    SQLALCHEMY_ENGINE_OPTIONS: dict = {
+        "connect_args": {"check_same_thread": False, "timeout": 30},
+        "pool_pre_ping": True,
+    }
 
     # Planificateur
     AUTOMATION_INTERVAL: int = int(os.environ.get("AUTOMATION_INTERVAL", "60"))
