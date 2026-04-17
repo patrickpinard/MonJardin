@@ -58,9 +58,15 @@ def create_app(config: type = Config) -> Flask:
     # Contexte global pour les templates
     @app.context_processor
     def inject_globals():
+        from .models import Zone
+        try:
+            zones_nav = Zone.query.order_by(Zone.zone_id).all()
+        except Exception:
+            zones_nav = []
         return {
             "simulation_mode": app.config.get("SIMULATION_MODE", False),
             "sim_speed": app.config.get("SIMULATION_SPEED", 1),
+            "zones_nav": zones_nav,
         }
 
     log.info(

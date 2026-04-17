@@ -71,26 +71,13 @@
         </button>
       </div>
       <div class="nav-sub" id="nav-sub-zones">
-        <a href="/zones/1" class="nav-sub-item">
-          <div class="zone-dot" id="sdot-1"></div>
-          <span>Serre</span>
-          <span class="zone-mini-m" id="smoist-1">—</span>
+        {% for z in zones_nav %}
+        <a href="/zones/{{ z.zone_id }}" class="nav-sub-item">
+          <div class="zone-dot" id="sdot-{{ z.zone_id }}"></div>
+          <span>{{ z.name }}</span>
+          <span class="zone-mini-m" id="smoist-{{ z.zone_id }}">—</span>
         </a>
-        <a href="/zones/2" class="nav-sub-item">
-          <div class="zone-dot" id="sdot-2"></div>
-          <span>Soleil</span>
-          <span class="zone-mini-m" id="smoist-2">—</span>
-        </a>
-        <a href="/zones/3" class="nav-sub-item">
-          <div class="zone-dot" id="sdot-3"></div>
-          <span>Mi-ombre</span>
-          <span class="zone-mini-m" id="smoist-3">—</span>
-        </a>
-        <a href="/zones/4" class="nav-sub-item">
-          <div class="zone-dot" id="sdot-4"></div>
-          <span>Aromates</span>
-          <span class="zone-mini-m" id="smoist-4">—</span>
-        </a>
+        {% endfor %}
       </div>
       <div class="nav-section-label">Système</div>
       <a href="/system/arduino" class="nav-item {% if '/system/arduino' in request.path %}active{% endif %}">
@@ -175,18 +162,11 @@
     <i class="bi bi-grid-3x3-gap-fill"></i> Vue des zones
   </a>
   <div class="mobile-menu-zones">
-    <a href="/zones/1" class="mobile-menu-subitem" onclick="closeMobileMenu()">
-      <div class="zone-dot" id="mdot-1"></div><span>Serre</span><span class="zone-mini-m" id="mmoist-1">—</span>
+    {% for z in zones_nav %}
+    <a href="/zones/{{ z.zone_id }}" class="mobile-menu-subitem" onclick="closeMobileMenu()">
+      <div class="zone-dot" id="mdot-{{ z.zone_id }}"></div><span>{{ z.name }}</span><span class="zone-mini-m" id="mmoist-{{ z.zone_id }}">—</span>
     </a>
-    <a href="/zones/2" class="mobile-menu-subitem" onclick="closeMobileMenu()">
-      <div class="zone-dot" id="mdot-2"></div><span>Soleil</span><span class="zone-mini-m" id="mmoist-2">—</span>
-    </a>
-    <a href="/zones/3" class="mobile-menu-subitem" onclick="closeMobileMenu()">
-      <div class="zone-dot" id="mdot-3"></div><span>Mi-ombre</span><span class="zone-mini-m" id="mmoist-3">—</span>
-    </a>
-    <a href="/zones/4" class="mobile-menu-subitem" onclick="closeMobileMenu()">
-      <div class="zone-dot" id="mdot-4"></div><span>Aromates</span><span class="zone-mini-m" id="mmoist-4">—</span>
-    </a>
+    {% endfor %}
   </div>
   <div class="mobile-menu-section">Système</div>
   <a href="/system/arduino" class="mobile-menu-item {% if '/system/arduino' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
