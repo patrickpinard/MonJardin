@@ -289,7 +289,7 @@ def rpi_status():
         info["cpu_percent"] = 0; info["cpu_count"] = 4
         info["cpu_freq_mhz"] = 1800; info["cpu_temp_c"] = None
         info["load_avg"] = [0, 0, 0]
-        info["uptime_s"] = int(time.time())
+        info["uptime_s"] = 0
         info["memory"] = {"total": 8*1024**3, "used": 2*1024**3, "available": 6*1024**3, "percent": 25.0}
         info["disks"] = [{"mountpoint": "/", "fstype": "ext4", "total": 32*1024**3, "used": 8*1024**3, "free": 24*1024**3, "percent": 25.0}]
         info["network"] = [{"interface": "eth0", "address": socket.gethostbyname(socket.gethostname()), "address6": None, "bytes_sent": 0, "bytes_recv": 0}]
