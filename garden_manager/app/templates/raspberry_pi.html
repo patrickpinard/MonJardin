@@ -16,148 +16,175 @@
 
 <div class="page-body">
 
-  <!-- ── Ligne 1 : CPU + RAM ── -->
-  <div class="diag-grid mb-3">
+  <!-- ── CPU + RAM ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-cpu-fill"></i> Processeur &amp; Mémoire</div>
+    <div class="diag-grid">
 
-    <!-- CPU -->
-    <div class="diag-channel">
-      <div class="diag-ch-header">
-        <div class="diag-ch-icon z2"><i class="bi bi-cpu-fill"></i></div>
-        <div>
-          <div class="diag-ch-name">Processeur</div>
-          <div class="diag-ch-sub" id="rpi-cpu-cores-sub">— cœurs</div>
+      <!-- CPU -->
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z2"><i class="bi bi-cpu-fill"></i></div>
+          <div>
+            <div class="diag-ch-name">Processeur</div>
+            <div class="diag-ch-sub" id="rpi-cpu-cores-sub">— cœurs</div>
+          </div>
+        </div>
+        <div class="diag-ch-body">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div class="diag-stat-sm">
+              <div class="diag-label">Charge</div>
+              <div class="diag-val-lg" id="rpi-cpu-pct">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Température</div>
+              <div class="diag-val-lg" id="rpi-cpu-temp">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Fréquence</div>
+              <div class="diag-val" id="rpi-cpu-freq">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Charge 1/5/15 min</div>
+              <div class="diag-val" id="rpi-load-avg">—</div>
+            </div>
+          </div>
+          <div class="diag-bar-wrap">
+            <div class="diag-bar-track">
+              <div class="diag-bar-fill ok" id="rpi-cpu-bar" style="width:0%"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="diag-ch-body">
-        <div style="display:flex;gap:14px;flex-wrap:wrap;">
-          <div class="diag-stat-sm">
-            <div class="diag-label">Charge</div>
-            <div class="diag-val-lg" id="rpi-cpu-pct">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Température</div>
-            <div class="diag-val-lg" id="rpi-cpu-temp">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Fréquence</div>
-            <div class="diag-val" id="rpi-cpu-freq">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Charge 1/5/15 min</div>
-            <div class="diag-val" id="rpi-load-avg">—</div>
-          </div>
-        </div>
-        <div class="diag-bar-wrap">
-          <div class="diag-bar-track">
-            <div class="diag-bar-fill ok" id="rpi-cpu-bar" style="width:0%"></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- RAM -->
-    <div class="diag-channel">
-      <div class="diag-ch-header">
-        <div class="diag-ch-icon z3"><i class="bi bi-memory"></i></div>
-        <div>
-          <div class="diag-ch-name">Mémoire RAM</div>
-          <div class="diag-ch-sub" id="rpi-mem-total-sub">— total</div>
-        </div>
-      </div>
-      <div class="diag-ch-body">
-        <div style="display:flex;gap:14px;flex-wrap:wrap;">
-          <div class="diag-stat-sm">
-            <div class="diag-label">Utilisée</div>
-            <div class="diag-val-lg" id="rpi-mem-used">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Disponible</div>
-            <div class="diag-val" id="rpi-mem-avail">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Usage</div>
-            <div class="diag-val" id="rpi-mem-pct">—</div>
+      <!-- RAM -->
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z3"><i class="bi bi-memory"></i></div>
+          <div>
+            <div class="diag-ch-name">Mémoire RAM</div>
+            <div class="diag-ch-sub" id="rpi-mem-total-sub">— total</div>
           </div>
         </div>
-        <div class="diag-bar-wrap">
-          <div class="diag-bar-track">
-            <div class="diag-bar-fill ok" id="rpi-mem-bar" style="width:0%"></div>
+        <div class="diag-ch-body">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div class="diag-stat-sm">
+              <div class="diag-label">Utilisée</div>
+              <div class="diag-val-lg" id="rpi-mem-used">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Disponible</div>
+              <div class="diag-val" id="rpi-mem-avail">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Usage</div>
+              <div class="diag-val" id="rpi-mem-pct">—</div>
+            </div>
+          </div>
+          <div class="diag-bar-wrap">
+            <div class="diag-bar-track">
+              <div class="diag-bar-fill ok" id="rpi-mem-bar" style="width:0%"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-  </div>
-
-  <!-- ── Ligne 2 : Disques + Réseau ── -->
-  <div class="diag-grid mb-3">
-
-    <!-- Disques -->
-    <div class="diag-channel">
-      <div class="diag-ch-header">
-        <div class="diag-ch-icon z1"><i class="bi bi-hdd-fill"></i></div>
-        <div>
-          <div class="diag-ch-name">Stockage</div>
-          <div class="diag-ch-sub">Partitions montées</div>
-        </div>
-      </div>
-      <div class="diag-ch-body" id="rpi-disk-list">
-        <div class="diag-label">Chargement…</div>
-      </div>
-    </div>
-
-    <!-- Réseau -->
-    <div class="diag-channel">
-      <div class="diag-ch-header">
-        <div class="diag-ch-icon z4"><i class="bi bi-ethernet"></i></div>
-        <div>
-          <div class="diag-ch-name">Réseau</div>
-          <div class="diag-ch-sub">Interfaces actives</div>
-        </div>
-      </div>
-      <div class="diag-ch-body" id="rpi-net-list">
-        <div class="diag-label">Chargement…</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ── Ligne 3 : Infos système ── -->
-  <div class="diag-grid">
-  <div class="diag-channel" style="grid-column:1/-1">
-    <div class="diag-ch-header">
-      <div class="diag-ch-icon z2"><i class="bi bi-info-circle-fill"></i></div>
-      <div>
-        <div class="diag-ch-name">Informations système</div>
-        <div class="diag-ch-sub" id="rpi-hostname-sub">—</div>
-      </div>
-    </div>
-    <div class="diag-ch-body">
-      <div style="display:flex;gap:14px;flex-wrap:wrap;">
-        <div class="diag-stat-sm">
-          <div class="diag-label">Système d'exploitation</div>
-          <div class="diag-val" id="rpi-os">—</div>
-        </div>
-        <div class="diag-stat-sm">
-          <div class="diag-label">Kernel</div>
-          <div class="diag-val" id="rpi-kernel">—</div>
-        </div>
-        <div class="diag-stat-sm">
-          <div class="diag-label">Python</div>
-          <div class="diag-val" id="rpi-python">—</div>
-        </div>
-        <div class="diag-stat-sm">
-          <div class="diag-label">Uptime</div>
-          <div class="diag-val" id="rpi-uptime">—</div>
-        </div>
-        <div class="diag-stat-sm">
-          <div class="diag-label">Heure système</div>
-          <div class="diag-val" id="rpi-time">—</div>
-        </div>
-      </div>
     </div>
   </div>
-  </div><!-- /.diag-grid -->
+
+  <!-- ── Stockage + Réseau ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-hdd-fill"></i> Stockage &amp; Réseau</div>
+    <div class="diag-grid">
+
+      <!-- Disques -->
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z1"><i class="bi bi-hdd-fill"></i></div>
+          <div>
+            <div class="diag-ch-name">Stockage</div>
+            <div class="diag-ch-sub">Partitions montées</div>
+          </div>
+        </div>
+        <div class="diag-ch-body" id="rpi-disk-list">
+          <div class="diag-label">Chargement…</div>
+        </div>
+      </div>
+
+      <!-- Réseau -->
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z4"><i class="bi bi-ethernet"></i></div>
+          <div>
+            <div class="diag-ch-name">Réseau</div>
+            <div class="diag-ch-sub">Interfaces actives</div>
+          </div>
+        </div>
+        <div class="diag-ch-body" id="rpi-net-list">
+          <div class="diag-label">Chargement…</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Logiciel + Temps système ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
+    <div class="diag-grid">
+
+      <!-- Logiciel -->
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z2"><i class="bi bi-info-circle-fill"></i></div>
+          <div>
+            <div class="diag-ch-name">Logiciel</div>
+            <div class="diag-ch-sub" id="rpi-hostname-sub">—</div>
+          </div>
+        </div>
+        <div class="diag-ch-body">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div class="diag-stat-sm">
+              <div class="diag-label">Système d'exploitation</div>
+              <div class="diag-val" id="rpi-os">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Kernel</div>
+              <div class="diag-val" id="rpi-kernel">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Python</div>
+              <div class="diag-val" id="rpi-python">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Temps système -->
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z4"><i class="bi bi-clock-fill"></i></div>
+          <div>
+            <div class="diag-ch-name">Temps système</div>
+            <div class="diag-ch-sub">Activité du serveur</div>
+          </div>
+        </div>
+        <div class="diag-ch-body">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div class="diag-stat-sm">
+              <div class="diag-label">Uptime</div>
+              <div class="diag-val-lg" id="rpi-uptime">—</div>
+            </div>
+            <div class="diag-stat-sm">
+              <div class="diag-label">Heure système</div>
+              <div class="diag-val" id="rpi-time">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
 </div>
 {% endblock %}
