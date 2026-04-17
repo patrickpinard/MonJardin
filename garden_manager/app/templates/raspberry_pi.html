@@ -16,9 +16,9 @@
 
 <div class="page-body">
 
-  <!-- ── CPU + RAM ── -->
+  <!-- ── Informations système ── -->
   <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-cpu-fill"></i> Processeur &amp; Mémoire</div>
+    <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
     <div class="diag-grid">
 
       <!-- CPU -->
@@ -89,34 +89,10 @@
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- ── Stockage ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-hdd-fill"></i> Stockage</div>
-    <div class="diag-ch-body" id="rpi-disk-list" style="padding:4px 0;">
-      <div class="diag-label">Chargement…</div>
-    </div>
-  </div>
-
-  <!-- ── Réseau ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-ethernet"></i> Réseau</div>
-    <div class="diag-ch-body" id="rpi-net-list" style="padding:4px 0;">
-      <div class="diag-label">Chargement…</div>
-    </div>
-  </div>
-
-  <!-- ── Logiciel + Temps système ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
-    <div class="diag-grid">
-
       <!-- Logiciel -->
       <div class="diag-channel">
         <div class="diag-ch-header">
-          <div class="diag-ch-icon z2"><i class="bi bi-info-circle-fill"></i></div>
+          <div class="diag-ch-icon z2"><i class="bi bi-terminal-fill"></i></div>
           <div>
             <div class="diag-ch-name">Logiciel</div>
             <div class="diag-ch-sub" id="rpi-hostname-sub">—</div>
@@ -163,6 +139,22 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ── Stockage ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-hdd-fill"></i> Stockage</div>
+    <div class="diag-ch-body" id="rpi-disk-list" style="padding:4px 0;">
+      <div class="diag-label">Chargement…</div>
+    </div>
+  </div>
+
+  <!-- ── Réseau ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-ethernet"></i> Réseau</div>
+    <div class="diag-ch-body" id="rpi-net-list" style="padding:4px 0;">
+      <div class="diag-label">Chargement…</div>
     </div>
   </div>
 
