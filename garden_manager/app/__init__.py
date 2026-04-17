@@ -20,6 +20,17 @@ def create_app(config: type = Config) -> Flask:
     CORS(app)
     db.init_app(app)
 
+    # WAL mode for concurrent read/write (scheduler + web requests)
+    from sqlalchemy import event, text
+    from sqlalchemy.engine import Engine
+    import sqlite3
+
+    @event.listens_for(Engine, "connect")
+    def set_sqlite_pragma(dbapi_conn, _connection_record):
+        if isinstance(dbapi_conn, sqlite3.Connection):
+            dbapi_conn.execute("PRAGMA journal_mode=WAL")
+            dbapi_conn.execute("PRAGMA busy_timeout=5000")
+
     with app.app_context():
         # Création des tables
         db.create_all()

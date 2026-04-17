@@ -90,10 +90,12 @@
 
       <div class="zone-actions">
         <div class="zone-actions-row">
-          <button class="btn btn-blue btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'open')">
+          <button class="btn btn-blue btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'open')"
+            {% if zd.zone.irrigation_mode == 'auto' %}disabled title="Mode automatique actif"{% endif %}>
             <i class="bi bi-droplet-fill"></i> <span>Arroser</span>
           </button>
-          <button class="btn btn-secondary btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'close')">
+          <button class="btn btn-secondary btn-sm" onclick="setValve({{ zd.zone.zone_id }}, 'close')"
+            {% if zd.zone.irrigation_mode == 'auto' %}disabled title="Mode automatique actif"{% endif %}>
             <i class="bi bi-stop-circle"></i> <span>Arrêter</span>
           </button>
         </div>
