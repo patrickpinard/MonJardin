@@ -159,10 +159,13 @@ Ouvrir **http://localhost:5000**
 |-----------|------|
 | Raspberry Pi 5 | Serveur Flask, logique décisionnelle |
 | Arduino Edge Control | Acquisition capteurs, pilotage actionneurs |
+| Arduino MKR WiFi 1010 | Connectivité WiFi (enfichée sur le slot MKR du Edge Control) |
 | SoilWatch 10 ×4 | Capteurs humidité sol |
 | DS18B20 ×2 | Température extérieure + serre |
-| Vannes 24V latching ×4 | Irrigation par zone |
-| Vérin linéaire | Ouverture toit serre |
+| Anémomètre QS-FS01 | Vitesse du vent (sortie analogique 0.4–2.0V) |
+| Vannes GARDENA 24V ×4 | Irrigation par zone (solénoïde NC) |
+| Vérin linéaire 12V | Ouverture toit serre |
+| Edge Control Enclosure Kit | LCD 2×16 + bouton poussoir |
 
 ---
 
@@ -170,18 +173,35 @@ Ouvrir **http://localhost:5000**
 
 [![Arduino Edge Control](https://store.arduino.cc/cdn/shop/products/ABX00048_01.front_e9fb5a5f-ae6c-4d63-b041-a48e15c5f819_1000x750.jpg)](https://store.arduino.cc/products/arduino-edge-control)
 
-Contrôleur industriel Arduino dédié à l'agriculture et à l'automatisation outdoor. Il intègre nativement la gestion des vannes latching 24V, les entrées analogiques haute résolution pour capteurs de sol, les bus OneWire/I²C et un module WiFi/BLE (NINA-W102).
+Contrôleur industriel Arduino dédié à l'agriculture et à l'automatisation outdoor. Il intègre nativement la gestion des vannes latching 24V, les entrées analogiques haute résolution pour capteurs de sol et les bus OneWire/I²C. **La connectivité WiFi est fournie par une carte MKR WiFi 1010 enfichée dans le slot MKR dédié** — le Edge Control seul n'a pas de WiFi.
 
 | Caractéristique | Valeur |
 |----------------|--------|
 | MCU | STM32H747 (Cortex-M7 + M4) |
 | Entrées analogiques | 16 canaux 16-bit |
 | Vannes latching | 8 sorties 24V DC |
-| Connectivité | WiFi 802.11 b/g/n · BLE 5.0 |
+| Connectivité | Slot MKR — nécessite MKR WiFi 1010 pour WiFi |
 | Alimentation | 7–30V DC (panneau solaire ou secteur) |
 | Protection | IP67-ready (boîtier hermétique) |
 
 🔗 [Documentation officielle Arduino Edge Control](https://docs.arduino.cc/hardware/edge-control/)
+
+---
+
+### Arduino MKR WiFi 1010
+
+[![MKR WiFi 1010](https://store.arduino.cc/cdn/shop/products/ABX00023_03.front_a2f63975-6a58-43ea-ae5d-e7a5b1a07c95_643x483.jpg)](https://store.arduino.cc/products/arduino-mkr-wifi-1010)
+
+Carte MKR enfichée dans le slot dédié du Edge Control. Elle fournit la connectivité WiFi 802.11 b/g/n et BLE 5.0 via le module NINA-W102. Le Edge Control l'utilise pour exposer son serveur REST HTTP et communiquer avec le Raspberry Pi.
+
+| Caractéristique | Valeur |
+|----------------|--------|
+| Module WiFi/BLE | u-blox NINA-W102 |
+| Connectivité | WiFi 802.11 b/g/n · BLE 5.0 |
+| Interface | Slot MKR du Edge Control |
+| Bibliothèque | `WiFiNINA` (incluse dans Arduino_EdgeControl) |
+
+🔗 [Documentation officielle MKR WiFi 1010](https://docs.arduino.cc/hardware/mkr-wifi-1010/)
 
 ---
 
