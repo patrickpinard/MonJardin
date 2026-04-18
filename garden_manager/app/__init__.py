@@ -61,7 +61,8 @@ def create_app(config: type = Config) -> Flask:
         from .models import Zone
         try:
             zones_nav = Zone.query.order_by(Zone.zone_id).all()
-        except Exception:
+        except Exception as e:
+            log.warning("Context processor : échec lecture zones_nav : %s", e)
             zones_nav = []
         return {
             "simulation_mode": app.config.get("SIMULATION_MODE", False),
@@ -90,7 +91,9 @@ def _init_services(app: Flask) -> None:
         try:
             from simulator.arduino_emulator import get_weather_sim
             weather_sim = get_weather_sim()
-        except Exception:
+            log.debug("Simulateur météo récupéré depuis l'émulateur Arduino")
+        except Exception as e:
+            log.warning("Émulateur Arduino indisponible (%s) — création d'un simulateur météo autonome", e)
             from simulator.weather_simulator import WeatherSimulator
             weather_sim = WeatherSimulator(profile=app.config.get("WEATHER_PROFILE", "printemps_normal"))
 

@@ -46,7 +46,8 @@ class PlantingAdvisor:
                 p.vegetable_name
                 for p in Planting.query.filter_by(zone_id=zone_id, status="active").all()
             }
-        except Exception:
+        except Exception as e:
+            log.warning("Échec lecture plantings actifs zone %d : %s", zone_id, e)
             active_names = set()
 
         advice = []
@@ -76,7 +77,8 @@ class PlantingAdvisor:
                 p.vegetable_name
                 for p in Planting.query.filter_by(zone_id=zone_id, status="active").all()
             ]
-        except Exception:
+        except Exception as e:
+            log.warning("Échec lecture plantings pour compatibilité zone %d : %s", zone_id, e)
             return []
 
         warnings = []
@@ -106,7 +108,8 @@ class PlantingAdvisor:
             today = date.today()
             horizon = today + timedelta(days=days)
             plantings = Planting.query.filter_by(zone_id=zone_id, status="active").all()
-        except Exception:
+        except Exception as e:
+            log.warning("Échec lecture plantings pour prévision récolte zone %d : %s", zone_id, e)
             return []
 
         upcoming = []

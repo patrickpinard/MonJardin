@@ -50,7 +50,12 @@ def _run_cycle(app) -> None:
                 is_simulated=app.config.get("SIMULATION_MODE", False),
             )
             db.session.add(reading)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.error("Échec persistance SensorReadings : %s", e, exc_info=True)
+        return
 
     # 3. Météo
     weather = weather_svc.get_current()
@@ -87,16 +92,24 @@ def _emergency_close(app) -> None:
 
     arduino: ArduinoClient = app.extensions["arduino_client"]
     for zone_id in range(1, 5):
-        arduino.set_valve(zone_id, "close")
-    arduino.set_roof("close")
+        ok = arduino.set_valve(zone_id, "close")
+        if not ok:
+            log.error("FAILSAFE : échec fermeture vanne zone %d", zone_id)
+    ok_roof = arduino.set_roof("close")
+    if not ok_roof:
+        log.error("FAILSAFE : échec fermeture lucarne")
 
-    entry = JournalEntry(
-        level="warning",
-        message="Failsafe : Arduino injoignable depuis trop longtemps — fermeture de toutes les vannes et du toit",
-    )
-    db.session.add(entry)
-    db.session.commit()
-    log.warning("FAILSAFE : vannes et toit fermés (perte connexion Arduino).")
+    try:
+        entry = JournalEntry(
+            level="warning",
+            message="Failsafe : Arduino injoignable depuis trop longtemps — fermeture de toutes les vannes et de la lucarne",
+        )
+        db.session.add(entry)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.error("FAILSAFE : échec écriture journal : %s", e)
+    log.warning("FAILSAFE : vannes et lucarne fermées (perte connexion Arduino).")
 
 
 def weather_poll(app) -> None:

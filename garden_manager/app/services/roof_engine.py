@@ -118,5 +118,10 @@ def execute_roof_decision(decision: RoofDecision, arduino_client, db) -> None:
         )
         db.session.add(log_entry)
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.error("Échec persistance décision lucarne : %s", e, exc_info=True)
+        return
     log.info("Lucarne %s : %s", decision.action, decision.reason)

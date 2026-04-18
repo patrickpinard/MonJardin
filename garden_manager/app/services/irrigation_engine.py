@@ -41,7 +41,8 @@ def _get_max_water_need(zone_id: int) -> str:
             if p.water_need and order.index(p.water_need) > order.index(max_need):
                 max_need = p.water_need
         return max_need
-    except Exception:
+    except Exception as e:
+        log.warning("Échec lecture plantings zone %d pour water_need : %s", zone_id, e)
         return "medium"
 
 
@@ -167,5 +168,10 @@ def execute_decision(decision: IrrigationDecision, arduino_client, db) -> None:
         )
         db.session.add(log_entry)
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.error("Échec persistance décision irrigation zone %d : %s", decision.zone_id, e, exc_info=True)
+        return
     log.info("Zone %d vanne %s : %s", decision.zone_id, decision.action, decision.reason)

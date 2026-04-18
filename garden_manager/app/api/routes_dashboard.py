@@ -1,5 +1,6 @@
 """Routes HTML — pages web du dashboard."""
 import json
+import logging
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -9,6 +10,7 @@ from flask import Blueprint, current_app, render_template, send_from_directory
 from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog
 
 dashboard_bp = Blueprint("dashboard", __name__)
+log = logging.getLogger(__name__)
 
 
 @dashboard_bp.get("/sw.js")
@@ -40,11 +42,13 @@ def dashboard():
         recent_entries = (JournalEntry.query
                           .order_by(JournalEntry.timestamp.desc())
                           .limit(10).all())
-    except Exception:
+    except Exception as e:
+        log.warning("Dashboard : échec lecture journal : %s", e)
         recent_entries = []
     try:
         zones = Zone.query.order_by(Zone.zone_id).all()
-    except Exception:
+    except Exception as e:
+        log.warning("Dashboard : échec lecture zones : %s", e)
         zones = []
 
     # Construire les données de zones pour le template
@@ -200,7 +204,11 @@ def _load_plants_db() -> list:
         with open(db_path, encoding="utf-8") as f:
             data = json.load(f)
             return data.get("plants", data.get("vegetables", []))
-    except (FileNotFoundError, ValueError):
+    except FileNotFoundError:
+        log.warning("Base de données plantes introuvable : %s", db_path)
+        return []
+    except ValueError as e:
+        log.warning("Erreur parsing plants_database.json : %s", e)
         return []
 
 

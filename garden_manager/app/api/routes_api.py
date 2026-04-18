@@ -1,5 +1,6 @@
 """Routes API JSON — consommées par le JavaScript du dashboard."""
 import json
+import logging
 from datetime import datetime, timedelta
 
 from flask import Blueprint, current_app, jsonify, request
@@ -7,6 +8,7 @@ from flask import Blueprint, current_app, jsonify, request
 from ..models import db, SensorReading, Zone, IrrigationLog, RoofLog, JournalEntry, Planting
 
 api_bp = Blueprint("api", __name__)
+log = logging.getLogger(__name__)
 
 
 @api_bp.get("/data/current")
@@ -69,7 +71,10 @@ def current_data():
 def history():
     """Série temporelle pour Plotly (zone_id optionnel, hours=24 par défaut)."""
     zone_id = request.args.get("zone_id", type=int)
-    hours = min(int(request.args.get("hours", 24)), 720)
+    try:
+        hours = min(int(request.args.get("hours", 24)), 720)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Le paramètre 'hours' doit être un entier"}), 400
     since = datetime.utcnow() - timedelta(hours=hours)
 
     query = SensorReading.query.filter(SensorReading.timestamp >= since)
@@ -89,7 +94,10 @@ def history():
 @api_bp.get("/data/irrigation_events")
 def irrigation_events():
     """Événements d'arrosage pour les marqueurs Plotly."""
-    hours = min(int(request.args.get("hours", 24)), 720)
+    try:
+        hours = min(int(request.args.get("hours", 24)), 720)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Le paramètre 'hours' doit être un entier"}), 400
     since = datetime.utcnow() - timedelta(hours=hours)
     events = (IrrigationLog.query
               .filter(IrrigationLog.timestamp >= since)
@@ -101,6 +109,9 @@ def irrigation_events():
 @api_bp.post("/control/valve/<int:zone_id>")
 def control_valve(zone_id: int):
     """Commande manuelle d'une vanne."""
+    if Zone.query.get(zone_id) is None:
+        return jsonify({"ok": False, "error": f"Zone {zone_id} inexistante"}), 404
+
     body = request.get_json(silent=True) or {}
     state = body.get("state", "")
     if state not in ("open", "close"):
@@ -110,18 +121,22 @@ def control_valve(zone_id: int):
     success = arduino.set_valve(zone_id, state)
 
     if success:
-        entry = IrrigationLog(
-            zone_id=zone_id, action=state,
-            trigger_type="manual",
-            reason=f"Commande manuelle utilisateur",
-        )
-        journal = JournalEntry(
-            level="info",
-            message=f"Zone {zone_id} — vanne {state} (commande manuelle)",
-        )
-        db.session.add(entry)
-        db.session.add(journal)
-        db.session.commit()
+        try:
+            entry = IrrigationLog(
+                zone_id=zone_id, action=state,
+                trigger_type="manual",
+                reason="Commande manuelle utilisateur",
+            )
+            journal = JournalEntry(
+                level="info",
+                message=f"Zone {zone_id} — vanne {state} (commande manuelle)",
+            )
+            db.session.add(entry)
+            db.session.add(journal)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            log.error("Erreur persistance commande vanne zone %d : %s", zone_id, e)
 
     action_fr = "ouverte" if state == "open" else "fermée"
     return jsonify({
@@ -142,10 +157,14 @@ def control_roof():
     success = arduino.set_roof(state)
 
     if success:
-        from ..models import RoofLog
-        db.session.add(RoofLog(action=state, trigger_type="manual", reason="Commande manuelle utilisateur"))
-        db.session.add(JournalEntry(level="info", message=f"Lucarne — {state} (commande manuelle)"))
-        db.session.commit()
+        try:
+            from ..models import RoofLog
+            db.session.add(RoofLog(action=state, trigger_type="manual", reason="Commande manuelle utilisateur"))
+            db.session.add(JournalEntry(level="info", message=f"Lucarne — {state} (commande manuelle)"))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            log.error("Erreur persistance commande lucarne : %s", e)
 
     action_fr = "ouvert" if state == "open" else "fermé"
     return jsonify({
@@ -237,11 +256,13 @@ def rpi_status():
             temps = psutil.sensors_temperatures()
             cpu_t = temps.get("cpu_thermal") or temps.get("coretemp") or []
             info["cpu_temp_c"] = round(cpu_t[0].current, 1) if cpu_t else None
-        except Exception:
+        except Exception as e:
+            log.debug("psutil sensors_temperatures indisponible : %s", e)
             try:
                 with open("/sys/class/thermal/thermal_zone0/temp") as f:
                     info["cpu_temp_c"] = round(int(f.read()) / 1000, 1)
-            except Exception:
+            except Exception as e2:
+                log.debug("Lecture thermal_zone0 indisponible : %s", e2)
                 info["cpu_temp_c"] = None
 
         # Simulated temperature in simulation mode when sensor unavailable
@@ -317,7 +338,10 @@ def force_cycle():
 @api_bp.get("/journal")
 def journal():
     """10 dernières entrées du journal système."""
-    limit = min(int(request.args.get("limit", 20)), 100)
+    try:
+        limit = min(int(request.args.get("limit", 20)), 100)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Le paramètre 'limit' doit être un entier"}), 400
     entries = (JournalEntry.query
                .order_by(JournalEntry.timestamp.desc())
                .limit(limit).all())
