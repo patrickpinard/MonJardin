@@ -186,9 +186,9 @@ def build():
             ["SoilWatch 10",             "4",        "Capteur humidité sol 0–100%",    "InputExpander ADC"],
             ["DS18B20 (sonde étanche)",  "2",        "Température ext. + serre",       "OneWire D5"],
             ["Anémomètre QS-FS01",       "1",        "Vitesse vent (tension 0.4–2.0 V)","InputExpander ADC 4"],
-            ["Vanne solénoïde 24V DC latching","4",  "Irrigation par zone",            "Relay 0–3"],
+            ["GARDENA Vanne 24V (réf. 900904101)","4", "Irrigation par zone (solénoïde)", "Relay 0–3 Edge Control"],
             ["Vérin linéaire 12V",       "1",        "Ouverture lucarne serre",        "GPIO D7/D8 + D9/D10"],
-            ["Alimentation 24V / 5A",    "1",        "Vannes latching",                "—"],
+            ["Alimentation 24V / 5A",    "1",        "Vannes GARDENA solénoïde",       "—"],
             ["Alimentation 12V / 2A",    "1",        "Vérin linéaire",                 "—"],
             ["Alimentation 5V / 5A USB-C","1",       "Raspberry Pi 5",                 "—"],
             ["Boîtier IP67",             "1",        "Protection intempéries",         "—"],
@@ -315,25 +315,38 @@ def build():
 
     # ── 6. VANNES ──────────────────────────────────────────────────────────
     story += [
-        p("6. Montage — Vannes 24V latching", H1), hr(),
-        p("Les vannes solénoïdes <b>latching</b> (bistables) maintiennent leur position "
-          "(ouverte ou fermée) sans courant continu. Seule une <b>impulsion courte</b> de "
-          "<b>50 ms</b> est nécessaire pour changer d'état, ce qui minimise la consommation."),
+        p("6. Montage — Vannes d'irrigation GARDENA 24V (réf. 900904101)", H1), hr(),
+        p("Les vannes utilisées sont des <b>solénoïdes GARDENA 24V normalement fermés</b>. "
+          "Contrairement aux vannes latching bistables, elles requièrent un <b>24V continu</b> "
+          "pour rester ouvertes et se referment automatiquement par ressort dès que "
+          "la tension est coupée."),
         sp(4),
+        p("Principe de fonctionnement avec les relais Edge Control", H2),
+        p("Les relais <b>latching</b> de l'Arduino Edge Control assurent la compatibilité : "
+          "une impulsion SET ferme les contacts du relais, qui restent fermés sans "
+          "alimentation continue. Le 24V est ainsi appliqué en permanence sur la bobine "
+          "GARDENA tant que la vanne doit rester ouverte. Une impulsion RESET ouvre "
+          "les contacts, coupant le 24V — le ressort referme la vanne."),
+        sp(4),
+        make_table([
+            ["Action",          "Commande firmware",  "Relais Edge Control",      "Vanne GARDENA"],
+            ["Ouvrir",          "Relay.on(index)",    "Impulsion SET → contacts fermés", "24V continu → ouverte"],
+            ["Fermer",          "Relay.off(index)",   "Impulsion RESET → contacts ouverts", "Hors tension → fermée"],
+            ["Durée impulsion",  "RELAY_PULSE_MS = 50 ms", "—",                  "—"],
+        ], [3*cm, 4*cm, 5.5*cm, 4*cm]),
+        sp(6),
         p("Connexion aux relais Edge Control", H2),
         make_table([
-            ["Zone", "Relais Edge Control", "Bobine +",         "Bobine −", "Alimentation"],
-            ["Zone 1 — Serre",    "Relay 0", "Bobine set",    "Bobine reset", "24V DC / ~500 mA par ouverture"],
-            ["Zone 2 — Potager",  "Relay 1", "Bobine set",    "Bobine reset", "24V DC / ~500 mA par ouverture"],
-            ["Zone 3 — Mi-ombre", "Relay 2", "Bobine set",    "Bobine reset", "24V DC / ~500 mA par ouverture"],
-            ["Zone 4 — Aromates", "Relay 3", "Bobine set",    "Bobine reset", "24V DC / ~500 mA par ouverture"],
-        ], [3.5*cm, 3.5*cm, 2.5*cm, 2.5*cm, 4.5*cm]),
+            ["Zone", "Relais Edge Control", "Fil solénoïde 1",  "Fil solénoïde 2", "Alimentation"],
+            ["Zone 1 — Serre",    "Relay 0", "Fil A (rouge)",  "Fil B (noir)", "24V DC / ~300 mA en continu"],
+            ["Zone 2 — Potager",  "Relay 1", "Fil A (rouge)",  "Fil B (noir)", "24V DC / ~300 mA en continu"],
+            ["Zone 3 — Mi-ombre", "Relay 2", "Fil A (rouge)",  "Fil B (noir)", "24V DC / ~300 mA en continu"],
+            ["Zone 4 — Aromates", "Relay 3", "Fil A (rouge)",  "Fil B (noir)", "24V DC / ~300 mA en continu"],
+        ], [3.5*cm, 3.5*cm, 2.8*cm, 2.8*cm, 4*cm]),
         sp(4),
-        p("⚠️  Bug connu (v1.0) : Le firmware ValveController.cpp envoie actuellement "
-          "la même impulsion pour ouvrir ET fermer. Pour les relais latching avec "
-          "deux bobines distinctes (set/reset), il faut utiliser deux index de relais "
-          "par vanne (ex. Relay 0 = set, Relay 4 = reset pour Zone 1). "
-          "Corriger dans ValveController::_pulse() avant déploiement réel.", WARN),
+        p("La polarité des fils solénoïde n'est pas critique pour les solénoïdes AC/DC. "
+          "Vérifier la tension d'alimentation : la vanne GARDENA 900904101 est prévue "
+          "pour 24V DC ou AC.", NOTE),
         sp(6),
         p("Séquence d'initialisation", H2),
         p("Au démarrage du firmware (begin()), toutes les vannes reçoivent une impulsion "
@@ -388,7 +401,7 @@ def build():
         p("8. Alimentation", H1), hr(),
         make_table([
             ["Composant",            "Tension", "Courant max", "Notes"],
-            ["Vannes latching",      "24V DC",  "500 mA × 4 = 2A (simultané)", "Alimentation dédiée, masse commune avec Arduino"],
+            ["Vannes GARDENA 900904101","24V DC/AC","~300 mA × 4 = 1.2A (simultané)", "Solénoïde NC — 24V continu requis quand ouverte"],
             ["Vérin linéaire",       "12V DC",  "2A",          "Alimentation dédiée"],
             ["Arduino Edge Control", "7–30V",   "500 mA",      "Peut être alimenté depuis le 24V"],
             ["Raspberry Pi 5",       "5V DC",   "5A",          "USB-C, alimentation officielle RPi"],
@@ -604,7 +617,7 @@ def build():
             ["☐", "Mettre à jour RPI_HOST avec l'IP fixe du Raspberry Pi",      "config.h:9"],
             ["☐", "Calibrer ADC_DRY et ADC_WET pour vos capteurs SoilWatch",    "config.h:26-27"],
             ["☐", "Vérifier câblage QS-FS01 : alimentation ≥ 7V, signal sur ADC 4", "config.h, AnemometerSensor.cpp"],
-            ["☐", "Corriger ValveController::_pulse() pour relais latching",    "ValveController.cpp:50"],
+            ["☐", "Vérifier alimentation 24V vannes GARDENA (solénoïde NC)",     "ValveController.cpp"],
             ["☐", "Compiler et flasher via PlatformIO",                         "platformio.ini"],
             ["☐", "Vérifier logs série : 4 zones ADC, 2 DS18B20 détectés",      "Serial 115200"],
             ["☐", "Tester GET http://<IP_ARDUINO>/api/health depuis le Pi",      "RestServer"],

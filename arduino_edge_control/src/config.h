@@ -42,7 +42,10 @@
 #define WIND_ADC_SAMPLES    8       // lectures moyennées par mesure
 
 // ── Actionneurs ───────────────────────────────────────────────────────────
-#define RELAY_PULSE_MS      50      // durée pulse relais latching (ms)
+// Vannes : GARDENA 24V Irrigation Valve (réf. 900904101)
+//   Solénoïde normalement fermé — 24V continu requis pour rester ouvert
+//   Alimenté via relais latching Edge Control (contacts fermés = 24V permanent)
+#define RELAY_PULSE_MS      50      // durée impulsion SET/RESET bobine relais latching (ms)
 // Vérin lucarne
 #define ACTUATOR_IN1        7       // pin direction H-bridge
 #define ACTUATOR_IN2        8

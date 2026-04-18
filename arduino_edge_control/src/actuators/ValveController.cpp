@@ -48,16 +48,20 @@ bool ValveController::isOpen(int zoneId) const {
 }
 
 void ValveController::_pulse(int relayIndex, bool open) {
-    // Relais latching : une impulsion courte pour set ou reset
+    // Vanne GARDENA 24V (solénoïde, normalement fermée) :
+    //   - besoin de 24V CONTINU pour rester ouverte
+    //   - se referme par ressort dès que la tension est coupée
+    //
+    // Le relais latching Edge Control fournit ce 24V continu :
+    //   open  → impulsion SET   (Relay.on)  → relais latchisé fermé  → 24V permanent sur bobine
+    //   close → impulsion RESET (Relay.off) → relais latchisé ouvert → bobine hors tension → ressort
     if (open) {
         Relay.on(relayIndex);
         delay(RELAY_PULSE_MS);
-        Relay.off(relayIndex);
+        // relais reste latchisé FERMÉ — pas de Relay.off() ici
     } else {
-        // Pour relais latching, off = impulsion sur la bobine reset
-        // Sur Edge Control, les relais latching ont deux bobines via index pair/impair
-        Relay.on(relayIndex);
-        delay(RELAY_PULSE_MS);
         Relay.off(relayIndex);
+        delay(RELAY_PULSE_MS);
+        // relais reste latchisé OUVERT — pas de Relay.on() ici
     }
 }
