@@ -94,6 +94,16 @@
       </a>
     </nav>
 
+    <!-- Logout (visible si connecté) -->
+    {% if session.get('auth_user') %}
+    <div style="padding:0 12px 6px;">
+      <a href="/logout" class="nav-item" style="color:var(--text-tertiary);font-size:12px;gap:8px;">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>{{ session.get('auth_user') }} · Déconnexion</span>
+      </a>
+    </div>
+    {% endif %}
+
     <!-- Arduino connection status -->
     <div class="sidebar-footer">
       <div class="connection-widget">
@@ -184,6 +194,12 @@
   <a href="/admin" class="mobile-menu-item {% if '/admin' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-shield-lock-fill"></i> Administration
   </a>
+  {% if session.get('auth_user') %}
+  <div class="mobile-menu-section">Session</div>
+  <a href="/logout" class="mobile-menu-item" onclick="closeMobileMenu()">
+    <i class="bi bi-box-arrow-right"></i> {{ session.get('auth_user') }} · Déconnexion
+  </a>
+  {% endif %}
 </nav>
 </div><!-- /#mobile-menu-wrapper -->
 
