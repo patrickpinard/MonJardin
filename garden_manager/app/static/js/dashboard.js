@@ -3,6 +3,21 @@
 const ZONE_COLORS = {1: '#30d158', 2: '#8BC34A', 3: '#0a84ff', 4: '#bf5af2'};
 const ZONE_NAMES  = {1: 'Serre', 2: 'Soleil', 3: 'Mi-ombre', 4: 'Aromates'};
 
+function plotlyTheme(extra) {
+  const dark = (document.documentElement.getAttribute('data-theme') || 'dark') !== 'light';
+  const fontColor  = dark ? 'rgba(255,255,255,.55)' : 'rgba(17,19,21,.70)';
+  const gridColor  = dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.08)';
+  const lineColor  = dark ? 'rgba(255,255,255,.10)' : 'rgba(0,0,0,.14)';
+  return {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    font: {color: fontColor, size: 11, family: '-apple-system,BlinkMacSystemFont,system-ui'},
+    xaxis: {gridcolor: gridColor, linecolor: lineColor, tickcolor: lineColor, tickformat: '%H:%M\n%d.%m'},
+    yaxis: {gridcolor: gridColor, linecolor: lineColor, tickcolor: lineColor},
+    legend: {orientation: 'h', y: -0.22, bgcolor: 'transparent', font: {color: fontColor}},
+    ...extra,
+  };
+}
+
 let _chartHours = 24;
 
 function initDashboard() {
@@ -91,12 +106,13 @@ function renderMainChart(hist, events) {
   const traces = [];
 
   for (const [zid, readings] of Object.entries(hist.zones)) {
+    const id = +zid;
     traces.push({
       x: readings.map(r => r.timestamp),
       y: readings.map(r => r.soil_moisture_pct),
       type: 'scatter', mode: 'lines',
-      name: ZONE_NAMES[zid] || `Zone ${zid}`,
-      line: {color: ZONE_COLORS[zid], width: 2},
+      name: ZONE_NAMES[id] || `Zone ${id}`,
+      line: {color: ZONE_COLORS[id], width: 2},
       yaxis: 'y1',
     });
   }
@@ -121,16 +137,12 @@ function renderMainChart(hist, events) {
       line: {color: ZONE_COLORS[e.zone_id] || '#30d158', width: 1, dash: 'dot'},
     }));
 
-  Plotly.react('mainChart', traces, {
-    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-    font: {color: 'rgba(255,255,255,.55)', size: 11, family: '-apple-system,BlinkMacSystemFont,system-ui'},
+  Plotly.react('mainChart', traces, plotlyTheme({
     margin: {t: 6, b: 50, l: 44, r: 52},
-    xaxis: {gridcolor: 'rgba(255,255,255,.06)', tickformat: '%H:%M\n%d.%m', linecolor: 'rgba(255,255,255,.08)'},
-    yaxis: {title: 'Humidité (%)', range: [0, 100], gridcolor: 'rgba(255,255,255,.06)', linecolor: 'rgba(255,255,255,.08)'},
-    yaxis2: {title: 'Temp (°C)', overlaying: 'y', side: 'right', showgrid: false, linecolor: 'rgba(255,255,255,.08)'},
-    legend: {orientation: 'h', y: -0.22, bgcolor: 'transparent'},
+    yaxis:  {title: 'Humidité (%)', range: [0, 100]},
+    yaxis2: {title: 'Temp (°C)', overlaying: 'y', side: 'right', showgrid: false},
     shapes,
-  }, {responsive: true, displayModeBar: false});
+  }), {responsive: true, displayModeBar: false});
 }
 
 async function loadJournal() {

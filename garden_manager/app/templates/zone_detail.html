@@ -384,6 +384,21 @@ function switchZoneTab(btn, zoneId, hours) {
   loadZoneChart(zoneId, hours);
 }
 
+function plotlyTheme(extra) {
+  const dark = (document.documentElement.getAttribute('data-theme') || 'dark') !== 'light';
+  const fontColor = dark ? 'rgba(255,255,255,.55)' : 'rgba(17,19,21,.70)';
+  const gridColor = dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.08)';
+  const lineColor = dark ? 'rgba(255,255,255,.10)' : 'rgba(0,0,0,.14)';
+  return {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    font: {color: fontColor, size: 11, family: '-apple-system,BlinkMacSystemFont,system-ui'},
+    xaxis: {gridcolor: gridColor, linecolor: lineColor, tickcolor: lineColor, tickformat: '%H:%M\n%d.%m'},
+    yaxis: {gridcolor: gridColor, linecolor: lineColor, tickcolor: lineColor},
+    legend: {orientation: 'h', y: -0.22, bgcolor: 'transparent', font: {color: fontColor}},
+    ...extra,
+  };
+}
+
 async function loadZoneChart(zoneId, hours) {
   const resp = await fetch(`/api/data/history?zone_id=${zoneId}&hours=${hours}`);
   const data = await resp.json();
@@ -395,7 +410,7 @@ async function loadZoneChart(zoneId, hours) {
       x: readings.map(r => r.timestamp),
       y: readings.map(r => r.soil_moisture_pct),
       type: 'scatter', mode: 'lines', name: 'Humidité',
-        line: {color, width: 2},
+      line: {color, width: 2},
     },
     {
       x: readings.map(r => r.timestamp),
@@ -404,15 +419,11 @@ async function loadZoneChart(zoneId, hours) {
       line: {color: '#ff9f0a', width: 1.5, dash: 'dot'},
       yaxis: 'y2',
     }
-  ], {
-    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-    font: {color: 'rgba(255,255,255,.55)', size: 11, family: '-apple-system,system-ui'},
+  ], plotlyTheme({
     margin: {t: 6, b: 40, l: 42, r: 42},
-    xaxis: {gridcolor: 'rgba(255,255,255,.06)', tickformat: '%H:%M\n%d.%m'},
-    yaxis:  {title: 'Humidité (%)', range: [0, 100], gridcolor: 'rgba(255,255,255,.06)'},
+    yaxis:  {title: 'Humidité (%)', range: [0, 100]},
     yaxis2: {title: 'Temp (°C)', overlaying: 'y', side: 'right', showgrid: false},
-    legend: {orientation: 'h', y: -0.22, bgcolor: 'transparent'},
-  }, {responsive: true, displayModeBar: false});
+  }), {responsive: true, displayModeBar: false});
 }
 loadZoneChart({{ zone.zone_id }}, 24);
 

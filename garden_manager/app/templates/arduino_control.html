@@ -102,8 +102,10 @@
           </div>
         </div>
         <div class="diag-ch-body">
-          <div class="diag-val-lg" id="temp-ext">—</div>
-          <div class="diag-label">°C</div>
+          <div style="display:flex;align-items:baseline;gap:5px;">
+            <div class="diag-val-lg" id="temp-ext">—</div>
+            <span class="diag-val-lg" style="color:var(--text-secondary);">°C</span>
+          </div>
         </div>
       </div>
       <div class="diag-channel">
@@ -115,8 +117,10 @@
           </div>
         </div>
         <div class="diag-ch-body">
-          <div class="diag-val-lg" id="temp-serre">—</div>
-          <div class="diag-label">°C</div>
+          <div style="display:flex;align-items:baseline;gap:5px;">
+            <div class="diag-val-lg" id="temp-serre">—</div>
+            <span class="diag-val-lg" style="color:var(--text-secondary);">°C</span>
+          </div>
         </div>
       </div>
       <div class="diag-channel">
@@ -128,8 +132,10 @@
           </div>
         </div>
         <div class="diag-ch-body">
-          <div class="diag-val-lg" id="wind-kmh">—</div>
-          <div class="diag-label">km/h</div>
+          <div style="display:flex;align-items:baseline;gap:5px;">
+            <div class="diag-val-lg" id="wind-kmh">—</div>
+            <span class="diag-val-lg" style="color:var(--text-secondary);">km/h</span>
+          </div>
           <div class="diag-bar-wrap" style="margin-top:8px;">
             <div class="diag-bar-track">
               <div class="diag-bar-fill ok" id="wind-bar" style="width:0%"></div>
@@ -169,29 +175,110 @@
   <!-- ── Linear actuator (roof) ── -->
   <div class="card mb-3">
     <div class="card-title"><i class="bi bi-arrows-vertical"></i> Vérin linéaire (lucarne serre)</div>
-    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="diag-stat">
-          <div class="diag-label">Position</div>
-          <div class="diag-val" id="roof-pos" style="font-size:20px;font-weight:700;">—</div>
+    <div class="diag-grid">
+      <div class="diag-channel">
+        <div class="diag-ch-header">
+          <div class="diag-ch-icon z3"><i class="bi bi-arrows-vertical"></i></div>
+          <div>
+            <div class="diag-ch-name">Vérin H-bridge</div>
+            <div class="diag-ch-sub">H-bridge · IN1/IN2 · fins de course D6/D7</div>
+          </div>
         </div>
-        <div class="diag-stat">
-          <div class="diag-label">Fin de course ouvert</div>
-          <div class="diag-val" id="roof-endstop-open">—</div>
-        </div>
-        <div class="diag-stat">
-          <div class="diag-label">Fin de course fermé</div>
-          <div class="diag-val" id="roof-endstop-close">—</div>
+        <div class="diag-ch-body">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Position</div>
+            <div class="diag-val-lg" id="roof-pos">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Fin de course ouvert</div>
+            <div class="diag-val" id="roof-endstop-open">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Fin de course fermé</div>
+            <div class="diag-val" id="roof-endstop-close">—</div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px;">
+            <button class="btn btn-warning btn-xs" onclick="manualRoof('open')">
+              <i class="bi bi-chevron-up"></i> Ouvrir
+            </button>
+            <button class="btn btn-secondary btn-xs" onclick="manualRoof('close')">
+              <i class="bi bi-chevron-down"></i> Fermer
+            </button>
+          </div>
         </div>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-warning btn-sm" onclick="manualRoof('open')">
-          <i class="bi bi-chevron-up"></i> Ouvrir lucarne
-        </button>
-        <button class="btn btn-secondary btn-sm" onclick="manualRoof('close')">
-          <i class="bi bi-chevron-down"></i> Fermer lucarne
-        </button>
-      </div>
+    </div>
+  </div>
+
+  <!-- ── Free I/O ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-plug"></i> Entrées / Sorties disponibles</div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
+      Canaux non utilisés de l'Arduino Edge Control — disponibles pour extensions futures.
+    </div>
+
+    <!-- Relais latching libres K5–K16 -->
+    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
+      Relais latching libres — 24V SPDT 2A (K5 à K16)
+    </div>
+    <div style="overflow-x:auto;margin-bottom:16px;">
+      <table class="table-modern" style="font-size:12px;">
+        <thead>
+          <tr><th>Canal</th><th>Interface</th><th>Adresse I²C</th><th>Usage suggéré</th><th>Statut</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>RELAY_5</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 4</td><td>Vanne zone 5 (extension)</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_6</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 5</td><td>Vanne zone 6 (extension)</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_7</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 6</td><td>Pompe de circulation</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_8</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 7</td><td>Éclairage horticole</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_9</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 0</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_10</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 1</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_11</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 2</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_12</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 3</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_13</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 4</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_14</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 5</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_15</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 6</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>RELAY_16</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 7</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SSR + H-Bridge + Analog -->
+    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
+      Autres sorties &amp; entrées disponibles
+    </div>
+    <div style="overflow-x:auto;margin-bottom:16px;">
+      <table class="table-modern" style="font-size:12px;">
+        <thead>
+          <tr><th>Canal</th><th>Type</th><th>Pin MCU</th><th>Caractéristiques</th><th>Statut</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>SSR_1</code></td><td>Relais solide (sortie)</td><td>D8</td><td>24VAC/DC · 1.5A · commutation rapide · zéro-crossing</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>SSR_2</code></td><td>Relais solide (sortie)</td><td>D9</td><td>24VAC/DC · 1.5A · commutation rapide · zéro-crossing</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>ADC_CH5</code></td><td>Entrée analogique</td><td>A4 (ADC ch 4)</td><td>0–3.3V · 12 bit · capteur capacitif ou pression</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>ADC_CH6</code></td><td>Entrée analogique</td><td>A5 (ADC ch 5)</td><td>0–3.3V · 12 bit · capteur capacitif ou pression</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>IRQ_1</code></td><td>Entrée digitale / IRQ</td><td>D2 (INT0)</td><td>3.3V · pull-up interne · interrupt capable · pluviomètre</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          <tr><td><code>IRQ_2</code></td><td>Entrée digitale / IRQ</td><td>D3 (INT1)</td><td>3.3V · pull-up interne · interrupt capable</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Bus disponibles -->
+    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
+      Bus de communication disponibles
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table-modern" style="font-size:12px;">
+        <thead>
+          <tr><th>Bus</th><th>Pins</th><th>Usage actuel</th><th>Capacité restante</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>I²C</code></td><td>SDA (D11) · SCL (D12)</td><td>Expanders relais (0x20, 0x21), ADC capteurs sol</td><td>Adresses 0x22–0x77 libres · capteurs RH, CO₂, luminosité</td></tr>
+          <tr><td><code>SPI</code></td><td>MISO/MOSI/SCK + CS libre</td><td>Non utilisé</td><td>Carte SD, afficheur OLED, logger externe</td></tr>
+          <tr><td><code>UART</code></td><td>TX (D14) · RX (D13)</td><td>Debug série (115200 baud)</td><td>Capteur CO₂ UART (ex. MH-Z19), GPS</td></tr>
+          <tr><td><code>OneWire</code></td><td>D4 (partagé)</td><td>2 capteurs DS18B20 (ext + serre)</td><td>Jusqu'à 10 sondes sur le même bus (adresse 64-bit unique)</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

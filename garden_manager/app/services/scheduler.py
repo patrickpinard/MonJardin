@@ -36,6 +36,7 @@ def _run_cycle(app) -> None:
     # 2. Persistance en base
     now = datetime.utcnow()
     temp = sensor_data.get("temperature_c", 15.0)
+    temp_serre = sensor_data.get("temp_serre_c")
     zones_data = {z["zone_id"]: z for z in sensor_data.get("zones", [])}
 
     for zone_id in range(1, 5):
@@ -47,6 +48,7 @@ def _run_cycle(app) -> None:
                 soil_moisture_pct=z_data.get("soil_moisture_pct"),
                 raw_adc=z_data.get("raw_adc"),
                 temperature_c=temp,
+                temp_serre_c=temp_serre,
                 is_simulated=app.config.get("SIMULATION_MODE", False),
             )
             db.session.add(reading)

@@ -12,6 +12,7 @@ class SensorReading(db.Model):
     soil_moisture_pct = db.Column(db.Float, nullable=True)
     raw_adc = db.Column(db.Float, nullable=True)
     temperature_c = db.Column(db.Float, nullable=True)
+    temp_serre_c = db.Column(db.Float, nullable=True)
     is_simulated = db.Column(db.Boolean, default=False)
 
     def to_dict(self) -> dict:
@@ -22,6 +23,7 @@ class SensorReading(db.Model):
             "soil_moisture_pct": self.soil_moisture_pct,
             "raw_adc": self.raw_adc,
             "temperature_c": self.temperature_c,
+            "temp_serre_c": self.temp_serre_c,
             "is_simulated": self.is_simulated,
         }
 
