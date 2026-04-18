@@ -182,6 +182,90 @@
     </div>
   </div>
 
+  <!-- ── Tests d'alertes ── -->
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-send-exclamation-fill" style="color:var(--orange);"></i> Tests d'alertes email</div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">
+      Envoie un email HTML formaté et ajoute une entrée dans le journal pour simuler chaque type d'alerte.
+      Destinataire : <strong>{{ mail_dest }}</strong>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;">
+
+      <!-- Gel -->
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:20px;">🌡️</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Gel nocturne</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">T°=-2.3°C · fermeture vannes</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('frost', this)">
+          <i class="bi bi-send"></i> Envoyer
+        </button>
+      </div>
+
+      <!-- Sécheresse -->
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:20px;">💧</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Sécheresse critique</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Zone 2 · 12% · 2 arrosages</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('drought', this)">
+          <i class="bi bi-send"></i> Envoyer
+        </button>
+      </div>
+
+      <!-- Capteur HS -->
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:20px;">🔌</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Capteur hors service</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Zone 3 · aucune donnée 2h15</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('sensor_failure', this)">
+          <i class="bi bi-send"></i> Envoyer
+        </button>
+      </div>
+
+      <!-- Inondation -->
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:20px;">🌊</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Risque inondation</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Zone 1 serre · 94%</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('flood', this)">
+          <i class="bi bi-send"></i> Envoyer
+        </button>
+      </div>
+
+      <!-- Arduino offline -->
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:20px;">📡</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Arduino injoignable</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">15 échecs · failsafe activé</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('arduino_offline', this)">
+          <i class="bi bi-send"></i> Envoyer
+        </button>
+      </div>
+
+    </div>
+    <div id="alert-test-result" style="margin-top:12px;"></div>
+  </div>
+
   <!-- ── Informations système ── -->
   <div class="card">
     <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
@@ -232,6 +316,29 @@
 
 {% block scripts %}
 <script>
+async function sendTestAlert(type, btn) {
+  const res = document.getElementById('alert-test-result');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Envoi…';
+  res.innerHTML = '';
+  try {
+    const resp = await fetch(`/api/system/test_alert/${type}`, {method: 'POST'});
+    const data = await resp.json();
+    if (data.ok) {
+      res.innerHTML = `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);">
+        <i class="bi bi-check-circle-fill"></i> Email "${type}" envoyé + entrée journal ajoutée</span>`;
+    } else {
+      res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">
+        <i class="bi bi-x-circle-fill"></i> ${data.error}</span>`;
+    }
+  } catch(e) {
+    res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">Erreur réseau</span>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = orig;
+}
+
 async function testEmail() {
   const btn = document.querySelector('[onclick="testEmail()"]');
   const res = document.getElementById('emailResult');

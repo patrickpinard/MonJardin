@@ -4,6 +4,8 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+**/.env
+garden_manager/.env
 *.db
 *.sqlite3
 .DS_Store
