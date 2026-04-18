@@ -4,6 +4,7 @@ from .sensor_data import SensorReading
 from .zone import Zone
 from .irrigation_log import IrrigationLog, RoofLog, JournalEntry
 from .planting import Planting, WeatherCache
+from .admin_user import AdminUser
 
 __all__ = [
     "db",
@@ -14,4 +15,5 @@ __all__ = [
     "JournalEntry",
     "Planting",
     "WeatherCache",
+    "AdminUser",
 ]

@@ -57,8 +57,11 @@ class Config:
     FLASK_PORT: int = int(os.environ.get("FLASK_PORT", "5000"))
     DEBUG: bool = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
 
-    # Email alertes Arduino
-    SMTP_HOST: str     = os.environ.get("SMTP_HOST", "smtp.bluewin.ch")
-    SMTP_PORT: int     = int(os.environ.get("SMTP_PORT", "587"))
-    SMTP_USER: str     = os.environ.get("SMTP_USER", "")
-    SMTP_PASSWORD: str = os.environ.get("SMTP_PASSWORD", "")
+    # Email alertes
+    SMTP_HOST: str              = os.environ.get("SMTP_HOST", "smtp.bluewin.ch")
+    SMTP_PORT: int              = int(os.environ.get("SMTP_PORT", "587"))
+    SMTP_USER: str              = os.environ.get("SMTP_USER", "")
+    SMTP_PASSWORD: str          = os.environ.get("SMTP_PASSWORD", "")
+    MAIL_USE_TLS: bool          = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
+    MAIL_DEFAULT_SENDER: str    = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("SMTP_USER", ""))
+    ADMIN_NOTIFICATION_EMAIL: str = os.environ.get("ADMIN_NOTIFICATION_EMAIL", "ppinard@bluewin.ch")

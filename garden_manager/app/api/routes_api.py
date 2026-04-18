@@ -398,71 +398,59 @@ def arduino_alert():
     return jsonify({"ok": True})
 
 
-def _send_alert_email(subject: str, body: str) -> None:
-    """Envoie un email d'alerte à l'administrateur."""
+def _send_alert_email(subject: str, body: str, to: str = None):
+    """Envoie un email d'alerte. Retourne (ok: bool, error: str|None)."""
     import smtplib
     from email.mime.text import MIMEText
-    ADMIN_EMAIL  = "ppinard@bluewin.ch"
-    SMTP_HOST    = current_app.config.get("SMTP_HOST", "smtp.bluewin.ch")
-    SMTP_PORT    = int(current_app.config.get("SMTP_PORT", 587))
-    SMTP_USER    = current_app.config.get("SMTP_USER", "")
+    SMTP_HOST     = current_app.config.get("SMTP_HOST", "smtp.bluewin.ch")
+    SMTP_PORT     = int(current_app.config.get("SMTP_PORT", 587))
+    SMTP_USER     = current_app.config.get("SMTP_USER", "")
     SMTP_PASSWORD = current_app.config.get("SMTP_PASSWORD", "")
+    FROM          = current_app.config.get("MAIL_DEFAULT_SENDER", SMTP_USER)
+    USE_TLS       = current_app.config.get("MAIL_USE_TLS", True)
+    DEST          = to or current_app.config.get("ADMIN_NOTIFICATION_EMAIL", "ppinard@bluewin.ch")
 
     if not SMTP_USER or not SMTP_PASSWORD:
-        log.warning("SMTP non configuré (SMTP_USER/SMTP_PASSWORD manquants) — email non envoyé")
-        return
+        msg = "SMTP non configuré (SMTP_USER/SMTP_PASSWORD manquants)"
+        log.warning("%s — email non envoyé", msg)
+        return False, msg
     try:
         msg = MIMEText(body, "plain", "utf-8")
         msg["Subject"] = subject
-        msg["From"]    = SMTP_USER
-        msg["To"]      = ADMIN_EMAIL
+        msg["From"]    = FROM
+        msg["To"]      = DEST
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
-            smtp.starttls()
+            if USE_TLS:
+                smtp.starttls()
             smtp.login(SMTP_USER, SMTP_PASSWORD)
             smtp.send_message(msg)
-        log.info("Email d'alerte envoyé à %s : %s", ADMIN_EMAIL, subject)
+        log.info("Email envoyé à %s : %s", DEST, subject)
+        return True, None
     except Exception as e:
-        log.error("Échec envoi email d'alerte : %s", e)
+        log.error("Échec envoi email : %s", e)
+        return False, str(e)
 
 
 @api_bp.post("/system/test_email")
 def test_email():
     """Envoie un email de test pour vérifier la configuration SMTP."""
-    import smtplib
-    from email.mime.text import MIMEText
     from datetime import datetime
-
-    ADMIN_EMAIL   = "ppinard@bluewin.ch"
-    SMTP_HOST     = current_app.config.get("SMTP_HOST", "smtp.bluewin.ch")
-    SMTP_PORT     = int(current_app.config.get("SMTP_PORT", 587))
-    SMTP_USER     = current_app.config.get("SMTP_USER", "")
-    SMTP_PASSWORD = current_app.config.get("SMTP_PASSWORD", "")
-
-    if not SMTP_USER or not SMTP_PASSWORD:
-        return jsonify({"ok": False, "error": "SMTP non configuré — SMTP_USER ou SMTP_PASSWORD manquant dans .env"}), 400
-
-    now = datetime.now().strftime("%d.%m.%Y à %H:%M:%S")
-    body = (
-        f"Ceci est un email de test envoyé depuis MonJardin.\n\n"
-        f"Date : {now}\n"
-        f"Serveur SMTP : {SMTP_HOST}:{SMTP_PORT}\n"
-        f"Expéditeur : {SMTP_USER}\n\n"
-        f"Si vous recevez ce message, les alertes email sont correctement configurées."
+    DEST = current_app.config.get("ADMIN_NOTIFICATION_EMAIL", "ppinard@bluewin.ch")
+    now  = datetime.now().strftime("%d.%m.%Y à %H:%M:%S")
+    ok, err = _send_alert_email(
+        subject="MonJardin — Test de la configuration email",
+        body=(
+            f"Ceci est un email de test envoyé depuis MonJardin.\n\n"
+            f"Date : {now}\n"
+            f"Serveur SMTP : {current_app.config.get('SMTP_HOST')}:{current_app.config.get('SMTP_PORT')}\n"
+            f"Expéditeur : {current_app.config.get('MAIL_DEFAULT_SENDER')}\n\n"
+            f"Si vous recevez ce message, les alertes email sont correctement configurées."
+        ),
+        to=DEST,
     )
-    try:
-        msg = MIMEText(body, "plain", "utf-8")
-        msg["Subject"] = "MonJardin — Test de la configuration email"
-        msg["From"]    = SMTP_USER
-        msg["To"]      = ADMIN_EMAIL
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
-            smtp.starttls()
-            smtp.login(SMTP_USER, SMTP_PASSWORD)
-            smtp.send_message(msg)
-        log.info("Email de test envoyé à %s", ADMIN_EMAIL)
-        return jsonify({"ok": True, "to": ADMIN_EMAIL})
-    except Exception as e:
-        log.error("Échec envoi email de test : %s", e)
-        return jsonify({"ok": False, "error": str(e)}), 500
+    if ok:
+        return jsonify({"ok": True, "to": DEST})
+    return jsonify({"ok": False, "error": err}), 500
 
 
 @api_bp.get("/journal")

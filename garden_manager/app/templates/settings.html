@@ -75,40 +75,6 @@
     {% endfor %}
   </div>
 
-  <!-- Email alertes -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-envelope-fill"></i> Alertes email</div>
-    <div class="grid-3" style="gap:12px;margin-bottom:16px;">
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Serveur SMTP</div>
-        <div style="font-weight:700;font-size:13px;">{{ smtp_host }}:{{ smtp_port }}</div>
-      </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Expéditeur</div>
-        <div style="font-weight:700;font-size:13px;">{{ smtp_user if smtp_user else '—' }}</div>
-      </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Statut</div>
-        {% if smtp_configured %}
-        <div style="font-weight:700;color:var(--green);"><i class="bi bi-check-circle-fill"></i> Configuré</div>
-        {% else %}
-        <div style="font-weight:700;color:var(--red);"><i class="bi bi-x-circle-fill"></i> Non configuré</div>
-        {% endif %}
-      </div>
-    </div>
-    {% if not smtp_configured %}
-    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
-      <i class="bi bi-info-circle"></i> Définissez <code>SMTP_USER</code> et <code>SMTP_PASSWORD</code> dans le fichier <code>.env</code> pour activer les alertes.
-    </div>
-    {% endif %}
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <button class="btn btn-primary btn-sm" onclick="testEmail()" {% if not smtp_configured %}disabled{% endif %}>
-        <i class="bi bi-send-fill"></i> Envoyer email de test
-      </button>
-      <div id="emailResult"></div>
-    </div>
-  </div>
-
   <!-- Système -->
   <div class="card mb-3">
     <div class="card-title"><i class="bi bi-cpu"></i> État du système</div>
@@ -176,30 +142,6 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
 <script>
-async function testEmail() {
-  const btn = document.querySelector('[onclick="testEmail()"]');
-  const res = document.getElementById('emailResult');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Envoi…';
-  res.innerHTML = '';
-  try {
-    const resp = await fetch('/api/system/test_email', {method: 'POST'});
-    const data = await resp.json();
-    if (data.ok) {
-      res.innerHTML = `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);">
-        <i class="bi bi-check-circle-fill"></i> Email envoyé à ${data.to}</span>`;
-    } else {
-      res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">
-        <i class="bi bi-x-circle-fill"></i> Erreur : ${data.error}</span>`;
-    }
-  } catch(e) {
-    res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">
-      <i class="bi bi-x-circle-fill"></i> Erreur réseau</span>`;
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="bi bi-send-fill"></i> Envoyer email de test';
-}
-
 async function checkHealth() {
   const resp = await fetch('/api/system/health');
   const data = await resp.json();

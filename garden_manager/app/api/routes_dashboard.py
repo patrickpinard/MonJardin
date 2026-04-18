@@ -5,9 +5,10 @@ import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from flask import Blueprint, current_app, render_template, send_from_directory
+from flask import Blueprint, current_app, render_template, send_from_directory, \
+    request, session, redirect
 
-from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog
+from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog, AdminUser
 
 dashboard_bp = Blueprint("dashboard", __name__)
 log = logging.getLogger(__name__)
@@ -352,15 +353,117 @@ def settings():
     weather = current_app.extensions["weather_service"].get_current()
     from simulator.weather_simulator import WeatherSimulator
     profiles = WeatherSimulator.list_profiles() if sim_mode else []
-    smtp_user = current_app.config.get("SMTP_USER", "")
-    smtp_configured = bool(smtp_user and current_app.config.get("SMTP_PASSWORD", ""))
     return render_template(
         "settings.html",
         zones=zones,
         weather=weather,
         sim_profiles=profiles,
-        smtp_host=current_app.config.get("SMTP_HOST", "smtp.bluewin.ch"),
+    )
+
+
+# ── Login / Logout ────────────────────────────────────────────────────────────
+
+@dashboard_bp.get("/login")
+def login_page():
+    if "auth_user" in session:
+        return redirect("/dashboard")
+    next_url = request.args.get("next", "/dashboard")
+    return render_template("login.html", next_url=next_url)
+
+
+@dashboard_bp.post("/login/post")
+def login_post():
+    username = request.form.get("username", "").strip()
+    pin      = request.form.get("pin", "").strip()
+    next_url = request.form.get("next_url", "/dashboard")
+    user = AdminUser.query.filter_by(username=username, enabled=True).first()
+    if user and user.check_pin(pin):
+        from datetime import datetime
+        user.last_login = datetime.utcnow()
+        from ..models import db
+        db.session.commit()
+        session["auth_user"] = username
+        session.permanent = True
+        return redirect(next_url)
+    return render_template("login.html", next_url=next_url, error="Identifiant ou PIN incorrect.")
+
+
+@dashboard_bp.get("/logout")
+def logout():
+    session.pop("auth_user", None)
+    return redirect("/login")
+
+
+# ── Administration ────────────────────────────────────────────────────────────
+
+@dashboard_bp.get("/admin")
+def admin_page():
+    users = AdminUser.query.order_by(AdminUser.created_at).all()
+    smtp_user       = current_app.config.get("SMTP_USER", "")
+    smtp_configured = bool(smtp_user and current_app.config.get("SMTP_PASSWORD", ""))
+    from ..models import db, SensorReading
+    import os
+    db_path = current_app.config.get("SQLALCHEMY_DATABASE_URI", "").replace("sqlite:///", "")
+    try:
+        db_size_kb = round(os.path.getsize(db_path) / 1024)
+    except Exception:
+        db_size_kb = None
+    total_readings = SensorReading.query.count()
+    return render_template(
+        "admin.html",
+        users=users,
+        smtp_host=current_app.config.get("SMTP_HOST", ""),
         smtp_port=current_app.config.get("SMTP_PORT", 587),
         smtp_user=smtp_user,
+        mail_sender=current_app.config.get("MAIL_DEFAULT_SENDER", smtp_user),
+        mail_dest=current_app.config.get("ADMIN_NOTIFICATION_EMAIL", ""),
+        mail_tls=current_app.config.get("MAIL_USE_TLS", True),
         smtp_configured=smtp_configured,
+        db_size_kb=db_size_kb,
+        total_readings=total_readings,
+        simulation_mode=current_app.config.get("SIMULATION_MODE", False),
+        current_user=session.get("auth_user"),
     )
+
+
+@dashboard_bp.post("/admin/users/add")
+def admin_add_user():
+    from ..models import db, AdminUser
+    username = request.form.get("username", "").strip()
+    pin      = request.form.get("pin", "").strip()
+    if not username or not pin or len(pin) < 4:
+        return redirect("/admin?error=invalid")
+    if AdminUser.query.filter_by(username=username).first():
+        return redirect("/admin?error=exists")
+    db.session.add(AdminUser(username=username, pin_hash=AdminUser.hash_pin(pin)))
+    db.session.commit()
+    return redirect("/admin")
+
+
+@dashboard_bp.post("/admin/users/<int:uid>/toggle")
+def admin_toggle_user(uid):
+    from ..models import db, AdminUser
+    user = AdminUser.query.get_or_404(uid)
+    user.enabled = not user.enabled
+    db.session.commit()
+    return redirect("/admin")
+
+
+@dashboard_bp.post("/admin/users/<int:uid>/pin")
+def admin_change_pin(uid):
+    from ..models import db, AdminUser
+    user = AdminUser.query.get_or_404(uid)
+    new_pin = request.form.get("pin", "").strip()
+    if len(new_pin) >= 4:
+        user.pin_hash = AdminUser.hash_pin(new_pin)
+        db.session.commit()
+    return redirect("/admin")
+
+
+@dashboard_bp.post("/admin/users/<int:uid>/delete")
+def admin_delete_user(uid):
+    from ..models import db, AdminUser
+    user = AdminUser.query.get_or_404(uid)
+    db.session.delete(user)
+    db.session.commit()
+    return redirect("/admin")

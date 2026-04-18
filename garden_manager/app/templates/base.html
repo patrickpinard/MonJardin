@@ -89,6 +89,9 @@
       <a href="/settings" class="nav-item {% if '/settings' in request.path %}active{% endif %}">
         <i class="bi bi-gear-fill"></i> Paramètres
       </a>
+      <a href="/admin" class="nav-item {% if '/admin' in request.path %}active{% endif %}">
+        <i class="bi bi-shield-lock-fill"></i> Administration
+      </a>
     </nav>
 
     <!-- Arduino connection status -->
@@ -178,6 +181,9 @@
   <a href="/settings" class="mobile-menu-item {% if '/settings' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-gear-fill"></i> Paramètres
   </a>
+  <a href="/admin" class="mobile-menu-item {% if '/admin' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-shield-lock-fill"></i> Administration
+  </a>
 </nav>
 </div><!-- /#mobile-menu-wrapper -->
 
@@ -199,7 +205,7 @@
     <a href="/history" class="mobile-nav-item {% if '/history' in request.path or '/journal' in request.path %}active{% endif %}">
       <i class="bi bi-graph-up"></i><span>Graphiques</span>
     </a>
-    <a href="/settings" class="mobile-nav-item {% if '/settings' in request.path %}active{% endif %}">
+    <a href="/settings" class="mobile-nav-item {% if '/settings' in request.path or '/admin' in request.path %}active{% endif %}">
       <i class="bi bi-gear-fill"></i><span>Réglages</span>
     </a>
   </div>

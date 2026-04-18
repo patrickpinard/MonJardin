@@ -32,7 +32,7 @@ def create_app(config: type = Config) -> Flask:
             dbapi_conn.execute("PRAGMA busy_timeout=5000")
 
     with app.app_context():
-        # Création des tables
+        # Création des tables (y compris admin_users)
         db.create_all()
         # Migrations colonnes manquantes (ALTER TABLE si nécessaire)
         _migrate_db(app)
@@ -41,6 +41,9 @@ def create_app(config: type = Config) -> Flask:
         ensure_defaults(app)
         if app.config.get("SIMULATION_MODE", False):
             seed_demo_history(app)
+
+    # Protection par authentification (before_request global)
+    _setup_auth(app)
 
     # Initialisation des services (singletons stockés dans app.extensions)
     _init_services(app)
@@ -77,6 +80,29 @@ def create_app(config: type = Config) -> Flask:
         "SIMULATION" if app.config.get("SIMULATION_MODE") else "PRODUCTION",
     )
     return app
+
+
+def _setup_auth(app: Flask) -> None:
+    """Intercepte toutes les requêtes : redirige vers /login si auth activée."""
+    from flask import request, session, redirect, url_for
+
+    _PUBLIC = {"/login", "/login/post", "/logout"}
+
+    @app.before_request
+    def check_auth():
+        # Laisser passer les ressources statiques et les routes publiques
+        if request.path.startswith("/static"):
+            return
+        if request.path in _PUBLIC:
+            return
+        # Vérifier si au moins un utilisateur actif existe
+        try:
+            from .models import AdminUser
+            auth_required = AdminUser.query.filter_by(enabled=True).first() is not None
+        except Exception:
+            return
+        if auth_required and "auth_user" not in session:
+            return redirect(f"/login?next={request.path}")
 
 
 def _migrate_db(app: Flask) -> None:
