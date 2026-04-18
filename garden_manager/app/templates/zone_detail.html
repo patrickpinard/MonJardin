@@ -395,8 +395,7 @@ async function loadZoneChart(zoneId, hours) {
       x: readings.map(r => r.timestamp),
       y: readings.map(r => r.soil_moisture_pct),
       type: 'scatter', mode: 'lines', name: 'Humidité',
-      line: {color, width: 2}, fill: 'tozeroy',
-      fillcolor: color.replace(')', ',.08)').replace('rgb', 'rgba'),
+        line: {color, width: 2},
     },
     {
       x: readings.map(r => r.timestamp),
