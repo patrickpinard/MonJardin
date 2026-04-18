@@ -1,41 +1,46 @@
-# 🌱 MonJardin
+# 🌱 MonJardin — Version 1.0
 
-Système automatisé de gestion de jardin potager — **Vullierens, Vaud, Suisse**
-
-Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite · Simulation intégrée
+Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite
 
 ---
 
 ## Aperçu visuel
 
-### Tableau de bord — Vue des zones
+### Tableau de bord
 
-![Vue des zones](docs/screenshot_zones_v2.png)
+![Tableau de bord](docs/screenshot_dashboard_v2.png)
 
-*4 cartes de zones avec humidité, températures serre/extérieur, statut des vannes et plantations actives.*
+*4 cartes de zones avec humidité en temps réel, températures serre/extérieur, statut des vannes, plantations actives et prévisions météo horaires.*
+
+### Page Conseils
+
+![Conseils](docs/screenshot_conseils.png)
+
+*Carrousel de 12 conseils de jardinage, guide complet du compagnonnage (associations bénéfiques et à éviter), calendrier saisonnier.*
+
+### Page Plantation
+
+![Plantation](docs/screenshot_planting.png)
+
+*Gestion des plantations par zone, conseils du mois (39 légumes en avril), progression et dates de récolte.*
 
 ### Diagnostic Arduino Edge Control
 
 ![Arduino Edge Control](docs/screenshot_arduino.png)
 
-*Entrées analogiques (SoilWatch 10), températures DS18B20, anémomètre, vannes, vérin linéaire et I/O libres.*
+*Entrées analogiques SoilWatch 10, températures DS18B20, anémomètre, statut des vannes, vérin linéaire et I/O.*
 
-### Page Administration
+### À propos
 
-![Administration](docs/screenshot_admin.png)
+![À propos](docs/screenshot_about.png)
 
-*Gestion des utilisateurs avec PIN, alertes email SMTP, tests d'alertes (gel, sécheresse, capteur HS, inondation, Arduino hors ligne) et informations système.*
+*Présentation du projet, fonctionnalités, matériel et stack technique.*
 
 ### Captures historiques
 
-| Tableau de bord | Encyclopédie des légumes |
-|---|---|
-| ![Dashboard](docs/screenshot_dashboard.png) | ![Encyclopédie](docs/screenshot_encyclopedia.png) |
-
-<p align="center">
-  <img src="docs/screenshot_zones.png" alt="Vue mobile iPhone" width="320">
-  <br><em>Interface mobile (iPhone)</em>
-</p>
+| Tableau de bord | Encyclopédie des légumes | Vue des zones |
+|---|---|---|
+| ![Dashboard](docs/screenshot_dashboard.png) | ![Encyclopédie](docs/screenshot_encyclopedia.png) | ![Zones](docs/screenshot_zones.png) |
 
 ## Architecture matérielle
 
@@ -50,9 +55,9 @@ MonJardin gère automatiquement l'arrosage et l'ouverture du toit de serre de 4 
 | Zone | Nom | Particularité |
 |------|-----|--------------|
 | 1 | Serre | Toit motorisé, capteur température intérieure |
-| 2 | Soleil | Exposition plein sud |
-| 3 | Mi-ombre | Exposition partielle |
-| 4 | Aromates | Seuils d'arrosage réduits |
+| 2 | Potager | Exposition plein sud |
+| 3 | Potager | Exposition partielle |
+| 4 | Fleurs | Seuils d'arrosage réduits |
 
 ---
 
@@ -85,18 +90,20 @@ MonJardin/
 ### Interface web (PWA)
 - Tableau de bord · Graphiques 30 jours · Journal des événements
 - Encyclopédie de 50 légumes et fleurs (région suisse)
-- Gestion des plantations par zone
+- Gestion des plantations par zone avec progression et récolte
+- Page Conseils — carrousel, compagnonnage, calendrier saisonnier
 - Diagnostic Arduino et Raspberry Pi en temps réel
+- Paramètres du jardin configurables (nom, lieu, propriétaire)
 - **Mode sombre/clair** · **Installable sur iPhone/iPad** (PWA)
 - Sidebar rétractable · Menu hamburger mobile
 
 ### Météo
-- Open-Meteo (Vullierens `46.778°N, 6.641°E`)
+- Open-Meteo (`GARDEN_LATITUDE / GARDEN_LONGITUDE`)
 - Cache DB 30 min · fallback simulateur
 
 ### Simulation
 - Émulateur Arduino (`localhost:8081`) — physique réaliste par zone
-- 6 profils météo Yverdon (printemps, été chaud, orageux, automne, gel, canicule)
+- 6 profils météo (printemps, été chaud, orageux, automne, gel, canicule)
 - Historique démo 30 jours généré automatiquement
 - Accélération temps (`SIMULATION_SPEED`)
 
@@ -125,6 +132,9 @@ Ouvrir **http://localhost:5000**
 | `SIMULATION_SPEED` | `1` | Accélérateur de temps (ex: `60`) |
 | `WEATHER_PROFILE` | `printemps_normal` | Profil météo simulé |
 | `FLASK_PORT` | `5000` | Port de l'application |
+| `GARDEN_NAME` | `MonJardin` | Nom affiché dans l'interface |
+| `GARDEN_LOCATION` | `Vullierens · Vaud` | Lieu du jardin |
+| `GARDEN_OWNER` | `Patrick Pinard` | Nom du propriétaire |
 
 ---
 
@@ -151,6 +161,4 @@ Ouvrir **http://localhost:5000**
 
 ---
 
-## Localisation
-
-> Vullierens · Canton de Vaud · Suisse · Zone USDA 7b · ~430 m d'altitude
+*Version 1.0 · Avril 2026 · Patrick Pinard*
