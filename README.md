@@ -46,11 +46,6 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 *Interface PWA installable sur iPhone — Tableau de bord et vue des zones avec barres d'humidité, plantations actives et contrôles.*
 
-### Captures historiques
-
-| Tableau de bord | Encyclopédie des légumes | Vue des zones |
-|---|---|---|
-| ![Dashboard](docs/screenshot_dashboard.png) | ![Encyclopédie](docs/screenshot_encyclopedia.png) | ![Zones](docs/screenshot_zones.png) |
 
 ## Architecture matérielle
 
