@@ -487,6 +487,110 @@ def test_email():
     return jsonify({"ok": False, "error": err}), 500
 
 
+@api_bp.get("/notifications")
+def notifications():
+    """Entrées journal de niveau warning/danger/error pour le panneau de notifications."""
+    try:
+        limit = min(int(request.args.get("limit", 20)), 100)
+    except (ValueError, TypeError):
+        limit = 20
+    entries = (JournalEntry.query
+               .filter(JournalEntry.level.in_(["warning", "danger", "error"]))
+               .order_by(JournalEntry.timestamp.desc())
+               .limit(limit).all())
+    return jsonify({"entries": [e.to_dict() for e in entries]})
+
+
+_TEST_ALERTS = {
+    "frost": {
+        "subject": "MonJardin — Alerte gel nocturne",
+        "title":   "Gel nocturne détecté",
+        "intro":   "La température extérieure est descendue sous le seuil critique. "
+                   "Les vannes ont été fermées automatiquement et la lucarne de serre fermée.",
+        "rows":    [("Température mesurée", "-2.3°C"), ("Seuil d'alerte", "3°C"),
+                    ("Zones protégées", "1, 2, 3, 4"), ("Action effectuée", "Fermeture toutes vannes + lucarne")],
+        "level":   "alert",
+        "footer":  "Vérifiez l'état de vos plantes sensibles au gel.",
+        "journal": ("danger", "🌡️ Gel nocturne détecté — T°=-2.3°C, vannes fermées, lucarne fermée"),
+    },
+    "drought": {
+        "subject": "MonJardin — Alerte sécheresse critique",
+        "title":   "Sécheresse critique — Zone 2",
+        "intro":   "Le capteur de la zone Soleil indique un niveau d'humidité critique malgré "
+                   "deux cycles d'arrosage consécutifs. Intervention manuelle recommandée.",
+        "rows":    [("Zone", "2 — Soleil"), ("Humidité mesurée", "12%"), ("Seuil bas", "30%"),
+                    ("Arrosages tentés", "2 × 15 min"), ("Dernière lecture", "il y a 5 min")],
+        "level":   "alert",
+        "footer":  "Vérifiez le capteur et la vanne de la zone Soleil.",
+        "journal": ("danger", "💧 Sécheresse critique zone 2 (Soleil) — 12%, 2 arrosages sans effet"),
+    },
+    "sensor_failure": {
+        "subject": "MonJardin — Capteur hors service",
+        "title":   "Capteur défaillant — Zone 3",
+        "intro":   "Aucune donnée reçue du capteur d'humidité de la zone Mi-ombre depuis 2h15. "
+                   "La zone est passée en mode manuel par sécurité.",
+        "rows":    [("Zone", "3 — Mi-ombre"), ("Dernière donnée valide", "il y a 2h15"),
+                    ("Valeur ADC brute", "4095 (hors plage)"), ("Mode activé", "Manuel (sécurité)")],
+        "level":   "warning",
+        "footer":  "Vérifiez le câblage du capteur SoilWatch 10 de la zone Mi-ombre.",
+        "journal": ("warning", "🔌 Capteur HS zone 3 (Mi-ombre) — aucune donnée depuis 2h15"),
+    },
+    "flood": {
+        "subject": "MonJardin — Risque d'inondation serre",
+        "title":   "Humidité excessive — Zone 1 Serre",
+        "intro":   "Le sol de la serre est saturé. La vanne est fermée et un délai de 3h "
+                   "est imposé avant tout arrosage automatique.",
+        "rows":    [("Zone", "1 — Serre"), ("Humidité mesurée", "94%"), ("Seuil haut", "65%"),
+                    ("Vanne", "Fermée"), ("Prochaine évaluation", "dans 3h")],
+        "level":   "warning",
+        "footer":  "Vérifiez le drainage et réduisez les fréquences d'arrosage.",
+        "journal": ("warning", "🌊 Sol saturé zone 1 (Serre) — 94%, arrosage suspendu 3h"),
+    },
+    "arduino_offline": {
+        "subject": "MonJardin — Arduino injoignable",
+        "title":   "Perte de connexion Arduino",
+        "intro":   "L'Arduino Edge Control ne répond plus depuis 15 tentatives consécutives. "
+                   "Le mode failsafe a été activé : toutes les vannes ont été fermées.",
+        "rows":    [("Tentatives échouées", "15"), ("Dernier contact", "il y a 8 min"),
+                    ("Adresse", "192.168.1.100:80"), ("Action failsafe", "Fermeture toutes vannes")],
+        "level":   "alert",
+        "footer":  "Vérifiez l'alimentation et la connexion WiFi de l'Arduino.",
+        "journal": ("danger", "📡 Arduino injoignable — 15 échecs, failsafe activé"),
+    },
+}
+
+
+@api_bp.post("/system/test_alert/<alert_type>")
+def test_alert_email(alert_type: str):
+    """Envoie un email d'alerte de test selon le type choisi."""
+    from ..services.email_builder import build_email_html
+    cfg = _TEST_ALERTS.get(alert_type)
+    if not cfg:
+        return jsonify({"ok": False, "error": f"Type inconnu : {alert_type}"}), 400
+
+    html = build_email_html(
+        title=cfg["title"], intro=cfg["intro"],
+        rows=cfg["rows"], level=cfg["level"], footer_note=cfg["footer"],
+    )
+    ok, err = _send_alert_email(
+        subject=cfg["subject"],
+        body_plain=f"{cfg['title']}\n\n{cfg['intro']}",
+        body_html=html,
+    )
+    if not ok:
+        return jsonify({"ok": False, "error": err}), 500
+
+    # Ajoute au journal pour simuler une vraie alerte
+    try:
+        lvl, msg = cfg["journal"]
+        db.session.add(JournalEntry(level=lvl, message=f"[TEST] {msg}"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return jsonify({"ok": True, "type": alert_type})
+
+
 @api_bp.get("/journal")
 def journal():
     """10 dernières entrées du journal système."""

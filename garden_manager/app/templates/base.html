@@ -130,16 +130,55 @@
       </div>
     </header>
 
-    <!-- Simulation banner -->
-    {% if simulation_mode %}
-    <div class="sim-banner">
-      <i class="bi bi-cpu-fill"></i>
-      <span>Mode simulation — vitesse ×{{ sim_speed }} — profil météo : <strong id="sim-profile-label">{{ weather_profile | default('') }}</strong></span>
-      <div class="sim-banner-actions">
-        <button class="btn btn-warning btn-xs" onclick="resetSim()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+    <!-- ── Top bar ── -->
+    <div class="top-bar">
+      <!-- Horloge -->
+      <div class="top-bar-clock">
+        <i class="bi bi-clock"></i>
+        <span id="top-clock">—</span>
+      </div>
+
+      <div class="top-bar-divider"></div>
+
+      <!-- Arduino status -->
+      <div class="top-bar-arduino">
+        <div class="conn-dot checking" id="tb-conn-dot"></div>
+        <span id="tb-conn-label">Vérification...</span>
+        <span id="tb-conn-lat" style="color:var(--text-tertiary);font-size:11px;"></span>
+      </div>
+
+      {% if simulation_mode %}
+      <div class="top-bar-divider"></div>
+      <div class="top-bar-sim">
+        <i class="bi bi-cpu-fill"></i> SIM ×{{ sim_speed }}
+      </div>
+      {% endif %}
+
+      <div class="top-bar-spacer"></div>
+
+      <!-- Cloche notifications -->
+      <div style="position:relative;">
+        <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()" title="Notifications">
+          <i class="bi bi-bell-fill"></i>
+          <span class="notif-badge" id="notif-badge"></span>
+        </button>
+        <!-- Panneau déroulant -->
+        <div class="notif-panel" id="notif-panel">
+          <div class="notif-panel-header">
+            <span class="notif-panel-title"><i class="bi bi-bell-fill"></i> Notifications</span>
+            <button class="notif-mark-read" onclick="markAllRead()">Tout marquer lu</button>
+          </div>
+          <div class="notif-list" id="notif-list">
+            <div class="notif-empty">Chargement...</div>
+          </div>
+          <div class="notif-footer">
+            <a href="/journal" style="font-size:12px;color:var(--blue);" onclick="closeNotifPanel()">
+              Voir le journal complet
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-    {% endif %}
 
     {% block content %}{% endblock %}
 
@@ -263,40 +302,145 @@ function showToast(msg, type = 'info') {
     t.style.transition='all .2s'; setTimeout(() => t.remove(), 220); }, 3800);
 }
 
+// ── Clock ────────────────────────────────────────────────
+function _tickClock() {
+  const el = document.getElementById('top-clock');
+  if (el) {
+    const now = new Date();
+    el.textContent = now.toLocaleTimeString('fr-CH', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+}
+_tickClock();
+setInterval(_tickClock, 1000);
+
 // ── Arduino connection monitor ───────────────────────────
 let _lastConnOk = null;
 
 async function checkArduino() {
-  const dot    = document.getElementById('conn-dot');
+  const dots   = [document.getElementById('conn-dot'), document.getElementById('tb-conn-dot')];
   const label  = document.getElementById('conn-label');
+  const tbLbl  = document.getElementById('tb-conn-label');
   const latEl  = document.getElementById('conn-latency');
+  const tbLat  = document.getElementById('tb-conn-lat');
   const mDot   = document.getElementById('mobile-conn-dot');
-  if (dot) dot.className = 'conn-dot checking';
+  dots.forEach(d => { if(d) d.className = 'conn-dot checking'; });
   if (mDot) mDot.className = 'mobile-conn-dot checking';
   try {
     const d = await fetch('/api/system/ping').then(r => r.json());
     if (d.ok) {
-      if (dot)   { dot.className   = 'conn-dot'; }
-      if (mDot)  { mDot.className  = 'mobile-conn-dot'; }
+      dots.forEach(d => { if(d) d.className = 'conn-dot'; });
+      if (mDot)  mDot.className  = 'mobile-conn-dot';
       if (label) label.textContent = 'Arduino connecté';
+      if (tbLbl) tbLbl.textContent = 'Arduino';
       if (latEl) latEl.textContent = d.latency_ms + ' ms';
+      if (tbLat) tbLat.textContent = d.latency_ms + ' ms';
       if (_lastConnOk === false) showToast('Arduino reconnecté', 'success');
       _lastConnOk = true;
     } else {
-      if (dot)   { dot.className   = 'conn-dot offline'; }
-      if (mDot)  { mDot.className  = 'mobile-conn-dot offline'; }
+      dots.forEach(d => { if(d) d.className = 'conn-dot offline'; });
+      if (mDot)  mDot.className  = 'mobile-conn-dot offline';
       if (label) label.textContent = 'Arduino hors ligne';
+      if (tbLbl) tbLbl.textContent = 'Hors ligne';
       if (latEl) latEl.textContent = '';
+      if (tbLat) tbLat.textContent = '';
       if (_lastConnOk === true) showToast('Arduino déconnecté', 'error');
       _lastConnOk = false;
     }
   } catch(e) {
-    if (dot)   dot.className   = 'conn-dot offline';
-    if (mDot)  mDot.className  = 'mobile-conn-dot offline';
-    if (label) { label.textContent = 'Erreur réseau'; }
+    dots.forEach(d => { if(d) d.className = 'conn-dot offline'; });
+    if (mDot) mDot.className = 'mobile-conn-dot offline';
+    if (tbLbl) tbLbl.textContent = 'Erreur';
     _lastConnOk = false;
   }
 }
+
+// ── Notifications ────────────────────────────────────────
+let _notifOpen = false;
+
+function toggleNotifPanel() {
+  _notifOpen = !_notifOpen;
+  document.getElementById('notif-panel').classList.toggle('open', _notifOpen);
+  if (_notifOpen) loadNotifications();
+}
+function closeNotifPanel() {
+  _notifOpen = false;
+  document.getElementById('notif-panel').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  const btn   = document.getElementById('notif-btn');
+  const panel = document.getElementById('notif-panel');
+  if (_notifOpen && !btn.contains(e.target) && !panel.contains(e.target)) closeNotifPanel();
+});
+
+function markAllRead() {
+  localStorage.setItem('notif_last_read', new Date().toISOString());
+  document.getElementById('notif-badge').classList.remove('visible');
+  document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+}
+
+const _ICON_MAP = {
+  danger:  {cls:'danger',  icon:'bi-exclamation-octagon-fill'},
+  error:   {cls:'danger',  icon:'bi-x-circle-fill'},
+  warning: {cls:'warning', icon:'bi-exclamation-triangle-fill'},
+  success: {cls:'success', icon:'bi-check-circle-fill'},
+  info:    {cls:'info',    icon:'bi-info-circle-fill'},
+};
+
+async function loadNotifications() {
+  try {
+    const resp = await fetch('/api/notifications?limit=20');
+    const data = await resp.json();
+    const list = document.getElementById('notif-list');
+    const lastRead = new Date(localStorage.getItem('notif_last_read') || 0);
+    const entries = data.entries || [];
+
+    if (!entries.length) {
+      list.innerHTML = '<div class="notif-empty"><i class="bi bi-bell-slash" style="font-size:24px;display:block;margin-bottom:6px;"></i>Aucune notification</div>';
+      return;
+    }
+
+    let unreadCount = 0;
+    list.innerHTML = entries.map(e => {
+      const ts = e.timestamp ? new Date(e.timestamp) : null;
+      const isUnread = ts && ts > lastRead;
+      if (isUnread) unreadCount++;
+      const style = _ICON_MAP[e.level] || _ICON_MAP.info;
+      const timeStr = ts ? ts.toLocaleString('fr-CH', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+      return `<div class="notif-item${isUnread ? ' unread' : ''}">
+        <div class="notif-icon ${style.cls}"><i class="bi ${style.icon}"></i></div>
+        <div class="notif-body">
+          <div class="notif-msg">${e.message}</div>
+          <div class="notif-time">${timeStr}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Badge
+    if (unreadCount > 0) {
+      const badge = document.getElementById('notif-badge');
+      badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      badge.classList.add('visible');
+    }
+  } catch(e) {}
+}
+
+async function _pollNotifBadge() {
+  try {
+    const resp = await fetch('/api/notifications?limit=50');
+    const data = await resp.json();
+    const lastRead = new Date(localStorage.getItem('notif_last_read') || 0);
+    const unread = (data.entries || []).filter(e => e.timestamp && new Date(e.timestamp) > lastRead).length;
+    const badge = document.getElementById('notif-badge');
+    if (unread > 0) {
+      badge.textContent = unread > 9 ? '9+' : unread;
+      badge.classList.add('visible');
+    } else {
+      badge.classList.remove('visible');
+    }
+  } catch(e) {}
+}
+_pollNotifBadge();
+setInterval(_pollNotifBadge, 30000);
 
 // ── Sidebar + mobile zone live update ───────────────────
 async function updateSidebarZones() {

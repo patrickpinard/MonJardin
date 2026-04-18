@@ -716,14 +716,102 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .table-modern tr:hover td { background: rgba(255,255,255,.03); color: var(--text-primary); }
 
 /* ── Sim banner ───────────────────────────────────────── */
-.sim-banner {
-  background: rgba(255,159,10,.07); border-bottom: 1px solid rgba(255,159,10,.18);
-  padding: 8px 30px;
+/* ── Top bar (clock · Arduino · notifications) ───────── */
+.top-bar {
+  position: sticky; top: 0; z-index: 120;
   display: flex; align-items: center; gap: 10px;
-  font-size: 13px; color: var(--orange);
+  padding: 0 24px; height: 44px;
+  background: var(--bg-primary); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.sim-banner i { font-size: 14px; }
-.sim-banner-actions { margin-left: auto; display: flex; gap: 7px; }
+.top-bar-clock {
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  font-variant-numeric: tabular-nums; letter-spacing: .3px;
+  display: flex; align-items: center; gap: 6px;
+}
+.top-bar-clock i { font-size: 12px; color: var(--text-tertiary); }
+.top-bar-divider { width: 1px; height: 18px; background: var(--border-md); flex-shrink: 0; }
+.top-bar-arduino {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-secondary);
+}
+.top-bar-sim {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--orange);
+  background: rgba(255,159,10,.09); border: 1px solid rgba(255,159,10,.2);
+  border-radius: var(--r-pill); padding: 2px 9px;
+}
+.top-bar-spacer { flex: 1; }
+
+/* Notification bell */
+.notif-btn {
+  position: relative; width: 32px; height: 32px; border-radius: 50%;
+  background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: 17px;
+  transition: background var(--t), color var(--t);
+}
+.notif-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.notif-badge {
+  position: absolute; top: 2px; right: 2px;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  background: var(--red); color: #fff; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; border: 2px solid var(--bg-primary);
+  display: none;
+}
+.notif-badge.visible { display: flex; }
+
+/* Notification panel */
+.notif-panel {
+  position: fixed; top: 52px; right: 12px; width: 340px; max-height: 480px;
+  background: var(--bg-primary); border: 1px solid var(--border-md);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-xl);
+  z-index: 300; display: none; flex-direction: column; overflow: hidden;
+}
+.notif-panel.open { display: flex; }
+.notif-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.notif-panel-title { font-size: 14px; font-weight: 700; }
+.notif-mark-read {
+  font-size: 11px; color: var(--blue); cursor: pointer; background: none; border: none;
+  padding: 0;
+}
+.notif-mark-read:hover { text-decoration: underline; }
+.notif-list { overflow-y: auto; flex: 1; }
+.notif-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background var(--t);
+}
+.notif-item:hover { background: var(--bg-hover); }
+.notif-item:last-child { border-bottom: none; }
+.notif-item.unread { background: rgba(255,255,255,.03); }
+.notif-icon {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0; margin-top: 1px;
+}
+.notif-icon.danger  { background: rgba(255,69,58,.12);  color: var(--red); }
+.notif-icon.warning { background: rgba(255,159,10,.12); color: var(--orange); }
+.notif-icon.success { background: rgba(48,209,88,.12);  color: var(--green); }
+.notif-icon.info    { background: rgba(10,132,255,.12); color: var(--blue); }
+.notif-body { flex: 1; min-width: 0; }
+.notif-msg  { font-size: 12px; color: var(--text-primary); line-height: 1.4; word-break: break-word; }
+.notif-time { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+.notif-empty {
+  padding: 28px 16px; text-align: center;
+  font-size: 13px; color: var(--text-tertiary);
+}
+.notif-footer {
+  padding: 10px 16px; border-top: 1px solid var(--border);
+  display: flex; justify-content: center; flex-shrink: 0;
+}
+
+.sim-banner { display: none; }
 
 /* ── Toast ────────────────────────────────────────────── */
 .toast-container {
