@@ -279,86 +279,73 @@
     <div class="carousel-dots" id="carousel-dots"></div>
   </div>
 
-  <!-- ── COMPAGNONNAGE ── -->
-  <div class="card">
-    <div class="card-title"><i class="bi bi-heart-fill" style="color:#e05c7a;"></i> Guide du compagnonnage</div>
-
-    <div class="companion-grid">
-
-      <!-- Associations bénéfiques -->
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-          <i class="bi bi-check-circle-fill"></i> Associations bénéfiques
+  <!-- ── COMPAGNONNAGE bénéfiques ── -->
+  <div class="card" style="border-top:3px solid rgba(48,209,88,.4);">
+    <div class="card-title"><i class="bi bi-check-circle-fill" style="color:var(--green);"></i> Associations bénéfiques</div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+      {% set good_rows = [
+        ("🍅","Tomate","🌿","Basilic","Repousse pucerons et aleurodes, améliore le goût des fruits"),
+        ("🍅","Tomate","🥕","Carotte","La carotte aère le sol autour des racines de tomate"),
+        ("🍅","Tomate","🧅","Oignon","Éloigne les insectes ravageurs et le mildiou"),
+        ("🥒","Concombre","🫘","Haricot","Les haricots fixent l'azote, profitent aux concombres"),
+        ("🥒","Concombre","🌿","Aneth","Attire les insectes pollinisateurs, favorise la nouaison"),
+        ("🥕","Carotte","🧅","Oignon","Chasse mutuellement mouche de la carotte et mouche de l'oignon"),
+        ("🥕","Carotte","🥬","Laitue","Cohabitent sans concurrence, optimisent l'espace"),
+        ("🥕","Carotte","🌿","Poireau","Association classique : protection croisée contre les parasites"),
+        ("🥦","Chou","💐","Céleri","Le céleri repousse la piéride du chou"),
+        ("🥦","Chou","🌿","Romarin","Éloigne les pucerons et les altises"),
+        ("🥬","Salade","🌱","Radis","Les radis éloignent les altises qui attaquent les salades"),
+        ("🫘","Haricot","🌽","Maïs","Les haricots grimpent sur le maïs — association des 3 soeurs"),
+        ("🌽","Maïs","🎃","Courge","La courge couvre le sol, garde l'humidité et chasse les mauvaises herbes"),
+        ("🍓","Fraise","🧄","Ail","L'ail protège les fraises des maladies fongiques"),
+        ("🥬","Épinard","🍓","Fraise","L'épinard profite de l'ombre légère des fraisiers"),
+        ("🫛","Pois","🥕","Carotte","Bonne cohabitation, besoins complémentaires"),
+      ] %}
+      {% for item in good_rows %}
+      <div class="assoc-row" style="{% if not loop.last %}border-bottom:1px solid var(--border);{% endif %}">
+        <div class="assoc-plants">
+          <span style="font-size:16px;">{{ item[0] }}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[1] }}</span>
+          <i class="bi bi-heart-fill" style="font-size:9px;color:var(--green);"></i>
+          <span style="font-size:16px;">{{ item[2] }}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[3] }}</span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:0;">
-          {% set good_rows = [
-            ("🍅","Tomate","🌿","Basilic","Repousse pucerons et aleurodes, améliore le goût des fruits"),
-            ("🍅","Tomate","🥕","Carotte","La carotte aère le sol autour des racines de tomate"),
-            ("🍅","Tomate","🧅","Oignon","Éloigne les insectes ravageurs et le mildiou"),
-            ("🥒","Concombre","🫘","Haricot","Les haricots fixent l'azote, profitent aux concombres"),
-            ("🥒","Concombre","🌿","Aneth","Attire les insectes pollinisateurs, favorise la nouaison"),
-            ("🥕","Carotte","🧅","Oignon","Chasse mutuellement mouche de la carotte et mouche de l'oignon"),
-            ("🥕","Carotte","🥬","Laitue","Cohabitent sans concurrence, optimisent l'espace"),
-            ("🥕","Carotte","🌿","Poireau","Association classique : protection croisée contre les parasites"),
-            ("🥦","Chou","💐","Céleri","Le céleri repousse la piéride du chou"),
-            ("🥦","Chou","🌿","Romarin","Éloigne les pucerons et les altises"),
-            ("🥬","Salade","🌱","Radis","Les radis éloignent les altises qui attaquent les salades"),
-            ("🫘","Haricot","🌽","Maïs","Les haricots grimpent sur le maïs — association des 3 soeurs"),
-            ("🌽","Maïs","🎃","Courge","La courge couvre le sol, garde l'humidité et chasse les mauvaises herbes"),
-            ("🍓","Fraise","🧄","Ail","L'ail protège les fraises des maladies fongiques"),
-            ("🥬","Épinard","🍓","Fraise","L'épinard profite de l'ombre légère des fraisiers"),
-            ("🫛","Pois","🥕","Carotte","Bonne cohabitation, besoins complémentaires"),
-          ] %}
-          {% for item in good_rows %}
-          <div class="assoc-row" style="{% if not loop.last %}border-bottom:1px solid var(--border);{% endif %}">
-            <div class="assoc-plants">
-              <span style="font-size:16px;">{{ item[0] }}</span>
-              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[1] }}</span>
-              <i class="bi bi-heart-fill" style="font-size:9px;color:var(--green);"></i>
-              <span style="font-size:16px;">{{ item[2] }}</span>
-              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[3] }}</span>
-            </div>
-            <span class="assoc-desc">{{ item[4] }}</span>
-          </div>
-          {% endfor %}
-        </div>
+        <span class="assoc-desc">{{ item[4] }}</span>
       </div>
+      {% endfor %}
+    </div>
+  </div>
 
-      <!-- Associations à éviter -->
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--red);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-          <i class="bi bi-x-circle-fill"></i> Associations à éviter
+  <!-- ── COMPAGNONNAGE à éviter ── -->
+  <div class="card" style="border-top:3px solid rgba(255,69,58,.4);">
+    <div class="card-title"><i class="bi bi-x-circle-fill" style="color:var(--red);"></i> Associations à éviter</div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+      {% set bad_rows = [
+        ("🍅","Tomate","🌿","Fenouil","Le fenouil inhibe la croissance et peut tuer les plants de tomate"),
+        ("🍅","Tomate","🥦","Chou","Forte concurrence pour les nutriments, croissance ralentie"),
+        ("🍅","Tomate","🥔","Pomme de terre","Même famille (solanacées), propagent les mêmes maladies"),
+        ("🧅","Oignon","🫘","Haricot","L'oignon inhibe fortement la croissance des légumineuses"),
+        ("🧅","Oignon","🫛","Pois","Même incompatibilité que haricot — éviter toutes légumineuses"),
+        ("🥔","Pomme de terre","🎃","Courge","Concurrence intense et mêmes ravageurs souterrains"),
+        ("🥔","Pomme de terre","🥒","Concombre","Favorisent mutuellement le mildiou en conditions humides"),
+        ("🌿","Fenouil","🥕","Carotte","Le fenouil est allélopathique, freine la germination des carottes"),
+        ("🌿","Fenouil","🥬","Laitue","Inhibe la croissance — isoler le fenouil dans une zone dédiée"),
+        ("🥦","Chou","🍓","Fraise","Concurrence pour le potassium, croissance des deux réduite"),
+        ("🥕","Carotte","🌿","Aneth fleuri","L'aneth en fleur ralentit la croissance des carottes"),
+        ("🥬","Salade","🌿","Persil","Le persil peut inhiber la germination des graines de salade"),
+      ] %}
+      {% for item in bad_rows %}
+      <div class="assoc-row" style="{% if not loop.last %}border-bottom:1px solid var(--border);{% endif %}">
+        <div class="assoc-plants">
+          <span style="font-size:16px;">{{ item[0] }}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[1] }}</span>
+          <i class="bi bi-x-lg" style="font-size:9px;color:var(--red);"></i>
+          <span style="font-size:16px;">{{ item[2] }}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[3] }}</span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:0;">
-          {% set bad_rows = [
-            ("🍅","Tomate","🌿","Fenouil","Le fenouil inhibe la croissance et peut tuer les plants de tomate"),
-            ("🍅","Tomate","🥦","Chou","Forte concurrence pour les nutriments, croissance ralentie"),
-            ("🍅","Tomate","🥔","Pomme de terre","Même famille (solanacées), propagent les mêmes maladies"),
-            ("🧅","Oignon","🫘","Haricot","L'oignon inhibe fortement la croissance des légumineuses"),
-            ("🧅","Oignon","🫛","Pois","Même incompatibilité que haricot — éviter toutes légumineuses"),
-            ("🥔","Pomme de terre","🎃","Courge","Concurrence intense et mêmes ravageurs souterrains"),
-            ("🥔","Pomme de terre","🥒","Concombre","Favorisent mutuellement le mildiou en conditions humides"),
-            ("🌿","Fenouil","🥕","Carotte","Le fenouil est allélopathique, freine la germination des carottes"),
-            ("🌿","Fenouil","🥬","Laitue","Inhibe la croissance — isoler le fenouil dans une zone dédiée"),
-            ("🥦","Chou","🍓","Fraise","Concurrence pour le potassium, croissance des deux réduite"),
-            ("🥕","Carotte","🌿","Aneth fleuri","L'aneth en fleur ralentit la croissance des carottes"),
-            ("🥬","Salade","🌿","Persil","Le persil peut inhiber la germination des graines de salade"),
-          ] %}
-          {% for item in bad_rows %}
-          <div class="assoc-row" style="{% if not loop.last %}border-bottom:1px solid var(--border);{% endif %}">
-            <div class="assoc-plants">
-              <span style="font-size:16px;">{{ item[0] }}</span>
-              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[1] }}</span>
-              <i class="bi bi-x-lg" style="font-size:9px;color:var(--red);"></i>
-              <span style="font-size:16px;">{{ item[2] }}</span>
-              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ item[3] }}</span>
-            </div>
-            <span class="assoc-desc">{{ item[4] }}</span>
-          </div>
-          {% endfor %}
-        </div>
+        <span class="assoc-desc">{{ item[4] }}</span>
       </div>
-
+      {% endfor %}
     </div>
   </div>
 
