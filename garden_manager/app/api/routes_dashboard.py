@@ -375,6 +375,27 @@ def settings_garden():
     return redirect("/settings")
 
 
+@dashboard_bp.post("/settings/sim_speed")
+def settings_sim_speed():
+    allowed = {1, 5, 10, 20, 50, 100}
+    try:
+        speed = int(request.form.get("speed", 1))
+    except (ValueError, TypeError):
+        speed = 1
+    if speed not in allowed:
+        speed = 1
+    _update_env_var("SIMULATION_SPEED", str(speed))
+    current_app.config["SIMULATION_SPEED"] = speed
+    scheduler = current_app.extensions.get("scheduler")
+    if scheduler:
+        base_interval = current_app.config.get("AUTOMATION_INTERVAL", 60)
+        cycle_interval = max(5, int(base_interval / speed))
+        weather_interval = max(30, int(1800 / speed))
+        scheduler.reschedule_job("automation_cycle", trigger="interval", seconds=cycle_interval)
+        scheduler.reschedule_job("weather_poll", trigger="interval", seconds=weather_interval)
+    return redirect("/settings")
+
+
 def _update_env_var(key: str, value: str):
     """Mise à jour d'une variable dans le fichier .env sans perdre les autres."""
     env_path = Path(__file__).resolve().parent.parent.parent / ".env"

@@ -24,6 +24,12 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 *Gestion des plantations par zone, conseils du mois (39 légumes en avril), progression et dates de récolte.*
 
+### Vue détail d'une zone
+
+![Zone détail](docs/screenshot_zone_detail.png)
+
+*Plantations actives, barre d'humidité avec seuils, historique Plotly, configuration des seuils et journal des événements.*
+
 ### Diagnostic Arduino Edge Control
 
 ![Arduino Edge Control](docs/screenshot_arduino.png)
@@ -36,7 +42,7 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 *Présentation du projet, fonctionnalités, matériel et stack technique.*
 
-### Interface mobile iPhone (PWA)
+### Interface mobile iPhone (PWA) — 4 écrans
 
 <p align="center">
   <img src="docs/screenshot_iphone_bord.png" alt="Tableau de bord iPhone" width="220">

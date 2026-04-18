@@ -131,6 +131,31 @@
   {% if simulation_mode %}
   <div class="card">
     <div class="card-title"><i class="bi bi-cpu-fill" style="color:var(--orange);"></i> Contrôles simulation</div>
+
+    <!-- Vitesse de simulation -->
+    <div style="margin-bottom:18px;">
+      <label class="form-label mb-2">Vitesse de simulation</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        {% for spd in [1, 5, 10, 20, 50, 100] %}
+        <form action="/settings/sim_speed" method="post" style="display:inline;">
+          <input type="hidden" name="speed" value="{{ spd }}">
+          <button type="submit" class="btn btn-sm {% if sim_speed == spd %}btn-warning{% else %}btn-secondary{% endif %}"
+                  style="min-width:52px;font-weight:{% if sim_speed == spd %}700{% else %}500{% endif %};">
+            {{ spd }}×
+          </button>
+        </form>
+        {% endfor %}
+      </div>
+      <div style="font-size:11px;color:var(--text-tertiary);margin-top:7px;">
+        Actuelle : <strong style="color:var(--orange);">{{ sim_speed }}×</strong> —
+        cycle automation toutes les <strong>{{ [5, (60 // sim_speed)] | max }}s</strong>,
+        météo toutes les <strong>{{ [30, (1800 // sim_speed)] | max }}s</strong>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:0 0 16px;">
+
+    <!-- Profil météo -->
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
       <div style="flex:1;min-width:200px;">
         <label class="form-label">Profil météo</label>
