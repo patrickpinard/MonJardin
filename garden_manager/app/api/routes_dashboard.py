@@ -352,9 +352,15 @@ def settings():
     weather = current_app.extensions["weather_service"].get_current()
     from simulator.weather_simulator import WeatherSimulator
     profiles = WeatherSimulator.list_profiles() if sim_mode else []
+    smtp_user = current_app.config.get("SMTP_USER", "")
+    smtp_configured = bool(smtp_user and current_app.config.get("SMTP_PASSWORD", ""))
     return render_template(
         "settings.html",
         zones=zones,
         weather=weather,
         sim_profiles=profiles,
+        smtp_host=current_app.config.get("SMTP_HOST", "smtp.bluewin.ch"),
+        smtp_port=current_app.config.get("SMTP_PORT", 587),
+        smtp_user=smtp_user,
+        smtp_configured=smtp_configured,
     )
