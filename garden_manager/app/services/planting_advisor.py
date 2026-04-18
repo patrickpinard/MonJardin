@@ -38,12 +38,22 @@ class PlantingAdvisor:
             "notes": veg.get("notes_fr", ""),
         }
 
-    def get_seasonal_advice(self, current_month: int) -> list[dict]:
-        """Légumes recommandés pour le mois courant, sans filtrage par zone."""
+    def get_seasonal_advice(self, current_month: int, limit: int = 12) -> list[dict]:
+        """Légumes recommandés pour le mois courant, triés par pertinence.
+
+        Priorité : mois de plantation optimal (premiers mois de la liste) et
+        difficulté facile avant difficile. Limité à `limit` résultats.
+        """
+        DIFFICULTY_ORDER = {"easy": 0, "medium": 1, "hard": 2}
         advice = []
         for veg in self._plants:
-            if current_month not in veg.get("planting_months_ch", []):
+            months = veg.get("planting_months_ch", [])
+            if current_month not in months:
                 continue
+            # Score de pertinence : plus bas = mieux
+            # Favorise les légumes dont le mois courant est en début de fenêtre
+            month_position = months.index(current_month) if current_month in months else 99
+            difficulty_score = DIFFICULTY_ORDER.get(veg.get("difficulty", "medium"), 1)
             advice.append({
                 "name": veg["name"],
                 "emoji": veg.get("emoji", "🌱"),
@@ -52,8 +62,10 @@ class PlantingAdvisor:
                 "notes_fr": veg.get("notes_fr", ""),
                 "days_to_harvest": veg.get("days_to_harvest", 90),
                 "harvest_months": veg.get("harvest_months_ch", []),
+                "_sort": (month_position, difficulty_score),
             })
-        return advice
+        advice.sort(key=lambda x: x.pop("_sort"))
+        return advice[:limit]
 
     def get_planting_advice(self, zone_id: int, current_month: int) -> list[dict]:
         """Légumes recommandés pour le mois courant dans la zone."""
