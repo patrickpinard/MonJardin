@@ -101,8 +101,9 @@
 
 /* ── Compagnonnage ── */
 .companion-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start;
 }
+@media (max-width: 768px) { .companion-grid { grid-template-columns: 1fr; } }
 .assoc-row {
   display: flex; align-items: flex-start; gap: 8px;
   padding: 8px 0; flex-wrap: wrap;
@@ -117,8 +118,6 @@
 @media (max-width: 768px) {
   .tip-card { flex: 0 0 230px; }
   .seasons-grid { grid-template-columns: 1fr; }
-  .companion-grid { grid-template-columns: 1fr; gap: 0; }
-  .companion-grid > div + div { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px; }
 }
 </style>
 {% endblock %}
@@ -279,7 +278,10 @@
     <div class="carousel-dots" id="carousel-dots"></div>
   </div>
 
-  <!-- ── COMPAGNONNAGE bénéfiques ── -->
+  <!-- ── COMPAGNONNAGE ── -->
+  <div class="companion-grid">
+
+  <!-- bénéfiques -->
   <div class="card" style="border-top:3px solid rgba(48,209,88,.4);">
     <div class="card-title"><i class="bi bi-check-circle-fill" style="color:var(--green);"></i> Associations bénéfiques</div>
     <div style="display:flex;flex-direction:column;gap:0;">
@@ -348,6 +350,8 @@
       {% endfor %}
     </div>
   </div>
+
+  </div><!-- /companion-grid -->
 
   <!-- ── SAISONS ── -->
   <div>
