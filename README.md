@@ -156,6 +156,44 @@ Ouvrir **http://localhost:5000**
 
 ---
 
+### Arduino Edge Control
+
+[![Arduino Edge Control](https://store.arduino.cc/cdn/shop/products/ABX00048_01.front_e9fb5a5f-ae6c-4d63-b041-a48e15c5f819_1000x750.jpg)](https://store.arduino.cc/products/arduino-edge-control)
+
+Contrôleur industriel Arduino dédié à l'agriculture et à l'automatisation outdoor. Il intègre nativement la gestion des vannes latching 24V, les entrées analogiques haute résolution pour capteurs de sol, les bus OneWire/I²C et un module WiFi/BLE (NINA-W102).
+
+| Caractéristique | Valeur |
+|----------------|--------|
+| MCU | STM32H747 (Cortex-M7 + M4) |
+| Entrées analogiques | 16 canaux 16-bit |
+| Vannes latching | 8 sorties 24V DC |
+| Connectivité | WiFi 802.11 b/g/n · BLE 5.0 |
+| Alimentation | 7–30V DC (panneau solaire ou secteur) |
+| Protection | IP67-ready (boîtier hermétique) |
+
+🔗 [Documentation officielle Arduino Edge Control](https://docs.arduino.cc/hardware/edge-control/)
+
+---
+
+### Raspberry Pi 5
+
+[![Raspberry Pi 5](https://www.raspberrypi.com/app/uploads/2023/10/2M2A3559-edit-1500x1000.jpg)](https://www.raspberrypi.com/products/raspberry-pi-5/)
+
+Micro-ordinateur exécutant le serveur Flask, le moteur de décision et l'interface web. Il dialogue avec l'Arduino Edge Control via WiFi (API REST JSON) et se connecte à Open-Meteo pour les données météo.
+
+| Caractéristique | Valeur |
+|----------------|--------|
+| CPU | Broadcom BCM2712 · Quad-core Arm Cortex-A76 @ 2.4 GHz |
+| RAM | 4 GB LPDDR4X |
+| Stockage | microSD (SQLite) |
+| Connectivité | WiFi 802.11ac · Gigabit Ethernet |
+| OS | Raspberry Pi OS Lite (64-bit) |
+| Alimentation | 5V/5A USB-C |
+
+🔗 [Documentation officielle Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/)
+
+---
+
 ## Stack technique
 
 - **Backend** : Python 3.10 · Flask · SQLAlchemy · APScheduler
