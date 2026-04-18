@@ -70,6 +70,7 @@ def planting_page():
         current_month=current_month,
         month_name=MONTH_NAMES_FR.get(current_month, ""),
         seasonal_advice=seasonal_advice,
+        today_date=date.today(),
     )
 
 

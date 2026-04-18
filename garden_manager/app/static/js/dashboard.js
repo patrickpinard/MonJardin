@@ -53,6 +53,9 @@ function updateZoneCards(data) {
       badge.className = `badge ${open ? 'badge-valve-open' : 'badge-valve-close'}`;
       badge.innerHTML = `<i class="bi bi-droplet${open ? '-fill' : ''}"></i> ${open ? 'Arrosage' : 'Fermé'}`;
     }
+    // Alerte sécheresse
+    const alertEl = document.getElementById(`alert-${z.zone_id}`);
+    if (alertEl) alertEl.style.display = z.is_alerting ? '' : 'none';
   });
 
   // Vent mesuré par l'Arduino

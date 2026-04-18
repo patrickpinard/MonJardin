@@ -25,6 +25,7 @@ def current_data():
             zones_map[z["zone_id"]] = z
 
     zones = Zone.query.order_by(Zone.zone_id).all()
+    alert_since = datetime.utcnow() - timedelta(hours=2)
     result = []
     for zone in zones:
         z_sensor = zones_map.get(zone.zone_id, {})
@@ -44,6 +45,13 @@ def current_data():
             if v.get("zone_id") == zone.zone_id:
                 valve_state = v.get("state", "close")
                 break
+        # Alerte : zone sous seuil depuis 2h+
+        recent = (SensorReading.query
+                  .filter(SensorReading.zone_id == zone.zone_id,
+                          SensorReading.timestamp >= alert_since)
+                  .all())
+        is_alerting = (len(recent) >= 3 and
+                       all(r.soil_moisture_pct < zone.moisture_threshold_low for r in recent))
         # Légumes actifs
         plantings = Planting.query.filter_by(zone_id=zone.zone_id, status="active").all()
         result.append({
@@ -51,6 +59,7 @@ def current_data():
             "soil_moisture_pct": z_sensor.get("soil_moisture_pct", 50.0),
             "raw_adc": z_sensor.get("raw_adc"),
             "valve_state": valve_state,
+            "is_alerting": is_alerting,
             "plantings": [p.to_dict() for p in plantings],
         })
 

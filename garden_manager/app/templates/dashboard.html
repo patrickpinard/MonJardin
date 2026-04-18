@@ -40,7 +40,12 @@
           <div class="zone-card-name">{{ zd.zone.name }}</div>
           <div class="zone-card-desc">Zone {{ zd.zone.zone_id }}{% if zd.zone.has_roof %} · Serre vitrée{% endif %}</div>
         </div>
-        <div class="zone-mode-badge {{ zd.zone.irrigation_mode }}">{{ zd.zone.irrigation_mode }}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+          <div class="zone-mode-badge {{ zd.zone.irrigation_mode }}">{{ zd.zone.irrigation_mode }}</div>
+          <div class="alert-dry-badge" id="alert-{{ zd.zone.zone_id }}" {% if not zd.is_alerting %}style="display:none;"{% endif %}>
+            <i class="bi bi-exclamation-triangle-fill"></i> Sec 2h+
+          </div>
+        </div>
       </div>
 
       <div class="zone-card-body">

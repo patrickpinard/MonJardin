@@ -2,7 +2,7 @@
 import json
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import Blueprint, current_app, render_template, send_from_directory
@@ -78,12 +78,21 @@ def dashboard():
             moisture_class = "moisture-ok"
 
         plantings = Planting.query.filter_by(zone_id=zone.zone_id, status="active").all()
+        # Alerte : zone sous seuil depuis 2h+
+        alert_since = datetime.utcnow() - timedelta(hours=2)
+        recent = (SensorReading.query
+                  .filter(SensorReading.zone_id == zone.zone_id,
+                          SensorReading.timestamp >= alert_since)
+                  .all())
+        is_alerting = (len(recent) >= 3 and
+                       all(r.soil_moisture_pct < zone.moisture_threshold_low for r in recent))
         zones_data.append({
             "zone": zone,
             "moisture": round(moisture, 1),
             "moisture_class": moisture_class,
             "valve_state": valve_map.get(zone.zone_id, "close"),
             "plantings": plantings,
+            "is_alerting": is_alerting,
         })
 
     temp = sensor_data.get("temperature_c", 15.0) if sensor_data else 15.0
@@ -179,21 +188,29 @@ def history():
 
 @dashboard_bp.get("/journal")
 def journal_page():
-    limit = 500
+    from flask import request as freq
+    period = freq.args.get("period", "week")
+    period_hours = {"day": 24, "week": 168, "month": 720, "year": 8760}.get(period, 168)
+    since = datetime.utcnow() - timedelta(hours=period_hours)
+
     irrigation_logs = (IrrigationLog.query
+                       .filter(IrrigationLog.timestamp >= since)
                        .order_by(IrrigationLog.timestamp.desc())
-                       .limit(limit).all())
+                       .all())
     roof_logs = (RoofLog.query
+                 .filter(RoofLog.timestamp >= since)
                  .order_by(RoofLog.timestamp.desc())
-                 .limit(limit).all())
+                 .all())
     journal_entries = (JournalEntry.query
+                       .filter(JournalEntry.timestamp >= since)
                        .order_by(JournalEntry.timestamp.desc())
-                       .limit(limit).all())
+                       .all())
     return render_template(
         "journal.html",
         irrigation_logs=irrigation_logs,
         roof_logs=roof_logs,
         journal_entries=journal_entries,
+        period=period,
     )
 
 

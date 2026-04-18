@@ -135,7 +135,7 @@
       <table class="table-modern">
         <thead><tr>
           <th>Légume</th><th>Variété</th><th>Planté</th><th>Récolte</th>
-          <th>Eau</th><th>Statut</th><th></th>
+          <th>Progression</th><th>Eau</th><th>Statut</th><th></th>
         </tr></thead>
         <tbody>
           {% for p in zone_plantings %}
@@ -144,6 +144,30 @@
             <td>{{ p.variety or '—' }}</td>
             <td>{{ p.planted_date.strftime('%d.%m.%y') if p.planted_date else '—' }}</td>
             <td>{{ p.expected_harvest_date.strftime('%d.%m.%y') if p.expected_harvest_date else '—' }}</td>
+            <td>
+              {% if p.planted_date and p.expected_harvest_date and p.status == 'active' %}
+                {% set total_days = (p.expected_harvest_date - p.planted_date).days %}
+                {% set elapsed_days = (today_date - p.planted_date).days %}
+                {% set days_left = (p.expected_harvest_date - today_date).days %}
+                {% if total_days > 0 %}
+                  {% set pct_raw = ((elapsed_days / total_days) * 100) | int %}
+                  {% set pct = pct_raw if pct_raw > 0 else 0 %}
+                  {% set pct = pct if pct < 100 else 100 %}
+                {% else %}
+                  {% set pct = 100 %}{% set days_left = 0 %}
+                {% endif %}
+                <div style="min-width:80px;">
+                  <div style="height:5px;border-radius:3px;background:var(--bg-tertiary);overflow:hidden;margin-bottom:3px;">
+                    <div style="height:100%;width:{{ pct }}%;border-radius:3px;background:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--green){% endif %};"></div>
+                  </div>
+                  <div style="font-size:10px;color:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--text-tertiary){% endif %};">
+                    {% if days_left < 0 %}⚠️ {{ -days_left }}j retard{% elif days_left == 0 %}🎉 Aujourd'hui{% else %}dans {{ days_left }}j{% endif %}
+                  </div>
+                </div>
+              {% else %}
+                <span style="color:var(--text-tertiary)">—</span>
+              {% endif %}
+            </td>
             <td>
               <span class="attr {% if p.water_need == 'high' %}water-high{% elif p.water_need == 'low' %}water-low{% else %}water-medium{% endif %}">
                 {{ p.water_need }}

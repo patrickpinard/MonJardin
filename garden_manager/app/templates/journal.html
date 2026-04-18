@@ -13,6 +13,18 @@
 
 <div class="page-body">
 
+  <!-- Période -->
+  <div class="filter-bar" style="margin-bottom:8px;">
+    <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;">Période</span>
+    <select class="form-select" style="width:auto;min-width:140px;"
+            onchange="location.href='?period='+this.value">
+      <option value="day"   {% if period == 'day'   %}selected{% endif %}>Aujourd'hui</option>
+      <option value="week"  {% if period == 'week'  %}selected{% endif %}>7 derniers jours</option>
+      <option value="month" {% if period == 'month' %}selected{% endif %}>30 derniers jours</option>
+      <option value="year"  {% if period == 'year'  %}selected{% endif %}>12 derniers mois</option>
+    </select>
+  </div>
+
   <!-- Filtres -->
   <div class="filter-bar">
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -37,6 +49,7 @@
       <button class="filter-chip" data-type="manual" onclick="setType(this,'manual')">👤 Manuel</button>
       <button class="filter-chip" data-type="weather" onclick="setType(this,'weather')">🌦️ Météo</button>
       <button class="filter-chip" data-type="frost" onclick="setType(this,'frost')">❄️ Gel</button>
+      <button class="filter-chip" data-type="alert" onclick="setType(this,'alert')">🚨 Alerte</button>
       <button class="filter-chip" data-type="system" onclick="setType(this,'system')">💻 Système</button>
     </div>
   </div>
@@ -171,7 +184,7 @@
     <div class="journal-list" id="system-journal-list">
       {% for entry in journal_entries %}
       {% set lvl = entry.level if entry.level in ('success','warning','danger','error') else 'info' %}
-      <div class="journal-item" data-type="{% if 'manuel' in entry.message | lower %}manual{% elif 'auto' in entry.message | lower %}auto{% else %}system{% endif %}">
+      <div class="journal-item" data-type="{% if 'alerte' in entry.message | lower or entry.level in ('danger','error') %}alert{% elif 'manuel' in entry.message | lower %}manual{% elif 'arrosage' in entry.message | lower or 'vanne' in entry.message | lower %}auto{% else %}system{% endif %}">
         <div class="j-icon {{ 'danger' if lvl == 'error' else lvl }}">
           <i class="bi bi-{% if lvl == 'warning' %}exclamation-triangle-fill{% elif lvl in ('danger','error') %}x-circle-fill{% elif lvl == 'success' %}check-circle-fill{% else %}info-circle-fill{% endif %}"></i>
         </div>
@@ -225,7 +238,8 @@ function applyFilters() {
     document.getElementById('section-roof').style.opacity = (_zone === 'all' || _zone === 'roof') ? '1' : '.4';
   } else if (_tab === 'system') {
     document.querySelectorAll('#system-journal-list .journal-item').forEach(item => {
-      const typeMatch = _type === 'all' || item.dataset.type === _type;
+      const typeMatch = _type === 'all' || item.dataset.type === _type
+                     || (_type === 'system' && !['alert','manual','auto'].includes(item.dataset.type));
       item.style.display = typeMatch ? '' : 'none';
     });
   }

@@ -728,6 +728,14 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   animation: toast-in .22s var(--ease);
 }
 @keyframes toast-in { from { transform: translateY(14px); opacity: 0; } }
+@keyframes badge-dry-pulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+.alert-dry-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10px; font-weight:700; color:var(--red);
+  background:rgba(255,69,58,.12); border:1px solid rgba(255,69,58,.3);
+  border-radius:20px; padding:3px 8px; white-space:nowrap;
+  animation: badge-dry-pulse 1.2s ease-in-out infinite;
+}
 .toast-item.success { border-left: 3px solid var(--green);  }
 .toast-item.error   { border-left: 3px solid var(--red);    }
 .toast-item.warning { border-left: 3px solid var(--orange); }
