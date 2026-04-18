@@ -56,6 +56,9 @@
       <a href="/planting" class="nav-item {% if '/planting' in request.path %}active{% endif %}">
         <i class="bi bi-calendar3"></i> Plantation
       </a>
+      <a href="/conseils" class="nav-item {% if '/conseils' in request.path %}active{% endif %}">
+        <i class="bi bi-lightbulb-fill"></i> Conseils
+      </a>
       <a href="/history" class="nav-item {% if '/history' in request.path %}active{% endif %}">
         <i class="bi bi-graph-up"></i> Graphiques
       </a>
@@ -92,46 +95,24 @@
       <a href="/admin" class="nav-item {% if '/admin' in request.path %}active{% endif %}">
         <i class="bi bi-shield-lock-fill"></i> Administration
       </a>
+      <div class="nav-section-label">Application</div>
+      <a href="/about" class="nav-item {% if '/about' in request.path %}active{% endif %}">
+        <i class="bi bi-info-circle-fill"></i> À propos
+      </a>
     </nav>
 
-    <!-- Logout (visible si connecté) -->
-    {% if session.get('auth_user') %}
-    <div style="padding:0 12px 6px;">
-      <a href="/logout" class="nav-item" style="color:var(--text-tertiary);font-size:12px;gap:8px;">
-        <i class="bi bi-box-arrow-right"></i>
-        <span>{{ session.get('auth_user') }} · Déconnexion</span>
-      </a>
-    </div>
-    {% endif %}
-
-    <!-- Arduino connection status -->
-    <div class="sidebar-footer">
-      <div class="connection-widget">
-        <div class="conn-dot checking" id="conn-dot"></div>
-        <span class="conn-label" id="conn-label">Vérification...</span>
-        <span class="conn-latency" id="conn-latency"></span>
-      </div>
-    </div>
   </aside>
 
   <!-- ═══ MAIN CONTENT ════════════════════════════════════ -->
   <div class="main-content">
 
-    <!-- Mobile topbar -->
-    <header class="mobile-topbar">
-      <button class="mobile-menu-btn" onclick="toggleMobileMenu()" id="mobile-menu-btn" aria-label="Menu">
-        <img src="{{ url_for('static', filename='logo.svg') }}" alt="MonJardin" id="mobile-menu-icon" style="width:22px;height:22px;display:block;filter:brightness(10);" onerror="this.style.display='none'">
-      </button>
-      <div class="mobile-topbar-right">
-        <div class="mobile-conn-dot checking" id="mobile-conn-dot"></div>
-        <button class="theme-toggle" onclick="toggleTheme()" title="Mode clair/sombre">
-          <i class="bi bi-moon-fill" id="theme-icon-mobile"></i>
-        </button>
-      </div>
-    </header>
-
     <!-- ── Top bar ── -->
     <div class="top-bar">
+      <!-- Hamburger logo (mobile only) -->
+      <button class="tb-hamburger" onclick="toggleMobileMenu()" id="mobile-menu-btn" aria-label="Menu">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="" style="width:28px;height:28px;border-radius:8px;display:block;">
+      </button>
+
       <!-- Horloge -->
       <div class="top-bar-clock">
         <i class="bi bi-clock"></i>
@@ -140,7 +121,7 @@
 
       <div class="top-bar-divider"></div>
 
-      <!-- Arduino status -->
+      <!-- Arduino status (desktop uniquement) -->
       <div class="top-bar-arduino">
         <div class="conn-dot checking" id="tb-conn-dot"></div>
         <span id="tb-conn-label">Vérification...</span>
@@ -178,6 +159,33 @@
           </div>
         </div>
       </div>
+
+      <!-- Bouton utilisateur -->
+      <div style="position:relative;" id="user-menu-wrap">
+        <button class="user-topbar-btn" id="user-btn" onclick="toggleUserPanel()" title="Compte">
+          <i class="bi bi-person-circle" style="font-size:18px;"></i>
+          {% if session.get('auth_user') %}<span class="user-topbar-name">{{ session.get('auth_user') }}</span>{% endif %}
+        </button>
+        <div class="user-panel" id="user-panel">
+          <div class="user-panel-header">
+            <i class="bi bi-person-circle" style="font-size:28px;color:var(--green);"></i>
+            <div>
+              <div class="user-panel-username">{{ session.get('auth_user') or 'Invité' }}</div>
+              <div class="user-panel-role">Administrateur</div>
+            </div>
+          </div>
+          <div class="user-panel-divider"></div>
+          <a href="/about" class="user-panel-item" onclick="closeUserPanel()">
+            <i class="bi bi-info-circle-fill"></i> À propos de MonJardin
+          </a>
+          {% if session.get('auth_user') %}
+          <div class="user-panel-divider"></div>
+          <a href="/logout" class="user-panel-item user-panel-logout">
+            <i class="bi bi-box-arrow-right"></i> Déconnexion
+          </a>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
     {% block content %}{% endblock %}
@@ -203,6 +211,9 @@
   </a>
   <a href="/planting" class="mobile-menu-item {% if '/planting' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-calendar3"></i> Plantation
+  </a>
+  <a href="/conseils" class="mobile-menu-item {% if '/conseils' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-lightbulb-fill"></i> Conseils
   </a>
   <a href="/history" class="mobile-menu-item {% if '/history' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-graph-up"></i> Graphiques
@@ -233,12 +244,10 @@
   <a href="/admin" class="mobile-menu-item {% if '/admin' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-shield-lock-fill"></i> Administration
   </a>
-  {% if session.get('auth_user') %}
-  <div class="mobile-menu-section">Session</div>
-  <a href="/logout" class="mobile-menu-item" onclick="closeMobileMenu()">
-    <i class="bi bi-box-arrow-right"></i> {{ session.get('auth_user') }} · Déconnexion
+  <div class="mobile-menu-section">Application</div>
+  <a href="/about" class="mobile-menu-item {% if '/about' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-info-circle-fill"></i> À propos
   </a>
-  {% endif %}
 </nav>
 </div><!-- /#mobile-menu-wrapper -->
 
@@ -317,38 +326,27 @@ setInterval(_tickClock, 1000);
 let _lastConnOk = null;
 
 async function checkArduino() {
-  const dots   = [document.getElementById('conn-dot'), document.getElementById('tb-conn-dot')];
-  const label  = document.getElementById('conn-label');
-  const tbLbl  = document.getElementById('tb-conn-label');
-  const latEl  = document.getElementById('conn-latency');
-  const tbLat  = document.getElementById('tb-conn-lat');
-  const mDot   = document.getElementById('mobile-conn-dot');
-  dots.forEach(d => { if(d) d.className = 'conn-dot checking'; });
-  if (mDot) mDot.className = 'mobile-conn-dot checking';
+  const tbDot = document.getElementById('tb-conn-dot');
+  const tbLbl = document.getElementById('tb-conn-label');
+  const tbLat = document.getElementById('tb-conn-lat');
+  if (tbDot) tbDot.className = 'conn-dot checking';
   try {
     const d = await fetch('/api/system/ping').then(r => r.json());
     if (d.ok) {
-      dots.forEach(d => { if(d) d.className = 'conn-dot'; });
-      if (mDot)  mDot.className  = 'mobile-conn-dot';
-      if (label) label.textContent = 'Arduino connecté';
+      if (tbDot) tbDot.className = 'conn-dot';
       if (tbLbl) tbLbl.textContent = 'Arduino';
-      if (latEl) latEl.textContent = d.latency_ms + ' ms';
       if (tbLat) tbLat.textContent = d.latency_ms + ' ms';
       if (_lastConnOk === false) showToast('Arduino reconnecté', 'success');
       _lastConnOk = true;
     } else {
-      dots.forEach(d => { if(d) d.className = 'conn-dot offline'; });
-      if (mDot)  mDot.className  = 'mobile-conn-dot offline';
-      if (label) label.textContent = 'Arduino hors ligne';
+      if (tbDot) tbDot.className = 'conn-dot offline';
       if (tbLbl) tbLbl.textContent = 'Hors ligne';
-      if (latEl) latEl.textContent = '';
       if (tbLat) tbLat.textContent = '';
       if (_lastConnOk === true) showToast('Arduino déconnecté', 'error');
       _lastConnOk = false;
     }
   } catch(e) {
-    dots.forEach(d => { if(d) d.className = 'conn-dot offline'; });
-    if (mDot) mDot.className = 'mobile-conn-dot offline';
+    if (tbDot) tbDot.className = 'conn-dot offline';
     if (tbLbl) tbLbl.textContent = 'Erreur';
     _lastConnOk = false;
   }
@@ -442,6 +440,23 @@ async function _pollNotifBadge() {
 _pollNotifBadge();
 setInterval(_pollNotifBadge, 30000);
 
+// ── User panel ───────────────────────────────────────────
+let _userPanelOpen = false;
+function toggleUserPanel() {
+  _userPanelOpen = !_userPanelOpen;
+  document.getElementById('user-panel').classList.toggle('open', _userPanelOpen);
+}
+function closeUserPanel() {
+  _userPanelOpen = false;
+  document.getElementById('user-panel').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('user-menu-wrap');
+  if (_userPanelOpen && wrap && !wrap.contains(e.target)) closeUserPanel();
+});
+
+
+
 // ── Sidebar + mobile zone live update ───────────────────
 async function updateSidebarZones() {
   try {
@@ -466,19 +481,15 @@ async function updateSidebarZones() {
 function toggleMobileMenu() {
   const menu     = document.getElementById('mobile-menu');
   const backdrop = document.getElementById('mobile-menu-backdrop');
-  const icon     = document.getElementById('mobile-menu-icon');
   const open     = menu.classList.toggle('open');
   backdrop.classList.toggle('open', open);
-  if (icon) icon.style.opacity = open ? '0.4' : '1';
   document.body.style.overflow = open ? 'hidden' : '';
 }
 function closeMobileMenu() {
   const menu     = document.getElementById('mobile-menu');
   const backdrop = document.getElementById('mobile-menu-backdrop');
-  const icon     = document.getElementById('mobile-menu-icon');
   menu.classList.remove('open');
   backdrop.classList.remove('open');
-  if (icon) icon.style.opacity = '1';
   document.body.style.overflow = '';
 }
 

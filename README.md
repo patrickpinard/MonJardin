@@ -8,6 +8,26 @@ Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite · Simulation intégré
 
 ## Aperçu visuel
 
+### Tableau de bord — Vue des zones
+
+![Vue des zones](docs/screenshot_zones_v2.png)
+
+*4 cartes de zones avec humidité, températures serre/extérieur, statut des vannes et plantations actives.*
+
+### Diagnostic Arduino Edge Control
+
+![Arduino Edge Control](docs/screenshot_arduino.png)
+
+*Entrées analogiques (SoilWatch 10), températures DS18B20, anémomètre, vannes, vérin linéaire et I/O libres.*
+
+### Page Administration
+
+![Administration](docs/screenshot_admin.png)
+
+*Gestion des utilisateurs avec PIN, alertes email SMTP, tests d'alertes (gel, sécheresse, capteur HS, inondation, Arduino hors ligne) et informations système.*
+
+### Captures historiques
+
 | Tableau de bord | Encyclopédie des légumes |
 |---|---|
 | ![Dashboard](docs/screenshot_dashboard.png) | ![Encyclopédie](docs/screenshot_encyclopedia.png) |

@@ -57,6 +57,11 @@ class Config:
     FLASK_PORT: int = int(os.environ.get("FLASK_PORT", "5000"))
     DEBUG: bool = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
 
+    # Identité du jardin
+    GARDEN_NAME: str     = os.environ.get("GARDEN_NAME", "MonJardin")
+    GARDEN_LOCATION: str = os.environ.get("GARDEN_LOCATION", "Vullierens, Vaud")
+    GARDEN_OWNER: str    = os.environ.get("GARDEN_OWNER", "Patrick Pinard")
+
     # Email alertes
     SMTP_HOST: str              = os.environ.get("SMTP_HOST", "smtp.bluewin.ch")
     SMTP_PORT: int              = int(os.environ.get("SMTP_PORT", "587"))

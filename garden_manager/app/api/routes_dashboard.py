@@ -361,6 +361,39 @@ def settings():
     )
 
 
+@dashboard_bp.post("/settings/garden")
+def settings_garden():
+    name     = request.form.get("garden_name", "MonJardin").strip()
+    location = request.form.get("garden_location", "Vullierens, Vaud").strip()
+    owner    = request.form.get("garden_owner", "").strip()
+    _update_env_var("GARDEN_NAME", name)
+    _update_env_var("GARDEN_LOCATION", location)
+    _update_env_var("GARDEN_OWNER", owner)
+    current_app.config["GARDEN_NAME"]     = name
+    current_app.config["GARDEN_LOCATION"] = location
+    current_app.config["GARDEN_OWNER"]    = owner
+    return redirect("/settings")
+
+
+def _update_env_var(key: str, value: str):
+    """Mise à jour d'une variable dans le fichier .env sans perdre les autres."""
+    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+    if not env_path.exists():
+        return
+    lines = env_path.read_text(encoding="utf-8").splitlines()
+    found = False
+    new_lines = []
+    for line in lines:
+        if line.startswith(f"{key}="):
+            new_lines.append(f"{key}={value}")
+            found = True
+        else:
+            new_lines.append(line)
+    if not found:
+        new_lines.append(f"{key}={value}")
+    env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+
+
 # ── Login / Logout ────────────────────────────────────────────────────────────
 
 @dashboard_bp.get("/login")
@@ -467,3 +500,13 @@ def admin_delete_user(uid):
     db.session.delete(user)
     db.session.commit()
     return redirect("/admin")
+
+
+@dashboard_bp.get("/conseils")
+def conseils():
+    return render_template("conseils.html")
+
+
+@dashboard_bp.get("/about")
+def about_page():
+    return render_template("about.html")

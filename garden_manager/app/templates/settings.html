@@ -22,6 +22,30 @@
 
 <div class="page-body">
 
+  <!-- Informations du jardin -->
+  <div class="card mb-4">
+    <div class="card-title"><i class="bi bi-geo-alt-fill"></i> Informations du jardin</div>
+    <form action="/settings/garden" method="post">
+      <div class="grid-3" style="gap:14px;margin-bottom:14px;">
+        <div class="form-group mb-0">
+          <label class="form-label">Nom du jardin</label>
+          <input type="text" name="garden_name" class="form-control" value="{{ garden_name }}" maxlength="60" placeholder="MonJardin">
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label">Lieu</label>
+          <input type="text" name="garden_location" class="form-control" value="{{ garden_location }}" maxlength="80" placeholder="Vullierens, Vaud">
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label">Propriétaire</label>
+          <input type="text" name="garden_owner" class="form-control" value="{{ garden_owner }}" maxlength="80" placeholder="Votre nom">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">
+        <i class="bi bi-check-lg"></i> Enregistrer
+      </button>
+    </form>
+  </div>
+
   <!-- Zone configs -->
   <div class="card-title mb-2" style="padding-left:2px;">
     <i class="bi bi-sliders"></i> Configuration des zones

@@ -715,15 +715,22 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .table-modern tr:last-child td { border-bottom: none; }
 .table-modern tr:hover td { background: rgba(255,255,255,.03); color: var(--text-primary); }
 
-/* ── Sim banner ───────────────────────────────────────── */
 /* ── Top bar (clock · Arduino · notifications) ───────── */
 .top-bar {
   position: sticky; top: 0; z-index: 120;
   display: flex; align-items: center; gap: 10px;
-  padding: 0 24px; height: 44px;
+  padding: 0 20px; height: 44px;
   background: var(--bg-primary); border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+/* Hamburger logo (mobile only, hidden on desktop) */
+.tb-hamburger {
+  display: none; background: none; border: none;
+  padding: 0; cursor: pointer; flex-shrink: 0;
+  align-items: center; opacity: 1;
+  transition: opacity .15s, transform .15s;
+}
+.tb-hamburger:active { opacity: .6; transform: scale(.9); }
 .top-bar-clock {
   font-size: 13px; font-weight: 600; color: var(--text-secondary);
   font-variant-numeric: tabular-nums; letter-spacing: .3px;
@@ -813,6 +820,95 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 
 .sim-banner { display: none; }
 
+/* ── User top-bar button ─────────────────────────────── */
+.user-topbar-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-primary); padding: 4px 8px;
+  border-radius: 8px; transition: background var(--t);
+  font-size: 13px; font-weight: 500;
+}
+.user-topbar-btn:hover { background: var(--hover); }
+.user-topbar-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── User panel dropdown ─────────────────────────────── */
+.user-panel {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  width: 220px; background: var(--bg-primary); border: 1px solid var(--border-md);
+  border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.28);
+  opacity: 0; pointer-events: none; transform: translateY(-6px);
+  transition: opacity .15s, transform .15s; z-index: 600;
+  overflow: hidden;
+}
+.user-panel.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.user-panel-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px;
+}
+.user-panel-username { font-weight: 600; font-size: 14px; }
+.user-panel-role { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.user-panel-divider { height: 1px; background: var(--border); margin: 0; }
+.user-panel-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: 13px; color: var(--text-primary);
+  text-decoration: none; transition: background var(--t);
+}
+.user-panel-item:hover { background: var(--hover); }
+.user-panel-item i { font-size: 15px; color: var(--text-secondary); }
+.user-panel-logout { color: var(--red) !important; }
+.user-panel-logout i { color: var(--red) !important; }
+
+/* ── Modal À propos (pas de flou, fond solide) ───────── */
+#about-overlay { backdrop-filter: none; }
+.about-box {
+  max-width: 560px; width: 92%; padding: 0; overflow: hidden;
+  border-radius: 20px; max-height: 88vh; display: flex; flex-direction: column;
+}
+.about-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.about-title { font-size: 20px; font-weight: 700; }
+.about-version { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+.about-close {
+  margin-left: auto; background: var(--hover); border: none; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: 14px; flex-shrink: 0;
+  transition: background var(--t);
+}
+.about-close:hover { background: var(--border); }
+.about-body { padding: 20px; overflow-y: auto; flex: 1; }
+.about-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; }
+.about-section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-tertiary);
+  margin: 18px 0 10px; display: flex; align-items: center; gap: 6px;
+}
+.about-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.about-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--hover); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 11px; font-size: 12px;
+  color: var(--text-primary);
+}
+.about-chip i { font-size: 13px; color: var(--green); }
+.about-features {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.about-features li {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; color: var(--text-secondary); line-height: 1.4;
+}
+.about-features li i { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.text-green { color: var(--green) !important; }
+.about-footer {
+  margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-tertiary); text-align: center;
+}
+
 /* ── Toast ────────────────────────────────────────────── */
 .toast-container {
   position: fixed; bottom: 22px; right: 22px;
@@ -858,12 +954,12 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .mobile-menu-btn {
   width: 36px; height: 36px; border-radius: 10px;
-  background: var(--green); border: none;
+  background: none; border: none;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 18px; flex-shrink: 0;
-  transition: background var(--t), transform .15s;
+  flex-shrink: 0; padding: 0;
+  transition: opacity var(--t), transform .15s;
 }
-.mobile-menu-btn:active { transform: scale(.92); }
+.mobile-menu-btn:active { transform: scale(.92); opacity: .75; }
 .mobile-topbar-right { display: flex; align-items: center; gap: 8px; }
 .mobile-conn-dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -1097,7 +1193,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 /* ── Custom confirm modal ─────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 9000;
-  background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+  background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
   opacity: 0; pointer-events: none;
@@ -1105,7 +1201,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .modal-overlay.visible { opacity: 1; pointer-events: all; }
 .modal-box {
-  background: var(--bg-card); border-radius: 16px;
+  background: var(--bg-primary); border-radius: 16px;
   border: 1px solid var(--border-md);
   width: 100%; max-width: 340px;
   box-shadow: 0 24px 60px rgba(0,0,0,.5);
@@ -1162,9 +1258,20 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 @media (max-width: 768px) {
   .sidebar, .sidebar-footer { display: none; }
-  .mobile-topbar { display: flex; }
+  .mobile-topbar { display: none; }
   .mobile-nav    { display: block; }
-  .main-content  { margin-left: 0; width: 100%; padding-top: calc(48px + env(safe-area-inset-top,0px)); padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 8px); }
+  /* Top bar becomes the fixed mobile header */
+  .top-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    height: calc(44px + env(safe-area-inset-top, 0px));
+    z-index: 200; padding-left: 12px; padding-right: 12px; gap: 8px;
+  }
+  .tb-hamburger { display: flex; }
+  .top-bar-arduino, .top-bar-divider:first-of-type { display: none; }
+  .top-bar-clock { font-size: 12px; }
+  .main-content  { margin-left: 0; width: 100%; padding-top: calc(44px + env(safe-area-inset-top,0px)); padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 8px); }
+  .user-topbar-name { display: none; }
   .page-header   { padding: 16px 16px 0; }
   .page-body     { padding: 14px 16px 28px; }
   .page-title    { font-size: 22px; }

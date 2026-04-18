@@ -73,6 +73,9 @@ def create_app(config: type = Config) -> Flask:
             "simulation_mode": app.config.get("SIMULATION_MODE", False),
             "sim_speed": app.config.get("SIMULATION_SPEED", 1),
             "zones_nav": zones_nav,
+            "garden_name":     app.config.get("GARDEN_NAME", "MonJardin"),
+            "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
+            "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
         }
 
     log.info(
