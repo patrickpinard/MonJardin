@@ -61,9 +61,9 @@
 #define LCD_BACKLIGHT_MS    30000UL  // extinction rétroéclairage après 30s sans activité
 
 // Bouton poussoir sur le breakout Enclosure Kit
-// → à confirmer selon votre câblage (connecteur IOBRD du Edge Control)
-#define BUTTON_PIN          0        // GPIO du bouton (à adapter si nécessaire)
-#define BUTTON_DEBOUNCE_MS  50       // anti-rebond
+// Pin POWER_ON : constante définie par la lib Arduino_EdgeControl (user manual §PowerOnButton)
+// Pas de #define nécessaire — utiliser POWER_ON directement dans ButtonController
+#define BUTTON_DEBOUNCE_MS   50       // anti-rebond
 #define BUTTON_LONG_PRESS_MS 2000UL  // >2s = arrêt d'urgence vannes
 
 // Durée d'affichage de chaque écran en rotation automatique

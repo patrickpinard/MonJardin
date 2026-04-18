@@ -1,5 +1,14 @@
 #include "SoilSensor.h"
 #include "../utils/Logger.h"
+#include <Arduino_EdgeControl.h>
+
+// Mapping zone_id → canal Input 0-5V (INPUT_05V_CH01=0 … INPUT_05V_CH04=3)
+static const pin_size_t SOIL_CH[NUM_ZONES] = {
+    INPUT_05V_CH01,
+    INPUT_05V_CH02,
+    INPUT_05V_CH03,
+    INPUT_05V_CH04,
+};
 
 SoilSensor::SoilSensor() {
     for (int i = 0; i < NUM_ZONES; i++) {
@@ -9,8 +18,9 @@ SoilSensor::SoilSensor() {
 }
 
 void SoilSensor::begin() {
-    Expander.begin();
-    Logger::log(LOG_INFO, "SOIL", "Capteurs sol initialisés");
+    Input.begin();
+    Input.enable();  // active l'alimentation du circuit 0-5V
+    Logger::log(LOG_INFO, "SOIL", "Capteurs sol initialisés (Input 0-5V)");
 }
 
 void SoilSensor::setCalibration(int zoneId, int dry, int wet) {
@@ -29,9 +39,9 @@ SoilReading SoilSensor::read(int zoneId) {
         return r;
     }
 
-    r.rawAdc     = _readAdc(zoneId);
+    r.rawAdc      = _readAdc(zoneId);
     r.moisturePct = _toPercent(r.rawAdc, _dry[zoneId-1], _wet[zoneId-1]);
-    r.valid      = true;
+    r.valid       = true;
 
     Logger::logf(LOG_DEBUG, "SOIL", "Zone %d ADC=%d -> %.1f%%",
                  zoneId, r.rawAdc, r.moisturePct);
@@ -45,11 +55,10 @@ void SoilSensor::readAll(SoilReading results[NUM_ZONES]) {
 }
 
 int SoilSensor::_readAdc(int zoneId) {
-    // Canal InputExpander : zone 1 → canal 0, etc.
-    int channel = zoneId - 1;
+    pin_size_t ch = SOIL_CH[zoneId - 1];
     long sum = 0;
     for (int s = 0; s < ADC_SAMPLES; s++) {
-        sum += Expander.analogRead(channel);
+        sum += Input.analogRead(ch);
         delay(5);
     }
     return (int)(sum / ADC_SAMPLES);

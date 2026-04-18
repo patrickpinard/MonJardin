@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <Arduino_EdgeControl.h>
 #include "../config.h"
 
 // Callbacks — passés depuis main.cpp

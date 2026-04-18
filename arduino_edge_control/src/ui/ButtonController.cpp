@@ -8,12 +8,13 @@ ButtonController::ButtonController()
 {}
 
 void ButtonController::begin() {
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    // POWER_ON : pin du bouton Enclosure Kit défini par Arduino_EdgeControl
+    pinMode(POWER_ON, INPUT);
 }
 
 void ButtonController::update() {
     unsigned long now = millis();
-    bool raw = digitalRead(BUTTON_PIN);
+    bool raw = digitalRead(POWER_ON);
 
     // ── Anti-rebond ────────────────────────────────────────────────────────
     if (raw != _lastRaw) {

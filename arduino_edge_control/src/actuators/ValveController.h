@@ -7,7 +7,7 @@ class ValveController {
 public:
     ValveController();
 
-    // Initialise les relais et ferme toutes les vannes (sécurité au boot)
+    // Initialise les relais latching et ferme toutes les vannes (sécurité au boot)
     void begin();
 
     // Ouvre ou ferme une vanne (zone 1-4). Retourne false si zone invalide.
@@ -20,5 +20,6 @@ public:
 
 private:
     bool _states[NUM_ZONES];
-    void _pulse(int relayIndex, bool open);
+    // channel = LATCHING_OUT_1..4, open=true → POSITIVE (relay fermé → 24V solénoïde)
+    void _pulse(pin_size_t channel, bool open);
 };
