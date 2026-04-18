@@ -4,17 +4,15 @@
 {% block head %}
 <style>
 /* ── Carrousel ── */
-.carousel-section { padding: 0 24px 8px; }
-.carousel-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px;
+.carousel-card-header {
+  display: flex; align-items: center; margin-bottom: 16px;
 }
-.carousel-title { font-size: 18px; font-weight: 700; }
+.carousel-card-header .card-title { margin-bottom: 0; flex: 1; }
 .carousel-nav { display: flex; gap: 8px; }
 .carousel-btn {
-  width: 34px; height: 34px; border-radius: 50%;
+  width: 32px; height: 32px; border-radius: 50%;
   background: var(--bg-secondary); border: 1px solid var(--border);
-  color: var(--text-primary); cursor: pointer; font-size: 15px;
+  color: var(--text-primary); cursor: pointer; font-size: 14px;
   display: flex; align-items: center; justify-content: center;
   transition: background var(--t), transform .12s;
 }
@@ -27,26 +25,40 @@
   display: flex; gap: 14px;
   transition: transform .35s cubic-bezier(.4,0,.2,1);
 }
+
+/* Tip cards — pattern .card */
 .tip-card {
-  flex: 0 0 260px; background: var(--bg-secondary);
-  border: 1px solid var(--border); border-radius: var(--r-lg);
-  padding: 20px; display: flex; flex-direction: column; gap: 10px;
-  cursor: default; transition: box-shadow var(--t), border-color var(--t);
+  flex: 0 0 260px; padding: 0; display: flex; flex-direction: column;
+  overflow: hidden; transition: box-shadow var(--t);
 }
-.tip-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.15); border-color: var(--border-md); }
-.tip-card-emoji { font-size: 32px; line-height: 1; }
-.tip-card-cat {
-  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em;
-  color: var(--text-tertiary);
+.tip-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+.tip-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
 }
-.tip-card-title { font-size: 15px; font-weight: 700; line-height: 1.3; }
-.tip-card-body { font-size: 13px; color: var(--text-secondary); line-height: 1.55; flex: 1; }
+.tip-card-emoji { font-size: 24px; line-height: 1; flex-shrink: 0; }
+.tip-card-title { font-size: 13.5px; font-weight: 700; line-height: 1.3; flex: 1; }
+.tip-cat-badge {
+  font-size: 10px; font-weight: 600; padding: 2px 7px;
+  border-radius: 20px; background: rgba(48,209,88,.1);
+  color: var(--green); border: 1px solid rgba(48,209,88,.2);
+  white-space: nowrap; flex-shrink: 0;
+}
+.tip-card-body {
+  font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;
+  padding: 12px 16px; flex: 1;
+}
+.tip-card-foot {
+  padding: 0 16px 12px;
+}
 .tip-card-tag {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 11px; padding: 3px 8px; border-radius: 20px;
-  background: var(--bg-tertiary); color: var(--text-tertiary); align-self: flex-start;
+  background: var(--bg-secondary); color: var(--text-tertiary);
+  border: 1px solid var(--border);
 }
-.carousel-dots { display: flex; gap: 5px; justify-content: center; margin-top: 14px; }
+
+.carousel-dots { display: flex; gap: 5px; justify-content: center; margin-top: 16px; }
 .carousel-dot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--border-md); transition: background .2s, width .2s;
@@ -55,46 +67,41 @@
 .carousel-dot.active { background: var(--green); width: 18px; border-radius: 3px; }
 
 /* ── Saisons ── */
-.seasons-section { padding: 8px 24px 32px; }
-.seasons-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
 .seasons-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
 }
-.season-card {
-  background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: var(--r-lg); overflow: hidden;
+.season-card { padding: 0; overflow: hidden; }
+.season-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
 }
-.season-header {
-  padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px;
-  border-bottom: 1px solid var(--border);
-}
-.season-emoji { font-size: 22px; }
-.season-name { font-size: 15px; font-weight: 700; }
+.season-emoji { font-size: 20px; flex-shrink: 0; }
+.season-name { font-size: 14px; font-weight: 700; }
 .season-months { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
-.season-tips { padding: 12px 0; }
+.season-tips { padding: 4px 0; }
 .season-tip {
   display: flex; align-items: flex-start; gap: 10px;
-  padding: 9px 16px; transition: background var(--t);
+  padding: 10px 16px; transition: background var(--t);
 }
+.season-tip + .season-tip { border-top: 1px solid var(--border); }
 .season-tip:hover { background: var(--hover); }
 .season-tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
 .season-tip-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
-.season-tip-title { font-weight: 600; color: var(--text-primary); font-size: 13px; margin-bottom: 2px; }
+.season-tip-title { font-weight: 600; color: var(--text-primary); font-size: 13px; margin-bottom: 3px; }
 
 /* Accent couleurs saisons */
-.season-card.spring .season-header { border-bottom-color: rgba(48,209,88,.2); }
-.season-card.spring .season-name  { color: #4CAF50; }
-.season-card.summer .season-header { border-bottom-color: rgba(255,204,0,.2); }
-.season-card.summer .season-name  { color: #FFB300; }
-.season-card.autumn .season-header { border-bottom-color: rgba(255,100,20,.2); }
-.season-card.autumn .season-name  { color: #FF7043; }
-.season-card.winter .season-header { border-bottom-color: rgba(100,170,255,.2); }
-.season-card.winter .season-name  { color: #64B5F6; }
+.season-card.spring .season-card-header { border-bottom-color: rgba(48,209,88,.25); }
+.season-card.spring .season-name { color: #4CAF50; }
+.season-card.summer .season-card-header { border-bottom-color: rgba(255,179,0,.25); }
+.season-card.summer .season-name { color: #FFB300; }
+.season-card.autumn .season-card-header { border-bottom-color: rgba(255,112,67,.25); }
+.season-card.autumn .season-name { color: #FF7043; }
+.season-card.winter .season-card-header { border-bottom-color: rgba(100,181,246,.25); }
+.season-card.winter .season-name { color: #64B5F6; }
 
 @media (max-width: 1100px) { .seasons-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {
-  .carousel-section, .seasons-section { padding-left: 16px; padding-right: 16px; }
-  .tip-card { flex: 0 0 220px; }
+  .tip-card { flex: 0 0 230px; }
   .seasons-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -113,9 +120,11 @@
 <div class="page-body" style="display:flex;flex-direction:column;gap:24px;padding-top:20px;">
 
   <!-- ── CARROUSEL ── -->
-  <section class="carousel-section">
-    <div class="carousel-header">
-      <div class="carousel-title">🌱 Bonnes pratiques du potager</div>
+  <div class="card">
+    <div class="carousel-card-header">
+      <div class="card-title" style="margin-bottom:0;">
+        <i class="bi bi-lightbulb-fill"></i> Bonnes pratiques du potager
+      </div>
       <div class="carousel-nav">
         <button class="carousel-btn" id="prev-btn" onclick="carouselPrev()" disabled>
           <i class="bi bi-chevron-left"></i>
@@ -125,118 +134,224 @@
         </button>
       </div>
     </div>
+
     <div class="carousel-track-wrap">
       <div class="carousel-track" id="carousel-track">
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">🌱</div>
-          <div class="tip-card-cat">Débutant</div>
-          <div class="tip-card-title">Commencer petit, progresser vite</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">🌱</div>
+            <div class="tip-card-title">Commencer petit, progresser vite</div>
+            <span class="tip-cat-badge">Débutant</span>
+          </div>
           <div class="tip-card-body">Délimitez une surface de 4 à 6 m² pour débuter. Mieux vaut une petite parcelle bien tenue qu'un grand jardin négligé — les succès rapides motivent à aller plus loin.</div>
-          <span class="tip-card-tag"><i class="bi bi-lightbulb-fill"></i> Conseil clé</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-lightbulb-fill"></i> Conseil clé</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">💧</div>
-          <div class="tip-card-cat">Arrosage</div>
-          <div class="tip-card-title">Tester l'humidité avant d'arroser</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">💧</div>
+            <div class="tip-card-title">Tester l'humidité avant d'arroser</div>
+            <span class="tip-cat-badge">Arrosage</span>
+          </div>
           <div class="tip-card-body">Enfoncez le doigt à 3 cm dans la terre. Si la terre est encore fraîche, n'arrosez pas. Un arrosage excessif est la première cause de maladies fongiques et de pourriture des racines.</div>
-          <span class="tip-card-tag"><i class="bi bi-droplet-fill"></i> Arrosage</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-droplet-fill"></i> Arrosage</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">⏰</div>
-          <div class="tip-card-cat">Arrosage</div>
-          <div class="tip-card-title">Arroser tôt le matin</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">⏰</div>
+            <div class="tip-card-title">Arroser tôt le matin</div>
+            <span class="tip-cat-badge">Arrosage</span>
+          </div>
           <div class="tip-card-body">L'arrosage matinal limite l'évaporation et donne aux feuilles le temps de sécher avant la nuit. Évitez d'arroser en plein soleil — les gouttes d'eau agissent comme des loupes sur les feuilles.</div>
-          <span class="tip-card-tag"><i class="bi bi-sunrise-fill"></i> Bonne pratique</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-sunrise-fill"></i> Bonne pratique</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">🌾</div>
-          <div class="tip-card-cat">Sol</div>
-          <div class="tip-card-title">Le paillage, allié numéro un</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">🌾</div>
+            <div class="tip-card-title">Le paillage, allié numéro un</div>
+            <span class="tip-cat-badge">Sol</span>
+          </div>
           <div class="tip-card-body">5 cm de paille ou de copeaux autour des plantes réduit les arrosages de moitié, limite les adventices et maintient la température du sol. Un investissement en temps qui paie toute la saison.</div>
-          <span class="tip-card-tag"><i class="bi bi-layers-fill"></i> Sol</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-layers-fill"></i> Sol</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">🔄</div>
-          <div class="tip-card-cat">Planification</div>
-          <div class="tip-card-title">Rotation des cultures chaque année</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">🔄</div>
+            <div class="tip-card-title">Rotation des cultures chaque année</div>
+            <span class="tip-cat-badge">Planification</span>
+          </div>
           <div class="tip-card-body">Ne semez pas la même famille de légumes au même endroit deux années de suite. La rotation prévient l'épuisement du sol et interrompt le cycle de vie des parasites spécifiques à chaque culture.</div>
-          <span class="tip-card-tag"><i class="bi bi-arrow-repeat"></i> Stratégie</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-arrow-repeat"></i> Stratégie</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">🤝</div>
-          <div class="tip-card-cat">Compagnonnage</div>
-          <div class="tip-card-title">Associer les bons voisins</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">🤝</div>
+            <div class="tip-card-title">Associer les bons voisins</div>
+            <span class="tip-cat-badge">Compagnonnage</span>
+          </div>
           <div class="tip-card-body">Basilic et tomate, carotte et oignon, haricot et maïs : certaines associations sont bénéfiques. Le basilic repousse les pucerons, les oignons éloignent la mouche de la carotte.</div>
-          <span class="tip-card-tag"><i class="bi bi-heart-fill"></i> Association</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-heart-fill"></i> Association</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">📅</div>
-          <div class="tip-card-cat">Planification</div>
-          <div class="tip-card-title">Semer en échelonné toutes les 3 semaines</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">📅</div>
+            <div class="tip-card-title">Semer en échelonné toutes les 3 semaines</div>
+            <span class="tip-cat-badge">Planification</span>
+          </div>
           <div class="tip-card-body">Plutôt que de tout semer d'un coup, étalez les semis de salades, radis et carottes toutes les 2-3 semaines. Vous aurez des récoltes continues sans surplus ingérable.</div>
-          <span class="tip-card-tag"><i class="bi bi-calendar3"></i> Planification</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-calendar3"></i> Planification</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">♻️</div>
-          <div class="tip-card-cat">Sol</div>
-          <div class="tip-card-title">Composter tous vos déchets verts</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">♻️</div>
+            <div class="tip-card-title">Composter tous vos déchets verts</div>
+            <span class="tip-cat-badge">Sol</span>
+          </div>
           <div class="tip-card-body">Épluchures, marc de café, feuilles mortes : votre composteur produit le meilleur engrais naturel possible. Appliquez 3-5 cm de compost mûr chaque printemps pour revitaliser le sol.</div>
-          <span class="tip-card-tag"><i class="bi bi-recycle"></i> Sol</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-recycle"></i> Sol</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">👁️</div>
-          <div class="tip-card-cat">Observation</div>
-          <div class="tip-card-title">Visiter son jardin chaque jour</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">👁️</div>
+            <div class="tip-card-title">Visiter son jardin chaque jour</div>
+            <span class="tip-cat-badge">Observation</span>
+          </div>
           <div class="tip-card-body">Une observation quotidienne permet de détecter tôt pucerons, maladies et carences. Un problème repéré au stade initial se traite facilement ; négligé, il peut détruire toute une culture.</div>
-          <span class="tip-card-tag"><i class="bi bi-eye-fill"></i> Vigilance</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-eye-fill"></i> Vigilance</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">📏</div>
-          <div class="tip-card-cat">Plantation</div>
-          <div class="tip-card-title">Respecter les espaces entre les plants</div>
-          <div class="tip-card-body">Des plants trop serrés se disputent eau et lumière, et favorisent l'humidité propice aux maladies. Consultez l'étiquette : une tomate a besoin de 60-80 cm, une courgette d'un mètre carré entier.</div>
-          <span class="tip-card-tag"><i class="bi bi-arrows-fullscreen"></i> Plantation</span>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">📏</div>
+            <div class="tip-card-title">Respecter les espaces entre les plants</div>
+            <span class="tip-cat-badge">Plantation</span>
+          </div>
+          <div class="tip-card-body">Des plants trop serrés se disputent eau et lumière, et favorisent l'humidité propice aux maladies. Une tomate a besoin de 60-80 cm, une courgette d'un mètre carré entier.</div>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-arrows-fullscreen"></i> Plantation</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">🧪</div>
-          <div class="tip-card-cat">Sol</div>
-          <div class="tip-card-title">Connaître son type de sol</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">🧪</div>
+            <div class="tip-card-title">Connaître son type de sol</div>
+            <span class="tip-cat-badge">Sol</span>
+          </div>
           <div class="tip-card-body">Sol argileux (colle aux doigts), sableux (ne tient pas) ou limoneux (idéal) ? Un sol argileux gagne à être aéré avec du sable et du compost ; un sol sableux retient mieux l'eau avec de l'humus.</div>
-          <span class="tip-card-tag"><i class="bi bi-flower1"></i> Sol</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-flower1"></i> Sol</span></div>
         </div>
 
-        <div class="tip-card">
-          <div class="tip-card-emoji">🌿</div>
-          <div class="tip-card-cat">Engrais verts</div>
-          <div class="tip-card-title">Semer des engrais verts en inter-saison</div>
+        <div class="tip-card card">
+          <div class="tip-card-header">
+            <div class="tip-card-emoji">🌿</div>
+            <div class="tip-card-title">Semer des engrais verts en inter-saison</div>
+            <span class="tip-cat-badge">Sol</span>
+          </div>
           <div class="tip-card-body">Phacélie, trèfle ou moutarde semés après la récolte protègent et enrichissent le sol pendant l'hiver. Enfouissez-les avant floraison au printemps suivant comme engrais naturel.</div>
-          <span class="tip-card-tag"><i class="bi bi-tree-fill"></i> Sol</span>
+          <div class="tip-card-foot"><span class="tip-card-tag"><i class="bi bi-tree-fill"></i> Sol</span></div>
         </div>
 
       </div>
     </div>
     <div class="carousel-dots" id="carousel-dots"></div>
-  </section>
+  </div>
+
+  <!-- ── COMPAGNONNAGE ── -->
+  <div class="card">
+    <div class="card-title"><i class="bi bi-heart-fill" style="color:#e05c7a;"></i> Guide du compagnonnage</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- Associations bénéfiques -->
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <i class="bi bi-check-circle-fill"></i> Associations bénéfiques
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          {% set good_rows = [
+            ("🍅","Tomate","🌿","Basilic","Repousse pucerons et aleurodes, améliore le goût des fruits"),
+            ("🍅","Tomate","🥕","Carotte","La carotte aère le sol autour des racines de tomate"),
+            ("🍅","Tomate","🧅","Oignon","Éloigne les insectes ravageurs et le mildiou"),
+            ("🥒","Concombre","🫘","Haricot","Les haricots fixent l'azote, profitent aux concombres"),
+            ("🥒","Concombre","🌿","Aneth","Attire les insectes pollinisateurs, favorise la nouaison"),
+            ("🥕","Carotte","🧅","Oignon","Chasse mutuellement mouche de la carotte et mouche de l'oignon"),
+            ("🥕","Carotte","🥬","Laitue","Cohabitent sans concurrence, optimisent l'espace"),
+            ("🥕","Carotte","🌿","Poireau","Association classique : protection croisée contre les parasites"),
+            ("🥦","Chou","💐","Céleri","Le céleri repousse la piéride du chou"),
+            ("🥦","Chou","🌿","Romarin","Éloigne les pucerons et les altises"),
+            ("🥬","Salade","🌱","Radis","Les radis éloignent les altises qui attaquent les salades"),
+            ("🫘","Haricot","🌽","Maïs","Les haricots grimpent sur le maïs — association des 3 soeurs"),
+            ("🌽","Maïs","🎃","Courge","La courge couvre le sol, garde l'humidité et chasse les mauvaises herbes"),
+            ("🍓","Fraise","🧄","Ail","L'ail protège les fraises des maladies fongiques"),
+            ("🥬","Épinard","🍓","Fraise","L'épinard profite de l'ombre légère des fraisiers"),
+            ("🫛","Pois","🥕","Carotte","Bonne cohabitation, besoins complémentaires"),
+          ] %}
+          {% for item in good_rows %}
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;{% if not loop.last %}border-bottom:1px solid var(--border);{% endif %}">
+            <span style="font-size:16px;flex-shrink:0;">{{ item[0] }}</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text-primary);flex-shrink:0;">{{ item[1] }}</span>
+            <i class="bi bi-heart-fill" style="font-size:10px;color:var(--green);flex-shrink:0;margin-top:3px;"></i>
+            <span style="font-size:16px;flex-shrink:0;">{{ item[2] }}</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text-primary);flex-shrink:0;">{{ item[3] }}</span>
+            <span style="font-size:11.5px;color:var(--text-tertiary);line-height:1.4;flex:1;">{{ item[4] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Associations à éviter -->
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--red);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <i class="bi bi-x-circle-fill"></i> Associations à éviter
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          {% set bad_rows = [
+            ("🍅","Tomate","🌿","Fenouil","Le fenouil inhibe la croissance et peut tuer les plants de tomate"),
+            ("🍅","Tomate","🥦","Chou","Forte concurrence pour les nutriments, croissance ralentie"),
+            ("🍅","Tomate","🥔","Pomme de terre","Même famille (solanacées), propagent les mêmes maladies"),
+            ("🧅","Oignon","🫘","Haricot","L'oignon inhibe fortement la croissance des légumineuses"),
+            ("🧅","Oignon","🫛","Pois","Même incompatibilité que haricot — éviter toutes légumineuses"),
+            ("🥔","Pomme de terre","🎃","Courge","Concurrence intense et mêmes ravageurs souterrains"),
+            ("🥔","Pomme de terre","🥒","Concombre","Favorisent mutuellement le mildiou en conditions humides"),
+            ("🌿","Fenouil","🥕","Carotte","Le fenouil est allélopathique, freine la germination des carottes"),
+            ("🌿","Fenouil","🥬","Laitue","Inhibe la croissance — isoler le fenouil dans une zone dédiée"),
+            ("🥦","Chou","🍓","Fraise","Concurrence pour le potassium, croissance des deux réduite"),
+            ("🥕","Carotte","🌿","Aneth fleuri","L'aneth en fleur ralentit la croissance des carottes"),
+            ("🥬","Salade","🌿","Persil","Le persil peut inhiber la germination des graines de salade"),
+          ] %}
+          {% for item in bad_rows %}
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;{% if not loop.last %}border-bottom:1px solid var(--border);{% endif %}">
+            <span style="font-size:16px;flex-shrink:0;">{{ item[0] }}</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text-primary);flex-shrink:0;">{{ item[1] }}</span>
+            <i class="bi bi-x-lg" style="font-size:10px;color:var(--red);flex-shrink:0;margin-top:3px;"></i>
+            <span style="font-size:16px;flex-shrink:0;">{{ item[2] }}</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text-primary);flex-shrink:0;">{{ item[3] }}</span>
+            <span style="font-size:11.5px;color:var(--text-tertiary);line-height:1.4;flex:1;">{{ item[4] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ── SAISONS ── -->
-  <section class="seasons-section">
-    <div class="seasons-title">🗓️ Calendrier saisonnier — Suisse romande</div>
+  <div>
+    <div class="card-title mb-3" style="padding-left:2px;">
+      <i class="bi bi-calendar3"></i> Calendrier saisonnier — {{ garden_location }}
+    </div>
     <div class="seasons-grid">
 
       <!-- Printemps -->
-      <div class="season-card spring">
-        <div class="season-header">
+      <div class="card season-card spring">
+        <div class="season-card-header">
           <div class="season-emoji">🌸</div>
           <div>
             <div class="season-name">Printemps</div>
@@ -248,43 +363,43 @@
             <div class="season-tip-icon">🌡️</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Surveiller les Saints de Glace</div>
-              Les 11-12-13 mai sont les Saints de Glace — ne transplantez pas les plants frileux (tomates, poivrons, courgettes) avant le 15 mai en plaine.
+              Les 11-12-13 mai — ne transplantez pas tomates, poivrons et courgettes avant le 15 mai en plaine.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🌱</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Démarrer les semis intérieurs</div>
-              Semez tomates, poivrons et aubergines à l'intérieur dès fin février-mars, 6 à 8 semaines avant la transplantation prévue.
+              Semez tomates, poivrons et aubergines à l'intérieur dès fin février, 6 à 8 semaines avant la transplantation.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🥕</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Semer en pleine terre dès mars</div>
-              Radis, épinards, carottes, pois et mâche tolèrent le froid. Semez dès que la terre peut être travaillée, généralement dès mi-mars.
+              Radis, épinards, carottes et pois tolèrent le froid. Semez dès que la terre peut être travaillée.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🌿</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Amender le sol avant de planter</div>
-              Incorporez 4-5 cm de compost mûr à la surface sans enfouir profondément. Les vers de terre feront le reste du travail naturellement.
+              Incorporez 4-5 cm de compost mûr en surface. Les vers de terre feront le reste naturellement.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🐌</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Se méfier des limaces printanières</div>
-              Les jeunes plants sont très vulnérables. Posez des pièges à bière ou de la cendre de bois autour des semis dès les premières pluies de mars.
+              Posez des pièges à bière ou de la cendre de bois autour des semis dès les premières pluies de mars.
             </div>
           </div>
         </div>
       </div>
 
       <!-- Été -->
-      <div class="season-card summer">
-        <div class="season-header">
+      <div class="card season-card summer">
+        <div class="season-card-header">
           <div class="season-emoji">☀️</div>
           <div>
             <div class="season-name">Été</div>
@@ -296,43 +411,43 @@
             <div class="season-tip-icon">💧</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Arroser profond mais moins souvent</div>
-              Un arrosage abondant tous les 2-3 jours vaut mieux que des petits arrosages quotidiens. Les racines s'enfoncent en profondeur et résistent mieux à la sécheresse.
+              Un arrosage abondant tous les 2-3 jours vaut mieux que des petits arrosages quotidiens.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🪴</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Tuteurer et pincer les tomates</div>
-              Attachez régulièrement les tiges et supprimez les gourmands (rameaux axillaires) pour concentrer l'énergie sur les fruits. Deux ou trois tiges par plant suffisent.
+              Supprimez les gourmands pour concentrer l'énergie sur les fruits. Deux ou trois tiges par plant suffisent.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🍅</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Récolter souvent pour produire plus</div>
-              Plus vous récoltez haricots, courgettes et concombres, plus les plantes en produisent. Ne laissez pas les courgettes devenir des courges géantes.
+              Plus vous récoltez haricots et courgettes, plus les plantes en produisent. Ne laissez rien sur-mûrir.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🌡️</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Protéger en cas de canicule</div>
-              Au-delà de 32°C, évitez d'arroser en journée. Installez une toile d'ombrage sur les plants les plus fragiles et arrosez après 19h.
+              Au-delà de 32°C, arrosez uniquement après 19h et installez une toile d'ombrage sur les plants fragiles.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🐛</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Surveiller doryphores et mildiou</div>
-              Inspectez le dessous des feuilles de pommes de terre chaque semaine. Ramassez les doryphores à la main tôt le matin quand ils sont moins actifs.
+              Inspectez le dessous des feuilles chaque semaine. Ramassez les doryphores tôt le matin.
             </div>
           </div>
         </div>
       </div>
 
       <!-- Automne -->
-      <div class="season-card autumn">
-        <div class="season-header">
+      <div class="card season-card autumn">
+        <div class="season-card-header">
           <div class="season-emoji">🍂</div>
           <div>
             <div class="season-name">Automne</div>
@@ -344,43 +459,43 @@
             <div class="season-tip-icon">🧄</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Planter ail et oignons en octobre</div>
-              C'est le moment idéal pour planter les gousses d'ail et les bulbilles d'oignon d'hiver. Ils passeront l'hiver en terre et seront récoltés en juin-juillet.
+              Plantez gousses d'ail et bulbilles d'oignon d'hiver. Ils passeront l'hiver en terre et seront récoltés en juin.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🎃</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Stocker courges et pommes de terre</div>
-              Récoltez avant les premières gelées et laissez sécher 10 jours au soleil. Stockez dans un endroit frais, sombre et bien ventilé à 10-15°C.
+              Récoltez avant les premières gelées, laissez sécher 10 jours au soleil, stockez au frais à 10-15°C.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🌿</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Semer les engrais verts</div>
-              Semez phacélie ou trèfle incarnat dès septembre sur les planches libérées. Ils enrichissent le sol et évitent qu'il soit lessivé par les pluies d'hiver.
+              Semez phacélie ou trèfle dès septembre sur les planches libérées pour enrichir et protéger le sol.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🍃</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Recycler les feuilles mortes</div>
-              Ramassez les feuilles mortes pour les composter ou les utiliser comme paillis épais (10-15 cm) sur les planches vides. Elles se décomposeront lentement en humus.
+              Compostez ou utilisez-les comme paillis épais (10-15 cm). Elles se décomposeront en humus au printemps.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🥬</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Continuer avec les légumes d'hiver</div>
-              Choux, poireaux, mâche, épinards et claytone d'hiver résistent au froid. Semez avant mi-septembre pour des récoltes jusqu'en janvier.
+              Choux, poireaux, mâche et épinards résistent au froid. Semez avant mi-septembre pour des récoltes en janvier.
             </div>
           </div>
         </div>
       </div>
 
       <!-- Hiver -->
-      <div class="season-card winter">
-        <div class="season-header">
+      <div class="card season-card winter">
+        <div class="season-card-header">
           <div class="season-emoji">❄️</div>
           <div>
             <div class="season-name">Hiver</div>
@@ -392,49 +507,49 @@
             <div class="season-tip-icon">📋</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Planifier la saison suivante</div>
-              C'est le moment idéal pour réfléchir aux rotations, dessiner le plan de votre potager et noter ce qui a bien ou mal fonctionné cette année.
+              Réfléchissez aux rotations, dessinez le plan du potager et notez ce qui a bien ou mal fonctionné.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">📦</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Commander les graines en janvier</div>
-              Les meilleures variétés partent vite. Commandez vos semences en janvier auprès de semenciers spécialisés pour être prêt dès février-mars.
+              Les meilleures variétés partent vite. Commandez en janvier pour être prêt dès février-mars.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🔧</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Entretenir et aiguiser les outils</div>
-              Nettoyez, dérouillez et huilez vos outils. Affûtez bêches et binettes — un outil tranchant demande deux fois moins d'effort et travaille le sol bien mieux.
+              Nettoyez, dérouillez et huilez vos outils. Un outil tranchant demande deux fois moins d'effort.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🌡️</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Protéger les plantes sensibles</div>
-              Couvrez les plants de romarin, thym et artichauts avec un voile d'hivernage dès que les températures descendent sous -5°C. Un châssis froid protège mâche et épinards.
+              Couvrez romarin, thym et artichauts avec un voile d'hivernage dès -5°C. Un châssis protège mâche et épinards.
             </div>
           </div>
           <div class="season-tip">
             <div class="season-tip-icon">🪱</div>
             <div class="season-tip-text">
               <div class="season-tip-title">Retourner le compost</div>
-              Mélangez votre compost en hiver pour l'aérer et accélérer la décomposition. Un compost bien retourné sera prêt à être utilisé dès le printemps.
+              Mélangez et aérez le compost en hiver. Un compost bien retourné sera prêt à l'emploi dès le printemps.
             </div>
           </div>
         </div>
       </div>
 
     </div>
-  </section>
+  </div>
 
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-const CARD_W = 260 + 14; // width + gap
+const CARD_W = 260 + 14;
 let currentIdx = 0;
 const track = document.getElementById('carousel-track');
 const cards  = track.querySelectorAll('.tip-card');
@@ -443,10 +558,8 @@ const dotsEl = document.getElementById('carousel-dots');
 let visibleCount = 1;
 
 function getVisible() {
-  const w = track.parentElement.offsetWidth;
-  return Math.max(1, Math.floor(w / CARD_W));
+  return Math.max(1, Math.floor(track.parentElement.offsetWidth / CARD_W));
 }
-
 function buildDots() {
   visibleCount = getVisible();
   const pages = Math.max(1, total - visibleCount + 1);
@@ -458,31 +571,24 @@ function buildDots() {
     dotsEl.appendChild(d);
   }
 }
-
 function updateButtons() {
-  visibleCount = getVisible();
-  const maxIdx = Math.max(0, total - visibleCount);
+  const maxIdx = Math.max(0, total - getVisible());
   document.getElementById('prev-btn').disabled = currentIdx === 0;
   document.getElementById('next-btn').disabled = currentIdx >= maxIdx;
 }
-
 function goTo(idx) {
-  visibleCount = getVisible();
-  const maxIdx = Math.max(0, total - visibleCount);
+  const maxIdx = Math.max(0, total - getVisible());
   currentIdx = Math.max(0, Math.min(idx, maxIdx));
   track.style.transform = `translateX(-${currentIdx * CARD_W}px)`;
   dotsEl.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === currentIdx));
   updateButtons();
 }
-
 function carouselNext() { goTo(currentIdx + 1); }
 function carouselPrev() { goTo(currentIdx - 1); }
 
-buildDots();
-updateButtons();
+buildDots(); updateButtons();
 window.addEventListener('resize', () => { buildDots(); goTo(Math.min(currentIdx, Math.max(0, total - getVisible()))); });
 
-// Touch swipe support
 let startX = 0;
 track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
 track.addEventListener('touchend', e => {

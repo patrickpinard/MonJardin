@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <div class="page-title">Tableau de bord</div>
-      <div class="page-subtitle">Vullierens · {{ temperature_c }}°C extérieur</div>
+      <div class="page-subtitle">{{ garden_location }} · {{ temperature_c }}°C extérieur</div>
     </div>
     <div class="d-flex align-center gap-2">
       <span class="stat-badge {% if arduino_reachable %}connected{% else %}offline{% endif %}">
@@ -124,7 +124,7 @@
   <div class="card">
     <div class="card-title">
       <i class="bi bi-cloud-sun-fill"></i>
-      Météo — Vullierens
+      Météo — {{ garden_location }}
       <span class="badge" style="margin-left:4px;font-weight:500;font-size:10px;">{{ weather.source }}</span>
       {% if temp_serre_c is not none %}
       <span class="badge badge-plant" style="margin-left:4px;font-size:10px;">🏠 Serre {{ temp_serre_c }}°C</span>

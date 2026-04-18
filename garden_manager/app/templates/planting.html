@@ -16,23 +16,6 @@
 
 <div class="page-body">
 
-  <!-- Associations d'or -->
-  {% if golden_associations %}
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-stars" style="color:var(--yellow);"></i> Associations d'or pour Vullierens</div>
-    <div class="grid-2" style="gap:8px;">
-      {% for a in golden_associations %}
-      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(48,209,88,.06);border:1px solid rgba(48,209,88,.14);border-radius:var(--r-md);">
-        <span class="badge badge-plant">{{ a.plant_a }}</span>
-        <i class="bi bi-heart-fill text-green" style="font-size:11px;"></i>
-        <span class="badge badge-plant">{{ a.plant_b }}</span>
-        <span style="font-size:12px;color:var(--text-tertiary);flex:1;">{{ a.reason }}</span>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
   <!-- Conseils du mois -->
   <div class="card mb-3">
     <div class="card-title">
