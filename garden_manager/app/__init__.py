@@ -34,6 +34,8 @@ def create_app(config: type = Config) -> Flask:
     with app.app_context():
         # Création des tables
         db.create_all()
+        # Migrations colonnes manquantes (ALTER TABLE si nécessaire)
+        _migrate_db(app)
         # Données initiales
         from .seed import ensure_defaults, seed_demo_history
         ensure_defaults(app)
@@ -75,6 +77,19 @@ def create_app(config: type = Config) -> Flask:
         "SIMULATION" if app.config.get("SIMULATION_MODE") else "PRODUCTION",
     )
     return app
+
+
+def _migrate_db(app: Flask) -> None:
+    """Ajoute les colonnes manquantes sans perdre les données existantes."""
+    from sqlalchemy import text, inspect
+    with app.app_context():
+        inspector = inspect(db.engine)
+        columns = {c["name"] for c in inspector.get_columns("sensor_readings")}
+        with db.engine.connect() as conn:
+            if "temp_serre_c" not in columns:
+                conn.execute(text("ALTER TABLE sensor_readings ADD COLUMN temp_serre_c REAL"))
+                conn.commit()
+                log.info("Migration DB : colonne temp_serre_c ajoutée à sensor_readings")
 
 
 def _init_services(app: Flask) -> None:
