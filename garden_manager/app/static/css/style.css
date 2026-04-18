@@ -563,7 +563,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
   gap: 10px; margin-bottom: 22px;
 }
-.char-item { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--r-md); padding: 13px 14px; }
+.char-item { background: var(--bg-secondary); border-radius: var(--r-md); padding: 13px 14px; }
 .char-icon  { font-size: 20px; margin-bottom: 5px; display: block; line-height: 1; }
 .char-label {
   font-size: 10px; font-weight: 700; color: var(--text-tertiary);

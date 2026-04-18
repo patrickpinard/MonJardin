@@ -55,7 +55,8 @@
   {% endif %}
 
   <!-- Stats live -->
-  <div class="chars-grid mb-3">
+  <div class="card mb-3">
+  <div class="chars-grid" style="margin-bottom:0;">
     <div class="char-item">
       {% set mc = mc %}
       <span class="char-icon">💧</span>
@@ -108,6 +109,7 @@
         {{ plantings | selectattr('status','eq','active') | list | length }}
       </div>
     </div>
+  </div>
   </div>
 
   <!-- Barre d'humidité visuelle -->
