@@ -111,17 +111,93 @@ def dashboard():
 
 @dashboard_bp.get("/zones/<int:zone_id>")
 def zone_detail(zone_id: int):
+    from datetime import date
     zone = Zone.query.get_or_404(zone_id)
     advisor = current_app.extensions["planting_advisor"]
     plantings = Planting.query.filter_by(zone_id=zone_id).order_by(Planting.planted_date.desc()).all()
     compatibility_warnings = advisor.check_zone_compatibility(zone_id)
-    harvest_forecast = advisor.get_harvest_forecast(zone_id)
+    harvest_forecast = advisor.get_harvest_forecast(zone_id, days=30)
+
+    # Données live capteur
+    arduino = current_app.extensions["arduino_client"]
+    sensor_data = arduino.get_all_sensors()
+    actuator_status = arduino.get_actuator_status() or {"valves": [], "roof_state": "close"}
+
+    current_moisture = None
+    current_temp = None
+    if sensor_data:
+        for z in sensor_data.get("zones", []):
+            if z["zone_id"] == zone_id:
+                current_moisture = round(z.get("soil_moisture_pct", 0), 1)
+                break
+        current_temp = sensor_data.get("temperature_c")
+
+    if current_moisture is None:
+        last = (SensorReading.query.filter_by(zone_id=zone_id)
+                .order_by(SensorReading.timestamp.desc()).first())
+        current_moisture = round(last.soil_moisture_pct, 1) if last else None
+        if current_temp is None and last:
+            current_temp = last.temperature_c
+
+    valve_state = "close"
+    for v in actuator_status.get("valves", []):
+        if v.get("zone_id") == zone_id:
+            valve_state = v.get("state", "close")
+            break
+    roof_state = actuator_status.get("roof_state", "close")
+
+    # Moisture class
+    if current_moisture is not None:
+        if current_moisture < zone.moisture_threshold_low:
+            mc = "low"
+        elif current_moisture > zone.moisture_threshold_high:
+            mc = "high"
+        else:
+            mc = "ok"
+    else:
+        mc = "ok"
+
+    # Dernier arrosage
+    last_irrigation = (IrrigationLog.query
+                       .filter_by(zone_id=zone_id, action="open")
+                       .order_by(IrrigationLog.timestamp.desc())
+                       .first())
+
+    # Événements récents de cette zone (journal)
+    recent_events = (IrrigationLog.query
+                     .filter_by(zone_id=zone_id)
+                     .order_by(IrrigationLog.timestamp.desc())
+                     .limit(8).all())
+
+    # Tendance humidité (2 dernières heures)
+    two_hours_ago = datetime.utcnow() - timedelta(hours=2)
+    recent_readings = (SensorReading.query
+                       .filter(SensorReading.zone_id == zone_id,
+                               SensorReading.timestamp >= two_hours_ago)
+                       .order_by(SensorReading.timestamp.asc()).all())
+    trend = None
+    if len(recent_readings) >= 4:
+        first_half = [r.soil_moisture_pct for r in recent_readings[:len(recent_readings)//2]]
+        second_half = [r.soil_moisture_pct for r in recent_readings[len(recent_readings)//2:]]
+        diff = (sum(second_half)/len(second_half)) - (sum(first_half)/len(first_half))
+        trend = "up" if diff > 1.5 else ("down" if diff < -1.5 else "stable")
+
     return render_template(
         "zone_detail.html",
         zone=zone,
         plantings=plantings,
         compatibility_warnings=compatibility_warnings,
         harvest_forecast=harvest_forecast,
+        today_date=date.today(),
+        current_moisture=current_moisture,
+        current_temp=round(current_temp, 1) if current_temp else None,
+        temp_serre_c=round(sensor_data.get("temp_serre_c"), 1) if sensor_data and sensor_data.get("temp_serre_c") else None,
+        valve_state=valve_state,
+        roof_state=roof_state,
+        mc=mc,
+        last_irrigation=last_irrigation,
+        recent_events=recent_events,
+        trend=trend,
     )
 
 
@@ -189,9 +265,13 @@ def history():
 @dashboard_bp.get("/journal")
 def journal_page():
     from flask import request as freq
+    from datetime import date as _date, time as _time
     period = freq.args.get("period", "week")
-    period_hours = {"day": 24, "week": 168, "month": 720, "year": 8760}.get(period, 168)
-    since = datetime.utcnow() - timedelta(hours=period_hours)
+    if period == "day":
+        since = datetime.combine(_date.today(), _time.min)
+    else:
+        period_hours = {"week": 168, "month": 720, "year": 8760}.get(period, 168)
+        since = datetime.utcnow() - timedelta(hours=period_hours)
 
     irrigation_logs = (IrrigationLog.query
                        .filter(IrrigationLog.timestamp >= since)

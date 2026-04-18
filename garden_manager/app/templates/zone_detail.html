@@ -5,24 +5,33 @@
 <div class="page-header">
   <div class="page-header-row">
     <div style="display:flex;align-items:center;gap:12px;">
-      <a href="/dashboard" class="btn btn-ghost btn-icon"><i class="bi bi-arrow-left"></i></a>
+      <button onclick="history.length > 1 ? history.back() : location.href='/zones'" class="btn btn-ghost btn-icon">
+        <i class="bi bi-arrow-left"></i>
+      </button>
       <div>
         <div class="page-title">Zone {{ zone.zone_id }} — {{ zone.name }}</div>
         <div class="page-subtitle">
-          {% if zone.has_roof %}Serre vitrée · {% endif %}
+          {% if zone.has_roof %}🏠 Serre vitrée · {% endif %}
           Mode <strong>{{ zone.irrigation_mode }}</strong>
         </div>
       </div>
     </div>
-    <div class="zone-mode-badge {{ zone.irrigation_mode }}" style="font-size:12px;padding:6px 14px;">
-      {{ zone.irrigation_mode }}
+    <div style="display:flex;align-items:center;gap:8px;">
+      {% if trend == 'up' %}
+      <span class="badge badge-valve-open"><i class="bi bi-arrow-up-right"></i> Humidité montante</span>
+      {% elif trend == 'down' %}
+      <span class="badge badge-warning"><i class="bi bi-arrow-down-right"></i> Humidité en baisse</span>
+      {% endif %}
+      <div class="zone-mode-badge {{ zone.irrigation_mode }}" style="font-size:12px;padding:6px 14px;">
+        {{ zone.irrigation_mode }}
+      </div>
     </div>
   </div>
 </div>
 
 <div class="page-body">
 
-  <!-- Incompatibilités -->
+  <!-- Alertes -->
   {% if compatibility_warnings %}
   <div class="greenhouse-note mb-3" style="background:rgba(255,69,58,.06);border-color:rgba(255,69,58,.2);">
     <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);"></i>
@@ -35,22 +44,100 @@
   </div>
   {% endif %}
 
-  <!-- Greenhouse advisory for Zone 1 -->
   {% if zone.has_roof %}
   <div class="greenhouse-note mb-3">
     <i class="bi bi-house-door-fill"></i>
     <div>
       <div class="gn-title">Serre vitrée — conseils spécifiques</div>
-      <div class="gn-body">
-        En été, la température dans la serre peut dépasser 35°C. Privilégiez des légumes tolérants à la chaleur (tomate, poivron, concombre) et ventilez au-delà de 25°C. En hiver, la serre protège du gel et permet de cultiver des salades et épinards.
+      <div class="gn-body">En été, ventilez au-delà de 25°C. Privilégiez tomate, poivron, concombre. En hiver, protège du gel pour salades et épinards.</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Stats live -->
+  <div class="chars-grid mb-3">
+    <div class="char-item">
+      {% set mc = mc %}
+      <span class="char-icon">💧</span>
+      <div class="char-label">Humidité sol</div>
+      <div class="char-value" style="color:{% if mc == 'low' %}var(--red){% elif mc == 'high' %}var(--blue){% else %}var(--green){% endif %};">
+        {% if current_moisture is not none %}{{ current_moisture }}%{% else %}—{% endif %}
       </div>
+      <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">
+        Seuil {{ zone.moisture_threshold_low | int }}–{{ zone.moisture_threshold_high | int }}%
+      </div>
+    </div>
+    <div class="char-item">
+      <span class="char-icon">🌡️</span>
+      <div class="char-label">{% if zone.has_roof and temp_serre_c %}Serre{% else %}Extérieur{% endif %}</div>
+      <div class="char-value">
+        {% if zone.has_roof and temp_serre_c %}{{ temp_serre_c }}°C
+        {% elif current_temp %}{{ current_temp }}°C
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div class="char-item">
+      <span class="char-icon">{% if valve_state == 'open' %}🚿{% else %}🔒{% endif %}</span>
+      <div class="char-label">Vanne</div>
+      <div class="char-value" style="color:{% if valve_state == 'open' %}var(--blue){% else %}var(--text-secondary){% endif %};">
+        {{ 'Ouverte' if valve_state == 'open' else 'Fermée' }}
+      </div>
+    </div>
+    {% if zone.has_roof %}
+    <div class="char-item">
+      <span class="char-icon">{{ '🪟' if roof_state == 'open' else '🏠' }}</span>
+      <div class="char-label">Lucarne</div>
+      <div class="char-value" style="color:{% if roof_state == 'open' %}var(--orange){% else %}var(--text-secondary){% endif %};">
+        {{ 'Ouverte' if roof_state == 'open' else 'Fermée' }}
+      </div>
+    </div>
+    {% endif %}
+    <div class="char-item">
+      <span class="char-icon">⏱️</span>
+      <div class="char-label">Dernier arrosage</div>
+      <div class="char-value" style="font-size:13px;">
+        {% if last_irrigation %}
+          {{ last_irrigation.timestamp.strftime('%d.%m à %H:%M') }}
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div class="char-item">
+      <span class="char-icon">🌱</span>
+      <div class="char-label">Plantations actives</div>
+      <div class="char-value">
+        {{ plantings | selectattr('status','eq','active') | list | length }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre d'humidité visuelle -->
+  {% if current_moisture is not none %}
+  <div class="card mb-3" style="padding:16px 20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;">Niveau d'humidité</span>
+      <span style="font-size:13px;font-weight:700;color:{% if mc == 'low' %}var(--red){% elif mc == 'high' %}var(--blue){% else %}var(--green){% endif %};">
+        {% if mc == 'low' %}⚠️ Trop sec{% elif mc == 'high' %}💧 Saturé{% else %}✅ Optimal{% endif %}
+      </span>
+    </div>
+    <div style="position:relative;height:14px;background:var(--bg-tertiary);border-radius:7px;overflow:visible;margin-bottom:6px;">
+      <div style="height:100%;width:{{ [current_moisture, 100] | min }}%;border-radius:7px;background:{% if mc == 'low' %}var(--red){% elif mc == 'high' %}var(--blue){% else %}var(--green){% endif %};transition:width .4s;"></div>
+      <!-- Seuil bas -->
+      <div style="position:absolute;top:-3px;left:{{ zone.moisture_threshold_low }}%;width:2px;height:20px;background:rgba(255,159,10,.8);border-radius:1px;"></div>
+      <!-- Seuil haut -->
+      <div style="position:absolute;top:-3px;left:{{ zone.moisture_threshold_high }}%;width:2px;height:20px;background:rgba(255,159,10,.8);border-radius:1px;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-tertiary);">
+      <span>0%</span>
+      <span style="color:var(--orange);">{{ zone.moisture_threshold_low | int }}%</span>
+      <span style="color:var(--orange);">{{ zone.moisture_threshold_high | int }}%</span>
+      <span>100%</span>
     </div>
   </div>
   {% endif %}
 
   <div class="grid-2">
     <!-- Graphique -->
-    <div class="card" style="grid-column: 1;">
+    <div class="card">
       <div class="card-title">
         <i class="bi bi-graph-up"></i> Historique humidité
         <div class="card-actions">
@@ -61,7 +148,7 @@
           </div>
         </div>
       </div>
-      <div id="zoneChart" style="height:260px;"></div>
+      <div id="zoneChart" style="height:240px;"></div>
     </div>
 
     <!-- Config -->
@@ -71,8 +158,8 @@
         <div class="form-group">
           <label class="form-label">Mode arrosage</label>
           <select name="irrigation_mode" class="form-select">
-            {% for m in ['auto','manual','disabled'] %}
-            <option value="{{ m }}" {% if zone.irrigation_mode == m %}selected{% endif %}>{{ m }}</option>
+            {% for m, lbl in [('auto','🤖 Automatique'),('manual','👤 Manuel'),('disabled','⛔ Désactivé')] %}
+            <option value="{{ m }}" {% if zone.irrigation_mode == m %}selected{% endif %}>{{ lbl }}</option>
             {% endfor %}
           </select>
         </div>
@@ -93,10 +180,54 @@
           <input type="number" name="irrigation_duration_min" class="form-control"
                  value="{{ zone.irrigation_duration_min }}" min="1" max="120">
         </div>
-        <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <button class="btn btn-blue btn-sm" type="button" onclick="setValve({{ zone.zone_id }}, 'open')"
+            {% if zone.irrigation_mode == 'auto' %}disabled title="Mode auto"{% endif %}>
+            <i class="bi bi-droplet-fill"></i> Arroser
+          </button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="setValve({{ zone.zone_id }}, 'close')"
+            {% if zone.irrigation_mode == 'auto' %}disabled title="Mode auto"{% endif %}>
+            <i class="bi bi-stop-circle"></i> Arrêter
+          </button>
+        </div>
+        {% if zone.has_roof %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <button class="btn btn-warning btn-sm" type="button" onclick="setRoof('open')">
+            <i class="bi bi-chevron-up"></i> Ouvrir
+          </button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="setRoof('close')">
+            <i class="bi bi-chevron-down"></i> Fermer
+          </button>
+        </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary w-100 mt-2">
+          <i class="bi bi-check2"></i> Enregistrer
+        </button>
       </form>
     </div>
   </div>
+
+  <!-- Récoltes prochaines -->
+  {% if harvest_forecast %}
+  <div class="card mt-3">
+    <div class="card-title"><i class="bi bi-basket-fill" style="color:var(--orange);"></i> Récoltes prochaines (30 jours)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      {% for h in harvest_forecast %}
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:{% if h.days_left <= 7 %}rgba(255,159,10,.08){% else %}var(--bg-secondary){% endif %};border:1px solid {% if h.days_left <= 7 %}rgba(255,159,10,.25){% else %}var(--border){% endif %};border-radius:var(--r-md);">
+        <span style="font-size:22px;">🌾</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary);">{{ h.vegetable_name }}</div>
+          <div style="font-size:11px;color:{% if h.days_left <= 7 %}var(--orange){% else %}var(--text-tertiary){% endif %};">
+            {% if h.days_left == 0 %}🎉 Aujourd'hui !
+            {% elif h.days_left == 1 %}Demain
+            {% else %}dans {{ h.days_left }} jours — {{ h.expected_harvest_date }}{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
   <!-- Plantations -->
   <div class="card mt-3">
@@ -112,20 +243,46 @@
       <table class="table-modern">
         <thead><tr>
           <th>Légume</th><th>Variété</th><th>Planté</th><th>Récolte</th>
-          <th>Besoin eau</th><th>Statut</th><th></th>
+          <th>Progression</th><th>Eau</th><th>Statut</th><th></th>
         </tr></thead>
         <tbody>
           {% for p in plantings %}
           <tr>
-            <td style="color:var(--text-primary);font-weight:600;">
-              <a href="/plants/{{ p.vegetable_name }}" style="color:inherit;">{{ p.vegetable_name }}</a>
+            <td style="font-weight:600;">
+              <a href="/plants/{{ p.vegetable_name }}" style="color:var(--text-primary);">{{ p.vegetable_name }}</a>
             </td>
             <td>{{ p.variety or '—' }}</td>
-            <td>{{ p.planted_date.strftime('%d.%m.%Y') if p.planted_date else '—' }}</td>
-            <td>{{ p.expected_harvest_date.strftime('%d.%m.%Y') if p.expected_harvest_date else '—' }}</td>
+            <td>{{ p.planted_date.strftime('%d.%m.%y') if p.planted_date else '—' }}</td>
+            <td>{{ p.expected_harvest_date.strftime('%d.%m.%y') if p.expected_harvest_date else '—' }}</td>
+            <td>
+              {% if p.planted_date and p.expected_harvest_date and p.status == 'active' %}
+                {% set total_days = (p.expected_harvest_date - p.planted_date).days %}
+                {% set elapsed_days = (today_date - p.planted_date).days %}
+                {% set days_left = (p.expected_harvest_date - today_date).days %}
+                {% if total_days > 0 %}
+                  {% set pct_raw = ((elapsed_days / total_days) * 100) | int %}
+                  {% set pct = pct_raw if pct_raw > 0 else 0 %}
+                  {% set pct = pct if pct < 100 else 100 %}
+                {% else %}
+                  {% set pct = 100 %}{% set days_left = 0 %}
+                {% endif %}
+                <div style="min-width:90px;">
+                  <div style="height:5px;border-radius:3px;background:var(--bg-tertiary);overflow:hidden;margin-bottom:3px;">
+                    <div style="height:100%;width:{{ pct }}%;border-radius:3px;background:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--green){% endif %};"></div>
+                  </div>
+                  <div style="font-size:10px;color:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--text-tertiary){% endif %};">
+                    {% if days_left < 0 %}⚠️ {{ -days_left }}j retard
+                    {% elif days_left == 0 %}🎉 Aujourd'hui
+                    {% else %}dans {{ days_left }}j{% endif %}
+                  </div>
+                </div>
+              {% else %}
+                <span style="color:var(--text-tertiary)">—</span>
+              {% endif %}
+            </td>
             <td>
               <span class="attr {% if p.water_need == 'high' %}water-high{% elif p.water_need == 'low' %}water-low{% else %}water-medium{% endif %}">
-                {{ p.water_need }}
+                {{ {'high':'💧💧💧 Élevé','medium':'💧💧 Moyen','low':'💧 Faible'}.get(p.water_need, p.water_need) }}
               </span>
             </td>
             <td>
@@ -147,7 +304,7 @@
               {% endif %}
               <form id="del-z-{{ p.id }}" action="{{ url_for('config.delete_planting', planting_id=p.id) }}" method="post">
                 <button type="button" class="btn btn-danger btn-xs"
-                  onclick="showConfirm({title:'Supprimer la plantation',body:'Supprimer {{ p.vegetable_name }}{% if p.variety %} ({{ p.variety }}){% endif %} de cette zone ?',okLabel:'Supprimer'},()=>document.getElementById('del-z-{{ p.id }}').submit())">
+                  onclick="showConfirm({title:'Supprimer la plantation',body:'Supprimer {{ p.vegetable_name }}{% if p.variety %} ({{ p.variety }}){% endif %} ?',okLabel:'Supprimer'},()=>document.getElementById('del-z-{{ p.id }}').submit())">
                   <i class="bi bi-trash"></i>
                 </button>
               </form>
@@ -165,15 +322,53 @@
     {% endif %}
   </div>
 
-  <!-- Récoltes prochaines -->
-  {% if harvest_forecast %}
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-    <span style="font-size:13px;color:var(--text-secondary);align-self:center;">Récoltes prochaines :</span>
-    {% for h in harvest_forecast %}
-    <span class="harvest-chip {% if h.days_left <= 7 %}soon{% endif %}">
-      🌾 {{ h.vegetable_name }} — {{ h.days_left }}j
-    </span>
-    {% endfor %}
+  <!-- Événements récents -->
+  {% if recent_events %}
+  <div class="card mt-3">
+    <div class="card-title">
+      <i class="bi bi-clock-history"></i> Événements récents
+      <a href="/journal" class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:11px;">Voir tout</a>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table-modern">
+        <thead><tr>
+          <th>Date/Heure</th><th>Action</th><th>Déclencheur</th><th>Humidité</th><th>Raison</th>
+        </tr></thead>
+        <tbody>
+          {% for ev in recent_events %}
+          <tr>
+            <td class="jcol-date">
+              <span class="jdate">{{ ev.timestamp.strftime('%d.%m.%y') }}</span>
+              <span class="jtime">{{ ev.timestamp.strftime('%H:%M') }}</span>
+            </td>
+            <td>
+              <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
+                <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
+                {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
+              </span>
+            </td>
+            <td>
+              <span class="attr easy">
+                {%- if ev.trigger_type == 'auto' %}⚙️ Auto
+                {%- elif ev.trigger_type == 'manual' %}👤 Manuel
+                {%- elif ev.trigger_type == 'weather' %}🌦️ Météo
+                {%- elif ev.trigger_type == 'frost' %}❄️ Gel
+                {%- else %}{{ ev.trigger_type or '—' }}{%- endif %}
+              </span>
+            </td>
+            <td>
+              {% if ev.moisture_at_trigger is not none %}
+              <span style="font-weight:600;font-size:12px;color:{% if ev.moisture_at_trigger < 30 %}var(--red){% elif ev.moisture_at_trigger > 65 %}var(--blue){% else %}var(--green){% endif %};">
+                {{ ev.moisture_at_trigger | round(1) }}%
+              </span>
+              {% else %}<span style="color:var(--text-tertiary)">—</span>{% endif %}
+            </td>
+            <td class="jcol-reason">{{ ev.reason or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
   {% endif %}
 
@@ -193,28 +388,38 @@ async function loadZoneChart(zoneId, hours) {
   const resp = await fetch(`/api/data/history?zone_id=${zoneId}&hours=${hours}`);
   const data = await resp.json();
   const readings = data.zones[zoneId] || [];
-  Plotly.react('zoneChart', [{
-    x: readings.map(r => r.timestamp),
-    y: readings.map(r => r.soil_moisture_pct),
-    type: 'scatter', mode: 'lines', name: 'Humidité',
-    line: {color: '#30d158', width: 2}, fill: 'tozeroy',
-    fillcolor: 'rgba(48,209,88,0.08)',
-  }], {
+  const ZONE_COLOR = {1:'#30d158', 2:'#8BC34A', 3:'#0a84ff', 4:'#bf5af2'};
+  const color = ZONE_COLOR[zoneId] || '#30d158';
+  Plotly.react('zoneChart', [
+    {
+      x: readings.map(r => r.timestamp),
+      y: readings.map(r => r.soil_moisture_pct),
+      type: 'scatter', mode: 'lines', name: 'Humidité',
+      line: {color, width: 2}, fill: 'tozeroy',
+      fillcolor: color.replace(')', ',.08)').replace('rgb', 'rgba'),
+    },
+    {
+      x: readings.map(r => r.timestamp),
+      y: readings.map(r => r.temperature_c),
+      type: 'scatter', mode: 'lines', name: 'Temp (°C)',
+      line: {color: '#ff9f0a', width: 1.5, dash: 'dot'},
+      yaxis: 'y2',
+    }
+  ], {
     paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
     font: {color: 'rgba(255,255,255,.55)', size: 11, family: '-apple-system,system-ui'},
-    margin: {t: 6, b: 40, l: 42, r: 10},
+    margin: {t: 6, b: 40, l: 42, r: 42},
     xaxis: {gridcolor: 'rgba(255,255,255,.06)', tickformat: '%H:%M\n%d.%m'},
-    yaxis: {title: 'Humidité (%)', range: [0, 100], gridcolor: 'rgba(255,255,255,.06)'},
+    yaxis:  {title: 'Humidité (%)', range: [0, 100], gridcolor: 'rgba(255,255,255,.06)'},
+    yaxis2: {title: 'Temp (°C)', overlaying: 'y', side: 'right', showgrid: false},
+    legend: {orientation: 'h', y: -0.22, bgcolor: 'transparent'},
   }, {responsive: true, displayModeBar: false});
 }
 loadZoneChart({{ zone.zone_id }}, 24);
 
-// ── Edit planting modal ──────────────────────────────────
+// ── Edit modal ──
 const _editForm = document.getElementById('edit-planting-form');
-let _editId = null;
-
 function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo) {
-  _editId = id;
   document.getElementById('ep-name').textContent   = name;
   document.getElementById('ep-variety').value      = variety;
   document.getElementById('ep-harvest').value      = harvest;
@@ -233,7 +438,7 @@ document.getElementById('edit-overlay').addEventListener('click', e => {
 });
 </script>
 
-<!-- Edit planting modal -->
+<!-- Edit modal -->
 <div class="modal-overlay" id="edit-overlay">
   <div class="modal-box" style="max-width:420px;">
     <div class="modal-header">
@@ -246,7 +451,7 @@ document.getElementById('edit-overlay').addEventListener('click', e => {
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div>
           <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Variété</label>
-          <input type="text" name="variety" id="ep-variety" placeholder="ex. Cœur de bœuf, Nantaise…"
+          <input type="text" name="variety" id="ep-variety" placeholder="ex. Cœur de bœuf…"
             style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
         </div>
         <div>
@@ -277,7 +482,7 @@ document.getElementById('edit-overlay').addEventListener('click', e => {
         </div>
         <div>
           <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Notes</label>
-          <textarea name="notes" id="ep-notes" rows="2" placeholder="Observations, remarques…"
+          <textarea name="notes" id="ep-notes" rows="2" placeholder="Observations…"
             style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);resize:vertical;"></textarea>
         </div>
       </div>
