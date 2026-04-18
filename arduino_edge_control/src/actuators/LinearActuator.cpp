@@ -16,8 +16,8 @@ void LinearActuator::open() {
     if (_state == ACT_OPEN || _state == ACT_MOVING_OPEN) return;
     if (_endstopOpen()) { _state = ACT_OPEN; return; }
     Logger::log(LOG_INFO, "ACTUATOR", "Lucarne -> ouverture");
-    digitalWrite(ACTUATOR_IN1, HIGH);
-    digitalWrite(ACTUATOR_IN2, LOW);
+    digitalWrite(ACTUATOR_IN1, LOW);
+    digitalWrite(ACTUATOR_IN2, HIGH);
     _state = ACT_MOVING_OPEN;
     _moveStartMs = millis();
 }
@@ -26,8 +26,8 @@ void LinearActuator::close() {
     if (_state == ACT_CLOSED || _state == ACT_MOVING_CLOSE) return;
     if (_endstopClose()) { _state = ACT_CLOSED; return; }
     Logger::log(LOG_INFO, "ACTUATOR", "Lucarne -> fermeture");
-    digitalWrite(ACTUATOR_IN1, LOW);
-    digitalWrite(ACTUATOR_IN2, HIGH);
+    digitalWrite(ACTUATOR_IN1, HIGH);
+    digitalWrite(ACTUATOR_IN2, LOW);
     _state = ACT_MOVING_CLOSE;
     _moveStartMs = millis();
 }
