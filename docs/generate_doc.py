@@ -125,7 +125,7 @@ def build():
             ["Version",   "1.0"],
             ["Date",      datetime.date.today().strftime("%d %B %Y")],
             ["Localisation", "Vullierens, Vaud, Suisse"],
-            ["Firmware",  "1.0.0 (PlatformIO / Arduino Edge Control)"],
+            ["Firmware",  "1.0.0 (PlatformIO / Arduino Edge Control + MKR WiFi 1010)"],
             ["Backend",   "Python 3.10 · Flask 3.x · APScheduler"],
         ], [5*cm, 11.5*cm], header=False),
         PageBreak(),
@@ -168,11 +168,13 @@ def build():
             ["Couche",        "Matériel",              "Rôle"],
             ["Décision",      "Raspberry Pi 5",        "Flask · APScheduler · SQLite · Météo Open-Meteo · Interface PWA"],
             ["Terrain",       "Arduino Edge Control",  "Lecture capteurs · Pilotage vannes · Contrôle vérin · Serveur HTTP"],
-            ["Capteurs sol",  "SoilWatch 10 ×4",       "Humidité volumétrique par zone (ADC 16-bit)"],
+            ["WiFi",          "MKR WiFi 1010",         "Connectivité WiFi 802.11 b/g/n (slot MKR du Edge Control)"],
+            ["Capteurs sol",  "SoilWatch 10 ×4",       "Humidité volumétrique par zone (Input 0-5V CH01–04)"],
             ["Température",   "DS18B20 ×2",            "Température extérieure + intérieure serre (OneWire)"],
-            ["Vent",          "Anémomètre QS-FS01",    "Vitesse vent en km/h (sortie tension analogique 0.4–2.0 V)"],
-            ["Irrigation",    "Vannes 24V latching ×4","Ouverture/fermeture par zone (pulse relais)"],
+            ["Vent",          "Anémomètre QS-FS01",    "Vitesse vent km/h — tension analogique 0.4–2.0 V (Input CH05)"],
+            ["Irrigation",    "Vannes GARDENA 24V ×4", "Solénoïde NC — relais latching (Latching OUT 1–4)"],
             ["Lucarne",       "Vérin linéaire 12V",    "Ouverture toit serre (H-bridge + fins de course)"],
+            ["Affichage",     "Enclosure Kit",         "LCD 2×16 NDS1602A + bouton POWER_ON"],
         ], [3.5*cm, 4.5*cm, 8.5*cm]),
         PageBreak(),
     ]
@@ -181,21 +183,21 @@ def build():
     story += [
         p("2. Matériel requis", H1), hr(),
         make_table([
-            ["Référence",                "Quantité", "Rôle",                          "Interface Arduino"],
-            ["Arduino Edge Control",     "1",        "Contrôleur principal terrain",   "—"],
-            ["Raspberry Pi 5 (4 GB)",    "1",        "Serveur Flask / décision",       "WiFi 802.11ac"],
-            ["SoilWatch 10",             "4",        "Capteur humidité sol 0–100%",    "InputExpander ADC"],
-            ["DS18B20 (sonde étanche)",  "2",        "Température ext. + serre",       "OneWire D5"],
-            ["Anémomètre QS-FS01",       "1",        "Vitesse vent (tension 0.4–2.0 V)","InputExpander ADC 4"],
-            ["GARDENA Vanne 24V (réf. 900904101)","4", "Irrigation par zone (solénoïde)", "Relay 0–3 Edge Control"],
-            ["Vérin linéaire 12V",       "1",        "Ouverture lucarne serre",        "GPIO D7/D8 + D9/D10"],
-            ["Arduino Edge Control Enclosure Kit","1","LCD 2×16 + bouton poussoir",    "TCA6424A Expander + GPIO"],
-            ["Alimentation 24V / 5A",    "1",        "Vannes GARDENA solénoïde",       "—"],
-            ["Alimentation 12V / 2A",    "1",        "Vérin linéaire",                 "—"],
-            ["Alimentation 5V / 5A USB-C","1",       "Raspberry Pi 5",                 "—"],
-            ["Boîtier IP67",             "1",        "Protection intempéries",         "—"],
-            ["Câble 2×0.75mm² (rouge/noir)","~20m",  "Alimentation capteurs/actionneurs","—"],
-        ], [5*cm, 1.8*cm, 5*cm, 4.7*cm]),
+            ["Référence",                "Qté", "Rôle",                              "Interface Arduino"],
+            ["Arduino Edge Control",     "1",   "Contrôleur principal terrain",       "—"],
+            ["Arduino MKR WiFi 1010",    "1",   "WiFi 802.11 b/g/n (slot MKR)",      "Slot MKR Edge Control"],
+            ["Raspberry Pi 5 (4 GB)",    "1",   "Serveur Flask / décision",           "WiFi 802.11ac"],
+            ["SoilWatch 10",             "4",   "Capteur humidité sol 0–100%",        "Input 0-5V CH01–CH04"],
+            ["DS18B20 (sonde étanche)",  "2",   "Température ext. + serre",           "OneWire D5"],
+            ["Anémomètre QS-FS01",       "1",   "Vitesse vent (tension 0.4–2.0 V)",  "Input 0-5V CH05"],
+            ["GARDENA 24V (réf. 900904101)","4","Irrigation — solénoïde NC",          "Latching OUT 1–4"],
+            ["Vérin linéaire 12V",       "1",   "Ouverture lucarne serre",            "GPIO D7/D8 + D9/D10"],
+            ["Edge Control Enclosure Kit","1",  "LCD 2×16 NDS1602A + bouton",        "TCA6424A Expander + POWER_ON"],
+            ["Alimentation 24V / 5A",    "1",   "Vannes GARDENA solénoïde",           "—"],
+            ["Alimentation 12V / 2A",    "1",   "Vérin linéaire",                     "—"],
+            ["Alimentation 5V / 5A USB-C","1",  "Raspberry Pi 5",                     "—"],
+            ["Boîtier IP67",             "1",   "Protection intempéries",             "—"],
+        ], [5.2*cm, 1.2*cm, 5.2*cm, 5*cm]),
         PageBreak(),
     ]
 
@@ -290,7 +292,7 @@ def build():
             ["Sortie signal",       "0.4 V à 2.0 V",   "Analogique — 0.4 V = vent nul, 2.0 V = 32.4 m/s"],
             ["Plage de mesure",     "0–32.4 m/s",      "Soit 0–116.6 km/h"],
             ["Formule de conversion","(V − 0.4) / 1.6 × 32.4","Résultat en m/s · multiplier par 3.6 pour km/h"],
-            ["Canal ADC",           "InputExpander 4", "Canaux 0–3 réservés aux SoilWatch"],
+            ["Canal ADC",           "Input 0-5V CH05", "INPUT_05V_CH05 (=4) — CH01–04 réservés SoilWatch"],
             ["Lectures moyennées",  "8",               "WIND_ADC_SAMPLES — réduction du bruit"],
             ["Période de lecture",  "5 s",             "lastWindReadMs — géré dans loop()"],
         ], [4.5*cm, 3.5*cm, 8.5*cm]),
@@ -449,14 +451,13 @@ def build():
         sp(4),
         make_table([
             ["Paramètre",          "Valeur",       "Description"],
-            ["BUTTON_PIN",         "0",            "GPIO bouton (à confirmer selon câblage IOBRD)"],
+            ["POWER_ON",           "(lib)",        "Constante définie par Arduino_EdgeControl — pin bouton Enclosure Kit"],
             ["BUTTON_DEBOUNCE_MS", "50 ms",        "Anti-rebond logiciel"],
             ["BUTTON_LONG_PRESS_MS","2 000 ms",    "Durée détection appui long"],
         ], [5*cm, 3*cm, 8.5*cm]),
         sp(4),
-        p("⚠️  Le pin BUTTON_PIN (défaut 0) doit être confirmé selon votre câblage "
-          "du connecteur IOBRD de l'Edge Control. Vérifier avec un multimètre "
-          "avant la mise en service.", WARN),
+        p("Le pin bouton est la constante POWER_ON définie par la librairie Arduino_EdgeControl "
+          "(user manual §PowerOnButton). Aucune configuration manuelle requise.", NOTE),
         PageBreak(),
     ]
 
@@ -495,7 +496,7 @@ def build():
             ["RPI_PORT",               "5001",               "Port Flask (défaut 5001)"],
             ["ADC_DRY",                "3100",               "Valeur ADC capteur sol à sec (calibrer)"],
             ["ADC_WET",                "1200",               "Valeur ADC capteur sol saturé (calibrer)"],
-            ["ANEMOMETER_ADC_CH",      "4",                  "Canal InputExpander (0–3 = SoilWatch, 4 = QS-FS01)"],
+            ["ANEMOMETER_ADC_CH",      "4",                  "Canal Input 0-5V (INPUT_05V_CH05) — CH01–04 = SoilWatch"],
             ["WIND_V_ZERO",            "0.4f",               "Tension sortie à vent nul (V) — datasheet QS-FS01"],
             ["WIND_V_FULL",            "2.0f",               "Tension sortie à vitesse max (V) — datasheet QS-FS01"],
             ["WIND_MS_MAX",            "32.4f",              "Vitesse max correspondante (m/s) — datasheet QS-FS01"],
@@ -524,7 +525,7 @@ def build():
 
     # 10.1 GET /api/sensors
     story += [
-        p("10.1   GET /api/sensors", H2),
+        p("11.1   GET /api/sensors", H2),
         p("Retourne les lectures de tous les capteurs en une seule requête. "
           "Appelé par le Raspberry Pi à chaque cycle d'automatisation (toutes les 60 s). "
           "C'est l'endpoint le plus utilisé — il concentre humidité sol, températures et vent."),
@@ -556,7 +557,7 @@ def build():
 
     # 10.2 GET /api/actuators/status
     story += [
-        p("10.2   GET /api/actuators/status", H2),
+        p("11.2   GET /api/actuators/status", H2),
         p("Retourne l'état actuel de tous les actionneurs : vannes d'irrigation et lucarne de serre. "
           "Le Raspberry Pi appelle cet endpoint après chaque commande pour confirmer l'exécution."),
         sp(4),
@@ -581,7 +582,7 @@ def build():
 
     # 10.3 POST /api/actuators/valve/<zone_id>
     story += [
-        p("10.3   POST /api/actuators/valve/&lt;zone_id&gt;", H2),
+        p("11.3   POST /api/actuators/valve/&lt;zone_id&gt;", H2),
         p("Commande l'ouverture ou la fermeture d'une vanne d'irrigation. "
           "Le paramètre <b>zone_id</b> est passé dans l'URL (1–4). "
           "L'Arduino envoie une impulsion de 50 ms sur le relais correspondant."),
@@ -602,7 +603,7 @@ def build():
 
     # 10.4 POST /api/actuators/roof
     story += [
-        p("10.4   POST /api/actuators/roof", H2),
+        p("11.4   POST /api/actuators/roof", H2),
         p("Commande l'ouverture ou la fermeture de la lucarne de serre via le vérin linéaire. "
           "Le moteur s'arrête automatiquement à la détection du fin de course (max 60 s). "
           "Si la fin de course n'est pas atteinte, l'état passe à 'error'."),
@@ -618,7 +619,7 @@ def build():
 
     # 10.5 GET /api/health
     story += [
-        p("10.5   GET /api/health", H2),
+        p("11.5   GET /api/health", H2),
         p("Endpoint de supervision. Le Raspberry Pi l'appelle périodiquement pour vérifier "
           "que l'Arduino est joignable et fonctionnel. En mode simulation, "
           "cet endpoint est également exposé par l'émulateur sur le port 8081."),
@@ -682,7 +683,7 @@ def build():
             ["☐", "Calibrer ADC_DRY et ADC_WET pour vos capteurs SoilWatch",    "config.h:26-27"],
             ["☐", "Vérifier câblage QS-FS01 : alimentation ≥ 7V, signal sur ADC 4", "config.h, AnemometerSensor.cpp"],
             ["☐", "Vérifier alimentation 24V vannes GARDENA (solénoïde NC)",     "ValveController.cpp"],
-            ["☐", "Confirmer BUTTON_PIN selon câblage connecteur IOBRD",         "config.h:BUTTON_PIN"],
+            ["☐", "Vérifier bouton LCD : constante POWER_ON (lib Arduino_EdgeControl)", "ButtonController.cpp"],
             ["☐", "Vérifier affichage LCD au boot (écran 'MonJardin v1')",       "DisplayController.cpp"],
             ["☐", "Compiler et flasher via PlatformIO",                         "platformio.ini"],
             ["☐", "Vérifier logs série : 4 zones ADC, 2 DS18B20 détectés",      "Serial 115200"],
