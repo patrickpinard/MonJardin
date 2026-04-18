@@ -18,18 +18,25 @@
 
   <!-- ── Connection status ── -->
   <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-wifi"></i> État de la connexion</div>
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;" id="conn-status-row">
+    <div class="card-title">
+      <i class="bi bi-wifi"></i> État de la connexion
+      <span class="badge badge-plant" style="margin-left:8px;font-size:10px;" id="mkr-module-badge">
+        <i class="bi bi-cpu"></i> MKR WiFi 1010
+      </span>
+    </div>
+
+    <!-- Ligne 1 : statut global -->
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;" id="conn-status-row">
       <div class="diag-stat">
         <div class="diag-label">Statut</div>
         <div class="diag-val" id="ard-status">—</div>
       </div>
       <div class="diag-stat">
-        <div class="diag-label">Latence</div>
+        <div class="diag-label">Latence RPi → Arduino</div>
         <div class="diag-val" id="ard-latency">—</div>
       </div>
       <div class="diag-stat">
-        <div class="diag-label">Uptime</div>
+        <div class="diag-label">Uptime Arduino</div>
         <div class="diag-val" id="ard-uptime">—</div>
       </div>
       <div class="diag-stat">
@@ -37,12 +44,41 @@
         <div class="diag-val" id="ard-firmware">—</div>
       </div>
       <div class="diag-stat">
-        <div class="diag-label">RSSI WiFi</div>
-        <div class="diag-val" id="ard-rssi">—</div>
-      </div>
-      <div class="diag-stat">
         <div class="diag-label">Mode</div>
         <div class="diag-val" id="ard-mode">—</div>
+      </div>
+    </div>
+
+    <!-- Ligne 2 : détails MKR WiFi 1010 -->
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">
+        <i class="bi bi-broadcast"></i> MKR WiFi 1010 — Module NINA-W102
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div class="diag-stat">
+          <div class="diag-label">SSID</div>
+          <div class="diag-val" id="ard-ssid">—</div>
+        </div>
+        <div class="diag-stat">
+          <div class="diag-label">RSSI</div>
+          <div class="diag-val" id="ard-rssi">—</div>
+        </div>
+        <div class="diag-stat">
+          <div class="diag-label">Qualité signal</div>
+          <div class="diag-val" id="ard-wifi-quality">—</div>
+        </div>
+        <div class="diag-stat" style="min-width:120px;">
+          <div class="diag-label">Force du signal</div>
+          <div style="margin-top:4px;">
+            <div class="diag-bar-track" style="height:8px;">
+              <div id="wifi-quality-bar" class="diag-bar-fill ok" style="width:0%;height:8px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="diag-stat">
+          <div class="diag-label">Module WiFi/BLE</div>
+          <div class="diag-val" id="ard-wifi-module" style="font-size:11px;">—</div>
+        </div>
       </div>
     </div>
   </div>
@@ -62,7 +98,7 @@
           </div>
           <div>
             <div class="diag-ch-name">Zone {{ z }} — {{ ['Serre','Soleil','Mi-ombre','Aromates'][z-1] }}</div>
-            <div class="diag-ch-sub">ADC canal {{ z }} · SoilWatch 10</div>
+            <div class="diag-ch-sub">Input 0-5V CH0{{ z }} · SoilWatch 10</div>
           </div>
         </div>
         <div class="diag-ch-body">
@@ -127,8 +163,8 @@
         <div class="diag-ch-header">
           <div class="diag-ch-icon z4"><i class="bi bi-wind"></i></div>
           <div>
-            <div class="diag-ch-name">Anémomètre</div>
-            <div class="diag-ch-sub">Impulsions · pin D5</div>
+            <div class="diag-ch-name">Anémomètre QS-FS01</div>
+            <div class="diag-ch-sub">Tension 0.4–2.0 V · Input CH05</div>
           </div>
         </div>
         <div class="diag-ch-body">
@@ -313,9 +349,23 @@ async function fetchHealth() {
     document.getElementById('ard-mode').textContent = d.simulation_mode ? 'Simulation' : 'Production';
     if (d.arduino_health) {
       const h = d.arduino_health;
-      document.getElementById('ard-uptime').textContent = formatUptime(h.uptime_s);
+      document.getElementById('ard-uptime').textContent   = formatUptime(h.uptime_s);
       document.getElementById('ard-firmware').textContent = h.firmware_version || '—';
-      document.getElementById('ard-rssi').textContent = h.wifi_rssi ? h.wifi_rssi + ' dBm' : '—';
+
+      // MKR WiFi 1010 details
+      const rssi = h.wifi_rssi;
+      document.getElementById('ard-rssi').textContent = rssi != null ? rssi + ' dBm' : '—';
+      document.getElementById('ard-ssid').textContent = h.wifi_ssid || '—';
+      document.getElementById('ard-wifi-module').textContent = h.wifi_module || 'MKR WiFi 1010 (NINA-W102)';
+
+      const quality = h.wifi_quality_pct ?? (rssi != null ? Math.min(Math.max(2*(rssi+100),0),100) : null);
+      if (quality != null) {
+        const qLabel = quality >= 75 ? 'Excellent' : quality >= 50 ? 'Bon' : quality >= 25 ? 'Faible' : 'Très faible';
+        document.getElementById('ard-wifi-quality').textContent = quality + '% — ' + qLabel;
+        const bar = document.getElementById('wifi-quality-bar');
+        bar.style.width = quality + '%';
+        bar.className = 'diag-bar-fill ' + (quality >= 60 ? 'ok' : quality >= 30 ? 'low' : 'high');
+      }
     }
   } catch(e) {}
 }

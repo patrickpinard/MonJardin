@@ -99,13 +99,17 @@ def set_roof():
 @_emulator_app.get("/api/health")
 def health():
     """Heartbeat de l'émulateur."""
+    rssi = -65
     return jsonify({
-        "status": "ok",
-        "uptime_s": int(time.time() - _start_time),
-        "simulated": True,
-        "wifi_rssi": -65,
+        "status":           "ok",
+        "uptime_s":         int(time.time() - _start_time),
+        "simulated":        True,
+        "wifi_module":      "MKR WiFi 1010 (NINA-W102) [simulé]",
+        "wifi_ssid":        "MonReseau",
+        "wifi_rssi":        rssi,
+        "wifi_quality_pct": min(max(2 * (rssi + 100), 0), 100),
         "firmware_version": "simulator-1.0.0",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp":        datetime.now(timezone.utc).isoformat(),
     })
 
 

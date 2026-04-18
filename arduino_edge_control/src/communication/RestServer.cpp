@@ -57,11 +57,16 @@ void RestServer::_handleRequest(WiFiClient& client) {
 
     // ── GET /api/health ───────────────────────────────────────────────────
     } else if (strcmp(method, "GET") == 0 && strcmp(path, "/api/health") == 0) {
-        StaticJsonDocument<128> doc;
+        int rssi = WiFi.RSSI();
+        int quality = constrain(2 * (rssi + 100), 0, 100);
+        StaticJsonDocument<256> doc;
         doc["status"]           = "ok";
         doc["firmware_version"] = FIRMWARE_VERSION;
         doc["uptime_s"]         = millis() / 1000;
-        doc["wifi_rssi"]        = WiFi.RSSI();
+        doc["wifi_module"]      = "MKR WiFi 1010 (NINA-W102)";
+        doc["wifi_ssid"]        = WiFi.SSID();
+        doc["wifi_rssi"]        = rssi;
+        doc["wifi_quality_pct"] = quality;
         String out; serializeJson(doc, out);
         _send200(client, out);
 
