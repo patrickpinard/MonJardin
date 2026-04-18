@@ -38,7 +38,7 @@ class PlantingAdvisor:
             "notes": veg.get("notes_fr", ""),
         }
 
-    def get_seasonal_advice(self, current_month: int, limit: int = 12) -> list[dict]:
+    def get_seasonal_advice(self, current_month: int, limit: int = 999) -> list[dict]:
         """Légumes recommandés pour le mois courant, triés par pertinence.
 
         Priorité : mois de plantation optimal (premiers mois de la liste) et
