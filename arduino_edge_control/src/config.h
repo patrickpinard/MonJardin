@@ -31,10 +31,15 @@
 #define ONE_WIRE_BUS        5       // pin OneWire (D5 sur Edge Control)
 #define TEMP_READ_INTERVAL  30000UL // lecture température toutes les 30s
 
-// ── Anémomètre ────────────────────────────────────────────────────────────
-#define ANEMOMETER_PIN      6       // pin impulsions (D6)
-#define WIND_MEASURE_MS     3000UL  // fenêtre de mesure 3s
-#define WIND_FACTOR         2.4f    // km/h par Hz (facteur calibration)
+// ── Anémomètre QS-FS01 (sortie tension analogique) ────────────────────────
+// Connecté sur canal ADC 4 de l'InputExpander (canaux 0-3 = SoilWatch zones)
+// Alimentation : 7-24V DC (ne pas alimenter en 3.3V)
+// Sortie signal : 0.4V (0 m/s) → 2.0V (32.4 m/s)
+#define ANEMOMETER_ADC_CH   4       // canal InputExpander (ADC 16-bit)
+#define WIND_V_ZERO         0.4f    // tension à vent nul (V)
+#define WIND_V_FULL         2.0f    // tension à vitesse max (V)
+#define WIND_MS_MAX         32.4f   // vitesse max correspondante (m/s)
+#define WIND_ADC_SAMPLES    8       // lectures moyennées par mesure
 
 // ── Actionneurs ───────────────────────────────────────────────────────────
 #define RELAY_PULSE_MS      50      // durée pulse relais latching (ms)

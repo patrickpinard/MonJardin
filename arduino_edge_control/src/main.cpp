@@ -7,32 +7,32 @@
 #include "utils/IrrigationGuard.h"
 #include "sensors/SoilSensor.h"
 #include "sensors/TempSensor.h"
+#include "sensors/AnemometerSensor.h"
 #include "actuators/ValveController.h"
 #include "actuators/LinearActuator.h"
 #include "communication/WiFiManager.h"
 #include "communication/RestServer.h"
 
 // ── Instances globales ────────────────────────────────────────────────────
-SoilSensor      soilSensor;
-TempSensor      tempSensor;
-ValveController valves;
-LinearActuator  roof;
-WiFiManager     wifi;
-RestServer      server;
-IrrigationGuard irrigGuard;
+SoilSensor        soilSensor;
+TempSensor        tempSensor;
+AnemometerSensor  anemometer;
+ValveController   valves;
+LinearActuator    roof;
+WiFiManager       wifi;
+RestServer        server;
+IrrigationGuard   irrigGuard;
 
 // ── Cache capteurs ────────────────────────────────────────────────────────
 SoilReading soilReadings[NUM_ZONES];
 float       tempExt   = -127.0f;
 float       tempSerre = -127.0f;
-float       windKmh   = 0.0f;
 
 // ── Timers ────────────────────────────────────────────────────────────────
-unsigned long lastSensorReadMs = 0;
+unsigned long lastSensorReadMs  = 0;
 unsigned long lastTempRequestMs = 0;
 unsigned long lastLogFlushMs    = 0;
-volatile unsigned long windPulseCount = 0;
-unsigned long windMeasureStartMs = 0;
+unsigned long lastWindReadMs    = 0;
 
 // ── Watchdog RPi ─────────────────────────────────────────────────────────
 // Si le RPi ne contacte pas l'Arduino pendant RPI_WATCHDOG_MS,
@@ -53,24 +53,6 @@ void checkRpiWatchdog() {
     if (rpiWatchdogTriggered && millis() - lastReq < RPI_WATCHDOG_MS) {
         rpiWatchdogTriggered = false;
         Logger::log(LOG_INFO, "WATCHDOG", "RPi de nouveau joignable — mode normal");
-    }
-}
-
-// ── Anemomètre (ISR) ─────────────────────────────────────────────────────
-void IRAM_ATTR onWindPulse() {
-    windPulseCount++;
-}
-
-void updateWindSpeed() {
-    unsigned long now = millis();
-    if (now - windMeasureStartMs >= WIND_MEASURE_MS) {
-        noInterrupts();
-        unsigned long pulses = windPulseCount;
-        windPulseCount = 0;
-        interrupts();
-        float hz = (float)pulses / (WIND_MEASURE_MS / 1000.0f);
-        windKmh = hz * WIND_FACTOR;
-        windMeasureStartMs = now;
     }
 }
 
@@ -103,7 +85,7 @@ void onGetSensors(String& out) {
     StaticJsonDocument<512> doc;
     doc["temperature_c"]   = isnan(tempExt)   ? JsonVariant() : JsonVariant(tempExt);
     doc["temp_serre_c"]    = isnan(tempSerre)  ? JsonVariant() : JsonVariant(tempSerre);
-    doc["wind_speed_kmh"]  = windKmh;
+    doc["wind_speed_kmh"]  = anemometer.getKmh();
 
     JsonArray zones = doc.createNestedArray("zones");
     for (int i = 0; i < NUM_ZONES; i++) {
@@ -146,10 +128,8 @@ void setup() {
     tempSensor.begin();
     roof.begin();
 
-    // Anémomètre
-    pinMode(ANEMOMETER_PIN, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(ANEMOMETER_PIN), onWindPulse, FALLING);
-    windMeasureStartMs = millis();
+    // Anémomètre QS-FS01
+    anemometer.begin();
 
     // Première lecture capteurs
     tempSensor.requestTemperatures();
@@ -201,8 +181,11 @@ void loop() {
         lastTempRequestMs = now;
     }
 
-    // 7. Vitesse du vent
-    updateWindSpeed();
+    // 7. Vitesse du vent (lecture ADC toutes les 5s)
+    if (now - lastWindReadMs >= 5000UL) {
+        anemometer.read();
+        lastWindReadMs = now;
+    }
 
     // 8. Envoi logs au RPi (toutes les 60s si WiFi dispo)
     if (now - lastLogFlushMs >= 60000UL) {

@@ -169,7 +169,7 @@ def build():
             ["Terrain",       "Arduino Edge Control",  "Lecture capteurs · Pilotage vannes · Contrôle vérin · Serveur HTTP"],
             ["Capteurs sol",  "SoilWatch 10 ×4",       "Humidité volumétrique par zone (ADC 16-bit)"],
             ["Température",   "DS18B20 ×2",            "Température extérieure + intérieure serre (OneWire)"],
-            ["Vent",          "Anémomètre impulsions", "Vitesse vent en km/h (comptage impulsions)"],
+            ["Vent",          "Anémomètre QS-FS01",    "Vitesse vent en km/h (sortie tension analogique 0.4–2.0 V)"],
             ["Irrigation",    "Vannes 24V latching ×4","Ouverture/fermeture par zone (pulse relais)"],
             ["Lucarne",       "Vérin linéaire 12V",    "Ouverture toit serre (H-bridge + fins de course)"],
         ], [3.5*cm, 4.5*cm, 8.5*cm]),
@@ -185,7 +185,7 @@ def build():
             ["Raspberry Pi 5 (4 GB)",    "1",        "Serveur Flask / décision",       "WiFi 802.11ac"],
             ["SoilWatch 10",             "4",        "Capteur humidité sol 0–100%",    "InputExpander ADC"],
             ["DS18B20 (sonde étanche)",  "2",        "Température ext. + serre",       "OneWire D5"],
-            ["Anémomètre impulsions",    "1",        "Vitesse vent",                   "GPIO D6"],
+            ["Anémomètre QS-FS01",       "1",        "Vitesse vent (tension 0.4–2.0 V)","InputExpander ADC 4"],
             ["Vanne solénoïde 24V DC latching","4",  "Irrigation par zone",            "Relay 0–3"],
             ["Vérin linéaire 12V",       "1",        "Ouverture lucarne serre",        "GPIO D7/D8 + D9/D10"],
             ["Alimentation 24V / 5A",    "1",        "Vannes latching",                "—"],
@@ -275,21 +275,41 @@ def build():
 
     # ── 5. ANÉMOMÈTRE ──────────────────────────────────────────────────────
     story += [
-        p("5. Montage — Anémomètre", H1), hr(),
-        p("L'anémomètre génère des <b>impulsions électriques</b> proportionnelles à la vitesse "
-          "de rotation des coupelles. La fréquence des impulsions est convertie en km/h."),
+        p("5. Montage — Anémomètre QS-FS01", H1), hr(),
+        p("Le QS-FS01 est un anémomètre à <b>sortie tension analogique</b> (0.4 V–2.0 V). "
+          "La tension est convertie en vitesse de vent selon la formule du fabricant. "
+          "Il n'utilise <b>pas</b> de sortie impulsions — il est connecté sur le canal ADC 4 "
+          "de l'InputExpander de l'Arduino Edge Control."),
         sp(4),
+        p("Caractéristiques électriques", H2),
         make_table([
-            ["Paramètre",         "Valeur",     "Description"],
-            ["Broche",            "D6",         "GPIO interruption (INPUT_PULLUP)"],
-            ["Fenêtre de mesure", "3 000 ms",   "Comptage des impulsions sur 3 secondes"],
-            ["Facteur vitesse",   "2.4 km/h/Hz","1 Hz = 2.4 km/h (à calibrer selon capteur)"],
-            ["Type signal",       "Contact sec","Fermeture à chaque demi-tour des coupelles"],
-        ], [4.5*cm, 3*cm, 9*cm]),
+            ["Paramètre",           "Valeur",          "Description"],
+            ["Alimentation",        "7–24 V DC",       "Ne pas alimenter en 3.3 V — tension minimale 7 V"],
+            ["Sortie signal",       "0.4 V à 2.0 V",   "Analogique — 0.4 V = vent nul, 2.0 V = 32.4 m/s"],
+            ["Plage de mesure",     "0–32.4 m/s",      "Soit 0–116.6 km/h"],
+            ["Formule de conversion","(V − 0.4) / 1.6 × 32.4","Résultat en m/s · multiplier par 3.6 pour km/h"],
+            ["Canal ADC",           "InputExpander 4", "Canaux 0–3 réservés aux SoilWatch"],
+            ["Lectures moyennées",  "8",               "WIND_ADC_SAMPLES — réduction du bruit"],
+            ["Période de lecture",  "5 s",             "lastWindReadMs — géré dans loop()"],
+        ], [4.5*cm, 3.5*cm, 8.5*cm]),
+        sp(6),
+        p("Câblage", H2),
+        make_table([
+            ["Fil QS-FS01",   "Couleur typique",  "Connexion Arduino Edge Control"],
+            ["Alimentation",  "Rouge / Marron",   "Bornier 12V ou 24V DC (7 V min)"],
+            ["Masse",         "Bleu / Noir",       "GND commun Arduino"],
+            ["Signal",        "Jaune / Bleu clair","InputExpander ADC canal 4"],
+        ], [4*cm, 4*cm, 8.5*cm]),
         sp(4),
-        p("Câblage : fil signal → D6, fil GND → GND Arduino. "
-          "La résistance pull-up interne est activée (INPUT_PULLUP). "
-          "Adapter WIND_FACTOR selon la documentation de votre anémomètre.", NOTE),
+        p("⚠️  L'alimentation doit être ≥ 7 V DC. Ne jamais alimenter le QS-FS01 depuis la "
+          "pin 3.3 V de l'Arduino — la tension est insuffisante et le signal restera à 0.4 V "
+          "(vent nul) en permanence.", WARN),
+        sp(4),
+        p("Formule complète (implémentée dans AnemometerSensor.cpp)", H2),
+        p("int avgAdc = moyenne(8 × InputExpander.analogRead(4));\n"
+          "float V    = avgAdc × (3.3 / 65535.0);          // ADC 16-bit → tension\n"
+          "float ms   = (V - 0.4) / 1.6 × 32.4;           // formule datasheet\n"
+          "float kmh  = ms × 3.6;                          // m/s → km/h", CODE),
         PageBreak(),
     ]
 
@@ -374,7 +394,7 @@ def build():
             ["Raspberry Pi 5",       "5V DC",   "5A",          "USB-C, alimentation officielle RPi"],
             ["Capteurs SoilWatch 10","3.3V",    "50 mA total", "Fourni par Arduino via pin 3.3V"],
             ["DS18B20",              "3.3V",    "1.5 mA chacun","Fourni par Arduino via pin 3.3V"],
-            ["Anémomètre",           "—",       "—",           "Contact sec, pas d'alimentation requise"],
+            ["Anémomètre QS-FS01",   "7–24V DC","< 20 mA",    "Alimentation dédiée ≥ 7 V requise"],
         ], [4.5*cm, 2*cm, 4*cm, 6*cm]),
         sp(8),
         p("⚠️  Ne jamais connecter la masse 24V directement à la masse 3.3V de l'Arduino "
@@ -398,7 +418,11 @@ def build():
             ["RPI_PORT",               "5001",               "Port Flask (défaut 5001)"],
             ["ADC_DRY",                "3100",               "Valeur ADC capteur sol à sec (calibrer)"],
             ["ADC_WET",                "1200",               "Valeur ADC capteur sol saturé (calibrer)"],
-            ["WIND_FACTOR",            "2.4f",               "Facteur km/h/Hz de votre anémomètre"],
+            ["ANEMOMETER_ADC_CH",      "4",                  "Canal InputExpander (0–3 = SoilWatch, 4 = QS-FS01)"],
+            ["WIND_V_ZERO",            "0.4f",               "Tension sortie à vent nul (V) — datasheet QS-FS01"],
+            ["WIND_V_FULL",            "2.0f",               "Tension sortie à vitesse max (V) — datasheet QS-FS01"],
+            ["WIND_MS_MAX",            "32.4f",              "Vitesse max correspondante (m/s) — datasheet QS-FS01"],
+            ["WIND_ADC_SAMPLES",       "8",                  "Nombre de lectures ADC moyennées par mesure"],
         ], [5*cm, 3.5*cm, 8*cm]),
         sp(6),
         p("Compilation et flash (PlatformIO)", H2),
@@ -579,7 +603,7 @@ def build():
             ["☐", "Mettre à jour WIFI_SSID et WIFI_PASSWORD dans config.h",     "config.h:4-5"],
             ["☐", "Mettre à jour RPI_HOST avec l'IP fixe du Raspberry Pi",      "config.h:9"],
             ["☐", "Calibrer ADC_DRY et ADC_WET pour vos capteurs SoilWatch",    "config.h:26-27"],
-            ["☐", "Ajuster WIND_FACTOR selon votre anémomètre",                 "config.h:35"],
+            ["☐", "Vérifier câblage QS-FS01 : alimentation ≥ 7V, signal sur ADC 4", "config.h, AnemometerSensor.cpp"],
             ["☐", "Corriger ValveController::_pulse() pour relais latching",    "ValveController.cpp:50"],
             ["☐", "Compiler et flasher via PlatformIO",                         "platformio.ini"],
             ["☐", "Vérifier logs série : 4 zones ADC, 2 DS18B20 détectés",      "Serial 115200"],
