@@ -105,20 +105,20 @@
 }
 @media (max-width: 768px) { .companion-grid { grid-template-columns: 1fr; } }
 .assoc-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
   padding: 10px 0;
 }
 .assoc-plants {
-  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  display: flex; align-items: flex-end; gap: 10px;
 }
 .assoc-plant {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
 }
-.assoc-plant-emoji { font-size: 20px; line-height: 1; }
+.assoc-plant-emoji { font-size: 22px; line-height: 1; }
 .assoc-plant-name { font-size: 11px; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
-.assoc-sep { font-size: 12px; flex-shrink: 0; margin-bottom: 12px; }
+.assoc-sep { font-size: 11px; flex-shrink: 0; padding-bottom: 2px; }
 .assoc-desc {
-  font-size: 12px; color: var(--text-tertiary); line-height: 1.4; flex: 1; min-width: 0;
+  font-size: 11.5px; color: var(--text-tertiary); line-height: 1.45;
 }
 @media (max-width: 1100px) { .seasons-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {

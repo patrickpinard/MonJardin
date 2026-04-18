@@ -301,6 +301,14 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zone-mode-badge.manual   { background: rgba(255,159,10,.1); color: var(--orange); }
 .zone-mode-badge.disabled { background: var(--bg-secondary); color: var(--text-disabled); }
 
+.zone-goto-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  color: var(--green); font-size: 20px; text-decoration: none;
+  transition: transform .15s, opacity .15s; flex-shrink: 0;
+}
+.zone-goto-btn:hover { transform: scale(1.15); opacity: .85; }
+
 .zone-card-body { padding: 15px 17px; }
 .moisture-row { display: flex; align-items: center; gap: 13px; margin-bottom: 12px; }
 .gauge-wrap { position: relative; width: 68px; height: 68px; flex-shrink: 0; }
