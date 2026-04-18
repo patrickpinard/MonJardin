@@ -335,6 +335,87 @@ def force_cycle():
     return jsonify({"ok": True, "message": "Cycle déclenché"})
 
 
+@api_bp.post("/arduino/log")
+def arduino_log():
+    """Reçoit les logs de l'Arduino et les persiste en JournalEntry."""
+    body = request.get_json(silent=True) or {}
+    logs = body.get("logs", [])
+    if not logs:
+        return jsonify({"ok": True, "stored": 0})
+    stored = 0
+    try:
+        for line in logs[:50]:  # max 50 lignes par batch
+            if not isinstance(line, str):
+                continue
+            level = "info"
+            if "[ERROR]" in line:   level = "danger"
+            elif "[WARNING]" in line: level = "warning"
+            db.session.add(JournalEntry(
+                level=level,
+                message=f"[Arduino] {line[:255]}",
+            ))
+            stored += 1
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.error("Erreur persistance logs Arduino : %s", e)
+        return jsonify({"ok": False, "error": str(e)}), 500
+    return jsonify({"ok": True, "stored": stored})
+
+
+@api_bp.post("/arduino/alert")
+def arduino_alert():
+    """Reçoit une alerte de l'Arduino et envoie un email à l'administrateur."""
+    body = request.get_json(silent=True) or {}
+    zone_id = body.get("zone_id")
+    message = body.get("message", "Alerte Arduino")
+    alert_type = body.get("type", "unknown")
+
+    log.warning("ALERTE Arduino zone=%s type=%s : %s", zone_id, alert_type, message)
+
+    try:
+        db.session.add(JournalEntry(
+            level="danger",
+            message=f"[Arduino ALERTE] {message}",
+        ))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.error("Erreur persistance alerte Arduino : %s", e)
+
+    _send_alert_email(subject=f"MonJardin — Alerte Arduino : {alert_type}",
+                      body=f"{message}\n\nZone : {zone_id}\nType : {alert_type}")
+
+    return jsonify({"ok": True})
+
+
+def _send_alert_email(subject: str, body: str) -> None:
+    """Envoie un email d'alerte à l'administrateur."""
+    import smtplib
+    from email.mime.text import MIMEText
+    ADMIN_EMAIL  = "ppinard@bluewin.ch"
+    SMTP_HOST    = current_app.config.get("SMTP_HOST", "smtp.bluewin.ch")
+    SMTP_PORT    = int(current_app.config.get("SMTP_PORT", 587))
+    SMTP_USER    = current_app.config.get("SMTP_USER", "")
+    SMTP_PASSWORD = current_app.config.get("SMTP_PASSWORD", "")
+
+    if not SMTP_USER or not SMTP_PASSWORD:
+        log.warning("SMTP non configuré (SMTP_USER/SMTP_PASSWORD manquants) — email non envoyé")
+        return
+    try:
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"]    = SMTP_USER
+        msg["To"]      = ADMIN_EMAIL
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
+            smtp.starttls()
+            smtp.login(SMTP_USER, SMTP_PASSWORD)
+            smtp.send_message(msg)
+        log.info("Email d'alerte envoyé à %s : %s", ADMIN_EMAIL, subject)
+    except Exception as e:
+        log.error("Échec envoi email d'alerte : %s", e)
+
+
 @api_bp.get("/journal")
 def journal():
     """10 dernières entrées du journal système."""

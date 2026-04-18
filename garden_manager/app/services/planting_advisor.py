@@ -38,6 +38,23 @@ class PlantingAdvisor:
             "notes": veg.get("notes_fr", ""),
         }
 
+    def get_seasonal_advice(self, current_month: int) -> list[dict]:
+        """Légumes recommandés pour le mois courant, sans filtrage par zone."""
+        advice = []
+        for veg in self._plants:
+            if current_month not in veg.get("planting_months_ch", []):
+                continue
+            advice.append({
+                "name": veg["name"],
+                "emoji": veg.get("emoji", "🌱"),
+                "water_need": veg.get("water_need", "medium"),
+                "sun_need": veg.get("sun_need", "full"),
+                "notes_fr": veg.get("notes_fr", ""),
+                "days_to_harvest": veg.get("days_to_harvest", 90),
+                "harvest_months": veg.get("harvest_months_ch", []),
+            })
+        return advice
+
     def get_planting_advice(self, zone_id: int, current_month: int) -> list[dict]:
         """Légumes recommandés pour le mois courant dans la zone."""
         try:

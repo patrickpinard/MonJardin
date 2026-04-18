@@ -38,32 +38,38 @@ def update_zone(zone_id: int):
     return redirect(url_for("dashboard.settings"))
 
 
+MONTH_NAMES_FR = {
+    1: "Janvier", 2: "Février", 3: "Mars", 4: "Avril",
+    5: "Mai", 6: "Juin", 7: "Juillet", 8: "Août",
+    9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Décembre",
+}
+
 @config_bp.get("/planting")
 def planting_page():
     advisor = current_app.extensions["planting_advisor"]
     zones = Zone.query.order_by(Zone.zone_id).all()
     current_month = date.today().month
     plantings_by_zone = {}
-    advice_by_zone = {}
     warnings_by_zone = {}
     for zone in zones:
         plantings_by_zone[zone.zone_id] = (
             Planting.query.filter_by(zone_id=zone.zone_id)
             .order_by(Planting.planted_date.desc()).all()
         )
-        advice_by_zone[zone.zone_id] = advisor.get_planting_advice(zone.zone_id, current_month)
         warnings_by_zone[zone.zone_id] = advisor.check_zone_compatibility(zone.zone_id)
     all_vegetables = advisor.get_all_vegetables()
     golden = advisor.get_golden_associations()
+    seasonal_advice = advisor.get_seasonal_advice(current_month)
     return render_template(
         "planting.html",
         zones=zones,
         plantings_by_zone=plantings_by_zone,
-        advice_by_zone=advice_by_zone,
         warnings_by_zone=warnings_by_zone,
         all_vegetables=all_vegetables,
         golden_associations=golden,
         current_month=current_month,
+        month_name=MONTH_NAMES_FR.get(current_month, ""),
+        seasonal_advice=seasonal_advice,
     )
 
 

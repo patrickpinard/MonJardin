@@ -35,28 +35,32 @@
 
   <!-- Conseils du mois -->
   <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-calendar3" style="color:var(--blue);"></i> À planter ce mois-ci</div>
-    {% for zone in zones %}
-    {% set advice = advice_by_zone.get(zone.zone_id, []) %}
-    {% if advice %}
-    <div class="mb-3">
-      <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
-        Zone {{ zone.zone_id }} — {{ zone.name }}
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        {% for veg in advice %}
-        <a href="/plants/{{ veg.name }}" style="display:inline-flex;align-items:center;gap:7px;padding:7px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--r-md);transition:all var(--t);" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
-          <span style="font-size:18px;">{{ veg.emoji if veg.emoji else '🌱' }}</span>
-          <div>
-            <div style="font-size:13px;font-weight:600;">{{ veg.name }}</div>
-            <div style="font-size:10px;color:var(--text-tertiary);">{{ veg.water_need }}</div>
+    <div class="card-title">
+      <i class="bi bi-calendar3" style="color:var(--blue);"></i>
+      À planter en {{ month_name }}
+      <span class="badge" style="margin-left:6px;font-size:10px;">{{ seasonal_advice | length }} légume(s)</span>
+    </div>
+    {% if seasonal_advice %}
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      {% for veg in seasonal_advice %}
+      <a href="/plants/{{ veg.name }}" style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--r-md);text-decoration:none;transition:border-color var(--t);" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span style="font-size:20px;line-height:1;">{{ veg.emoji }}</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ veg.name }}</div>
+          <div style="font-size:10px;color:var(--text-tertiary);">
+            {% if veg.water_need == 'high' %}💧💧💧{% elif veg.water_need == 'low' %}💧{% else %}💧💧{% endif %}
+            · {{ veg.days_to_harvest }}j
           </div>
-        </a>
-        {% endfor %}
-      </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:16px;">
+      <i class="bi bi-calendar-x" style="font-size:28px;display:block;margin-bottom:6px;"></i>
+      <p>Aucune plantation recommandée pour ce mois.</p>
     </div>
     {% endif %}
-    {% endfor %}
   </div>
 
   <!-- Plantations par zone -->
