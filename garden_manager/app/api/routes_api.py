@@ -392,15 +392,31 @@ def arduino_alert():
         db.session.rollback()
         log.error("Erreur persistance alerte Arduino : %s", e)
 
-    _send_alert_email(subject=f"MonJardin — Alerte Arduino : {alert_type}",
-                      body=f"{message}\n\nZone : {zone_id}\nType : {alert_type}")
+    from ..services.email_builder import build_email_html
+    html = build_email_html(
+        title=f"Alerte Arduino — {alert_type}",
+        intro=message,
+        rows=[
+            ("Zone", str(zone_id) if zone_id else "—"),
+            ("Type d'alerte", alert_type),
+        ],
+        level="alert",
+        footer_note="Connectez-vous à MonJardin pour vérifier l'état de votre jardin.",
+    )
+    _send_alert_email(
+        subject=f"MonJardin — Alerte Arduino : {alert_type}",
+        body_plain=f"{message}\n\nZone : {zone_id}\nType : {alert_type}",
+        body_html=html,
+    )
 
     return jsonify({"ok": True})
 
 
-def _send_alert_email(subject: str, body: str, to: str = None):
-    """Envoie un email d'alerte. Retourne (ok: bool, error: str|None)."""
+def _send_alert_email(subject: str, body_plain: str, body_html: str = None,
+                      to: str = None):
+    """Envoie un email HTML+texte. Retourne (ok: bool, error: str|None)."""
     import smtplib
+    from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
     SMTP_HOST     = current_app.config.get("SMTP_HOST", "smtp.bluewin.ch")
     SMTP_PORT     = int(current_app.config.get("SMTP_PORT", 587))
@@ -415,10 +431,13 @@ def _send_alert_email(subject: str, body: str, to: str = None):
         log.warning("%s — email non envoyé", msg)
         return False, msg
     try:
-        msg = MIMEText(body, "plain", "utf-8")
+        msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"]    = FROM
         msg["To"]      = DEST
+        msg.attach(MIMEText(body_plain, "plain", "utf-8"))
+        if body_html:
+            msg.attach(MIMEText(body_html, "html", "utf-8"))
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
             if USE_TLS:
                 smtp.starttls()
@@ -435,18 +454,33 @@ def _send_alert_email(subject: str, body: str, to: str = None):
 def test_email():
     """Envoie un email de test pour vérifier la configuration SMTP."""
     from datetime import datetime
-    DEST = current_app.config.get("ADMIN_NOTIFICATION_EMAIL", "ppinard@bluewin.ch")
-    now  = datetime.now().strftime("%d.%m.%Y à %H:%M:%S")
+    from ..services.email_builder import build_email_html
+    DEST  = current_app.config.get("ADMIN_NOTIFICATION_EMAIL", "ppinard@bluewin.ch")
+    HOST  = current_app.config.get("SMTP_HOST", "")
+    PORT  = current_app.config.get("SMTP_PORT", 587)
+    FROM  = current_app.config.get("MAIL_DEFAULT_SENDER", "")
+    now   = datetime.now().strftime("%d.%m.%Y à %H:%M:%S")
+
+    html = build_email_html(
+        title="Test de la configuration email",
+        intro="Ceci est un email de test envoyé depuis votre système MonJardin. "
+              "Si vous recevez ce message, les alertes sont correctement configurées.",
+        rows=[
+            ("Date", now),
+            ("Serveur SMTP", f"{HOST}:{PORT}"),
+            ("Expéditeur", FROM),
+            ("Destinataire", DEST),
+            ("TLS", "Activé" if current_app.config.get("MAIL_USE_TLS", True) else "Désactivé"),
+        ],
+        level="success",
+        footer_note="Ce message a été envoyé automatiquement. Aucune action n'est requise.",
+    )
+    plain = (f"Test email MonJardin\n\nDate : {now}\n"
+             f"Serveur : {HOST}:{PORT}\nExpéditeur : {FROM}\nDestinataire : {DEST}\n\n"
+             "Configuration email correcte.")
     ok, err = _send_alert_email(
         subject="MonJardin — Test de la configuration email",
-        body=(
-            f"Ceci est un email de test envoyé depuis MonJardin.\n\n"
-            f"Date : {now}\n"
-            f"Serveur SMTP : {current_app.config.get('SMTP_HOST')}:{current_app.config.get('SMTP_PORT')}\n"
-            f"Expéditeur : {current_app.config.get('MAIL_DEFAULT_SENDER')}\n\n"
-            f"Si vous recevez ce message, les alertes email sont correctement configurées."
-        ),
-        to=DEST,
+        body_plain=plain, body_html=html, to=DEST,
     )
     if ok:
         return jsonify({"ok": True, "to": DEST})

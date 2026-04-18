@@ -31,7 +31,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <a href="/" class="brand-logo">
-        <div class="brand-icon"><i class="bi bi-tree" style="color:#fff;"></i></div>
+        <div class="brand-icon"><img src="{{ url_for('static', filename='logo.svg') }}" alt="MonJardin" style="width:22px;height:22px;display:block;"></div>
         <div>
           <div class="brand-name">MonJardin</div>
           <div class="brand-sub">Vullierens · Vaud</div>
@@ -110,7 +110,7 @@
     <!-- Mobile topbar -->
     <header class="mobile-topbar">
       <button class="mobile-menu-btn" onclick="toggleMobileMenu()" id="mobile-menu-btn" aria-label="Menu">
-        <i class="bi bi-tree" id="mobile-menu-icon"></i>
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="MonJardin" id="mobile-menu-icon" style="width:22px;height:22px;display:block;filter:brightness(10);" onerror="this.style.display='none'">
       </button>
       <div class="mobile-topbar-right">
         <div class="mobile-conn-dot checking" id="mobile-conn-dot"></div>
@@ -309,7 +309,7 @@ function toggleMobileMenu() {
   const icon     = document.getElementById('mobile-menu-icon');
   const open     = menu.classList.toggle('open');
   backdrop.classList.toggle('open', open);
-  if (icon) icon.className = open ? 'bi bi-x-lg' : 'bi bi-tree';
+  if (icon) icon.style.opacity = open ? '0.4' : '1';
   document.body.style.overflow = open ? 'hidden' : '';
 }
 function closeMobileMenu() {
@@ -318,7 +318,7 @@ function closeMobileMenu() {
   const icon     = document.getElementById('mobile-menu-icon');
   menu.classList.remove('open');
   backdrop.classList.remove('open');
-  if (icon) icon.className = 'bi bi-tree';
+  if (icon) icon.style.opacity = '1';
   document.body.style.overflow = '';
 }
 

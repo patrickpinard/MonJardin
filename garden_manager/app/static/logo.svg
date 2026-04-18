@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background rounded square -->
+  <rect width="64" height="64" rx="16" fill="#1a7f3c"/>
+
+  <!-- WiFi arcs (connectivity) -->
+  <path d="M18 22 Q32 13 46 22" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.55"/>
+  <path d="M22 28 Q32 21 42 28" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.75"/>
+  <path d="M26 34 Q32 29 38 34" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.95"/>
+  <!-- Signal dot -->
+  <circle cx="32" cy="37.5" r="2.8" fill="white"/>
+
+  <!-- Plant stem -->
+  <path d="M32 40 L32 54" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Left leaf -->
+  <path d="M32 50 C32 50 23 47 22 41 C22 41 31 40 32 50Z" fill="white" opacity="0.85"/>
+
+  <!-- Right leaf -->
+  <path d="M32 46 C32 46 41 43 42 37 C42 37 33 36 32 46Z" fill="white"/>
+
+  <!-- Soil dots -->
+  <circle cx="26" cy="56" r="1.5" fill="white" opacity="0.45"/>
+  <circle cx="32" cy="57.5" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="38" cy="56" r="1.5" fill="white" opacity="0.45"/>
+</svg>
