@@ -140,13 +140,14 @@ def build():
             ["2", "Matériel requis",                   "3"],
             ["3", "Montage — Capteurs sol (SoilWatch 10)","4"],
             ["4", "Montage — Capteurs température DS18B20","5"],
-            ["5", "Montage — Anémomètre",              "6"],
-            ["6", "Montage — Vannes 24V latching",     "6"],
-            ["7", "Montage — Vérin linéaire (lucarne)","7"],
-            ["8", "Alimentation",                      "8"],
-            ["9", "Firmware Arduino — Configuration",  "8"],
-            ["10","API REST Arduino ↔ Raspberry Pi",   "9"],
-            ["11","Bascule Simulation → Production",   "12"],
+            ["5", "Montage — Anémomètre",                      "6"],
+            ["6", "Montage — Vannes 24V (GARDENA)",           "6"],
+            ["7", "Montage — Vérin linéaire (lucarne)",       "7"],
+            ["8", "Enclosure Kit — LCD 2×16 + Bouton",        "8"],
+            ["9", "Alimentation",                             "9"],
+            ["10","Firmware Arduino — Configuration",          "9"],
+            ["11","API REST Arduino ↔ Raspberry Pi",          "10"],
+            ["12","Bascule Simulation → Production",          "13"],
             ["12","Checklist de mise en service",      "13"],
         ], [1*cm, 12*cm, 3.5*cm], header=False),
         PageBreak(),
@@ -188,6 +189,7 @@ def build():
             ["Anémomètre QS-FS01",       "1",        "Vitesse vent (tension 0.4–2.0 V)","InputExpander ADC 4"],
             ["GARDENA Vanne 24V (réf. 900904101)","4", "Irrigation par zone (solénoïde)", "Relay 0–3 Edge Control"],
             ["Vérin linéaire 12V",       "1",        "Ouverture lucarne serre",        "GPIO D7/D8 + D9/D10"],
+            ["Arduino Edge Control Enclosure Kit","1","LCD 2×16 + bouton poussoir",    "TCA6424A Expander + GPIO"],
             ["Alimentation 24V / 5A",    "1",        "Vannes GARDENA solénoïde",       "—"],
             ["Alimentation 12V / 2A",    "1",        "Vérin linéaire",                 "—"],
             ["Alimentation 5V / 5A USB-C","1",       "Raspberry Pi 5",                 "—"],
@@ -396,9 +398,71 @@ def build():
         PageBreak(),
     ]
 
-    # ── 8. ALIMENTATION ────────────────────────────────────────────────────
+    # ── 8. ENCLOSURE KIT ───────────────────────────────────────────────────
     story += [
-        p("8. Alimentation", H1), hr(),
+        p("8. Enclosure Kit — LCD 2×16 + Bouton", H1), hr(),
+        p("L'<b>Arduino Edge Control Enclosure Kit</b> ajoute un boîtier IP40 din-rail "
+          "avec un breakout board intégrant un <b>afficheur LCD NDS1602A 2×16</b> "
+          "et un <b>bouton poussoir</b>. L'afficheur est piloté via le TCA6424A "
+          "(I/O Expander déjà présent sur l'Edge Control) — aucun câblage supplémentaire."),
+        sp(4),
+
+        p("LCD NDS1602A — Caractéristiques", H2),
+        make_table([
+            ["Paramètre",       "Valeur",              "Description"],
+            ["Modèle",          "NDS1602A",            "LCD alphanumérique 2 lignes × 16 caractères"],
+            ["Interface",       "TCA6424A (I/O Expander)", "Connecté sur Port 2 — EXP_LCD_D4..D7, RS, EN, RW"],
+            ["Rétroéclairage",  "EXP_LCD_BACKLIGHT",   "Contrôlé via TCA6424A_P20"],
+            ["Objet Arduino",   "LCD (global)",        "Fourni par <Arduino_EdgeControl.h>"],
+            ["Initialisation",  "LCD.begin(16, 2)",    "16 colonnes, 2 lignes"],
+        ], [3.5*cm, 5*cm, 8*cm]),
+        sp(6),
+
+        p("5 Écrans en rotation automatique (5 s / écran)", H2),
+        make_table([
+            ["Écran",  "Ligne 1",                        "Ligne 2"],
+            ["1 — Zones 1+2", "Z1: XX%   Z2: XX%",      "V1: ON/OFF  V2: ON/OFF"],
+            ["2 — Zones 3+4", "Z3: XX%   Z4: XX%",      "V3: ON/OFF  V4: ON/OFF"],
+            ["3 — Climat",    "Ext XX.X° Ser XX.X°",    "Vent: XX.X km/h"],
+            ["4 — Vannes",    "Vannes:",                 "V1 V2 V3 V4 (-- = fermé)"],
+            ["5 — Système",   "WiFi: OK/OFF  RPi: OK/OFF","Uptime: XXXXh XXm"],
+        ], [3*cm, 6*cm, 7.5*cm]),
+        sp(4),
+        p("Le rétroéclairage s'éteint automatiquement après 30 s sans activité "
+          "(LCD_BACKLIGHT_MS). Tout appui bouton le rallume.", NOTE),
+        sp(4),
+        p("Alertes prioritaires", H2),
+        make_table([
+            ["Événement",                      "Ligne 1",           "Ligne 2",        "Durée"],
+            ["RPi injoignable (watchdog)",     "! RPi injoignable", "Vannes fermees", "5 s"],
+            ["RPi reconnecté",                 "RPi reconnecte",    "Mode normal",    "3 s"],
+            ["Arrêt d'urgence (bouton long)",  "! ARRET URGENCE",  "Vannes fermees", "4 s"],
+        ], [5*cm, 4*cm, 3.5*cm, 2*cm]),
+        sp(6),
+
+        p("Bouton poussoir — Actions", H2),
+        make_table([
+            ["Type d'appui",   "Durée",     "Action"],
+            ["Court",          "< 2 s",     "Avance à l'écran suivant + rallume le rétroéclairage"],
+            ["Long",           "≥ 2 s",     "Arrêt d'urgence : ferme toutes les vannes immédiatement"],
+        ], [4*cm, 3*cm, 9.5*cm]),
+        sp(4),
+        make_table([
+            ["Paramètre",          "Valeur",       "Description"],
+            ["BUTTON_PIN",         "0",            "GPIO bouton (à confirmer selon câblage IOBRD)"],
+            ["BUTTON_DEBOUNCE_MS", "50 ms",        "Anti-rebond logiciel"],
+            ["BUTTON_LONG_PRESS_MS","2 000 ms",    "Durée détection appui long"],
+        ], [5*cm, 3*cm, 8.5*cm]),
+        sp(4),
+        p("⚠️  Le pin BUTTON_PIN (défaut 0) doit être confirmé selon votre câblage "
+          "du connecteur IOBRD de l'Edge Control. Vérifier avec un multimètre "
+          "avant la mise en service.", WARN),
+        PageBreak(),
+    ]
+
+    # ── 9. ALIMENTATION ────────────────────────────────────────────────────
+    story += [
+        p("9. Alimentation", H1), hr(),
         make_table([
             ["Composant",            "Tension", "Courant max", "Notes"],
             ["Vannes GARDENA 900904101","24V DC/AC","~300 mA × 4 = 1.2A (simultané)", "Solénoïde NC — 24V continu requis quand ouverte"],
@@ -415,9 +479,9 @@ def build():
         PageBreak(),
     ]
 
-    # ── 9. FIRMWARE ────────────────────────────────────────────────────────
+    # ── 10. FIRMWARE ───────────────────────────────────────────────────────
     story += [
-        p("9. Firmware Arduino — Configuration", H1), hr(),
+        p("10. Firmware Arduino — Configuration", H1), hr(),
         p("Tous les paramètres modifiables sont centralisés dans "
           "<b>arduino_edge_control/src/config.h</b>. "
           "Modifier ce fichier puis recompiler avec PlatformIO avant de flasher."),
@@ -448,9 +512,9 @@ def build():
         PageBreak(),
     ]
 
-    # ── 10. API REST ───────────────────────────────────────────────────────
+    # ── 11. API REST ───────────────────────────────────────────────────────
     story += [
-        p("10. API REST Arduino ↔ Raspberry Pi", H1), hr(),
+        p("11. API REST Arduino ↔ Raspberry Pi", H1), hr(),
         p("La communication est initiée <b>exclusivement par le Raspberry Pi</b>. "
           "L'Arduino expose un serveur HTTP léger sur le port <b>80</b>. "
           "Toutes les réponses sont en <b>JSON</b>, encodage UTF-8. "
@@ -586,9 +650,9 @@ def build():
         PageBreak(),
     ]
 
-    # ── 11. BASCULE PROD ───────────────────────────────────────────────────
+    # ── 12. BASCULE PROD ───────────────────────────────────────────────────
     story += [
-        p("11. Bascule Simulation → Production", H1), hr(),
+        p("12. Bascule Simulation → Production", H1), hr(),
         p("Le système bascule intégralement en production en modifiant uniquement le fichier "
           "<b>garden_manager/.env</b> et en redémarrant Flask. "
           "Aucune modification de code n'est nécessaire."),
@@ -618,6 +682,8 @@ def build():
             ["☐", "Calibrer ADC_DRY et ADC_WET pour vos capteurs SoilWatch",    "config.h:26-27"],
             ["☐", "Vérifier câblage QS-FS01 : alimentation ≥ 7V, signal sur ADC 4", "config.h, AnemometerSensor.cpp"],
             ["☐", "Vérifier alimentation 24V vannes GARDENA (solénoïde NC)",     "ValveController.cpp"],
+            ["☐", "Confirmer BUTTON_PIN selon câblage connecteur IOBRD",         "config.h:BUTTON_PIN"],
+            ["☐", "Vérifier affichage LCD au boot (écran 'MonJardin v1')",       "DisplayController.cpp"],
             ["☐", "Compiler et flasher via PlatformIO",                         "platformio.ini"],
             ["☐", "Vérifier logs série : 4 zones ADC, 2 DS18B20 détectés",      "Serial 115200"],
             ["☐", "Tester GET http://<IP_ARDUINO>/api/health depuis le Pi",      "RestServer"],

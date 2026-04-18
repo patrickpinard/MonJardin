@@ -12,6 +12,8 @@
 #include "actuators/LinearActuator.h"
 #include "communication/WiFiManager.h"
 #include "communication/RestServer.h"
+#include "ui/DisplayController.h"
+#include "ui/ButtonController.h"
 
 // ── Instances globales ────────────────────────────────────────────────────
 SoilSensor        soilSensor;
@@ -22,6 +24,8 @@ LinearActuator    roof;
 WiFiManager       wifi;
 RestServer        server;
 IrrigationGuard   irrigGuard;
+DisplayController display;
+ButtonController  button;
 
 // ── Cache capteurs ────────────────────────────────────────────────────────
 SoilReading soilReadings[NUM_ZONES];
@@ -33,6 +37,8 @@ unsigned long lastSensorReadMs  = 0;
 unsigned long lastTempRequestMs = 0;
 unsigned long lastLogFlushMs    = 0;
 unsigned long lastWindReadMs    = 0;
+unsigned long lastDisplaySyncMs = 0;
+unsigned long bootMs            = 0;
 
 // ── Watchdog RPi ─────────────────────────────────────────────────────────
 // Si le RPi ne contacte pas l'Arduino pendant RPI_WATCHDOG_MS,
@@ -48,12 +54,41 @@ void checkRpiWatchdog() {
             "RPi injoignable depuis 5 min — mode autonome : fermeture préventive des vannes");
         valves.closeAll();
         roof.close();
+        display.showAlert("! RPi injoignable", "Vannes fermees  ", 5000);
     }
     // Reset du flag si le RPi reprend contact
     if (rpiWatchdogTriggered && millis() - lastReq < RPI_WATCHDOG_MS) {
         rpiWatchdogTriggered = false;
         Logger::log(LOG_INFO, "WATCHDOG", "RPi de nouveau joignable — mode normal");
+        display.showAlert("RPi reconnecte  ", "Mode normal     ", 3000);
     }
+}
+
+// ── Callbacks bouton ──────────────────────────────────────────────────────
+void onButtonShortPress() {
+    display.nextScreen();
+}
+
+void onButtonLongPress() {
+    Logger::log(LOG_WARNING, "BUTTON", "Appui long — arrêt d'urgence : fermeture de toutes les vannes");
+    valves.closeAll();
+    display.showAlert("! ARRET URGENCE ", "Vannes fermees  ", 4000);
+}
+
+// ── Helpers affichage ─────────────────────────────────────────────────────
+void syncDisplay() {
+    DisplayData d;
+    for (int i = 0; i < NUM_ZONES; i++) {
+        d.moisture[i]  = soilReadings[i].valid ? soilReadings[i].moisturePct : -1.0f;
+        d.valveOpen[i] = valves.isOpen(i + 1);
+    }
+    d.tempExt   = tempExt;
+    d.tempSerre = tempSerre;
+    d.windKmh   = anemometer.getKmh();
+    d.wifiOk    = wifi.isConnected();
+    d.rpiOk     = !rpiWatchdogTriggered;
+    d.uptimeS   = (millis() - bootMs) / 1000UL;
+    display.setData(d);
 }
 
 // ── Callbacks REST ────────────────────────────────────────────────────────
@@ -70,6 +105,7 @@ void onValveCommand(int zoneId, bool open) {
         }
     }
     valves.setValve(zoneId, open);
+    syncDisplay();  // mise à jour immédiate affichage
 }
 
 void onRoofCommand(bool open) {
@@ -112,6 +148,7 @@ void onGetActuators(String& out) {
 
 // ── Setup ─────────────────────────────────────────────────────────────────
 void setup() {
+    bootMs = millis();
     Logger::begin(115200);
     Logger::log(LOG_INFO, "MAIN", "=== MonJardin Arduino Edge Control ===");
     Logger::logf(LOG_INFO, "MAIN", "Firmware v%s", FIRMWARE_VERSION);
@@ -127,9 +164,14 @@ void setup() {
     soilSensor.begin();
     tempSensor.begin();
     roof.begin();
-
-    // Anémomètre QS-FS01
     anemometer.begin();
+
+    // Enclosure Kit — LCD + bouton
+    display.begin();
+    button.begin();
+    button.onShortPress(onButtonShortPress);
+    button.onLongPress(onButtonLongPress);
+    Logger::log(LOG_INFO, "MAIN", "LCD 2x16 + bouton initialisés");
 
     // Première lecture capteurs
     tempSensor.requestTemperatures();
@@ -137,6 +179,8 @@ void setup() {
     tempExt   = tempSensor.getExterior();
     tempSerre = tempSensor.getGreenhouse();
     soilSensor.readAll(soilReadings);
+    anemometer.read();
+    syncDisplay();
 
     // WiFi
     wifi.begin();
@@ -177,7 +221,7 @@ void loop() {
     if (now - lastTempRequestMs >= TEMP_READ_INTERVAL) {
         tempExt   = tempSensor.getExterior();
         tempSerre = tempSensor.getGreenhouse();
-        tempSensor.requestTemperatures(); // déclenche la prochaine lecture
+        tempSensor.requestTemperatures();
         lastTempRequestMs = now;
     }
 
@@ -187,7 +231,17 @@ void loop() {
         lastWindReadMs = now;
     }
 
-    // 8. Envoi logs au RPi (toutes les 60s si WiFi dispo)
+    // 8. Synchronisation données → affichage (toutes les 10s)
+    if (now - lastDisplaySyncMs >= 10000UL) {
+        syncDisplay();
+        lastDisplaySyncMs = now;
+    }
+
+    // 9. LCD + bouton
+    button.update();
+    display.update();
+
+    // 10. Envoi logs au RPi (toutes les 60s si WiFi dispo)
     if (now - lastLogFlushMs >= 60000UL) {
         if (wifi.isConnected()) {
             Logger::flushToRpi();

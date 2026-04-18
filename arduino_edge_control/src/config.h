@@ -53,6 +53,22 @@
 #define ENDSTOP_CLOSE       10      // fin de course fermé
 #define ACTUATOR_TIMEOUT_MS 60000UL // timeout mouvement vérin
 
+// ── Enclosure Kit — LCD 2×16 + Bouton ────────────────────────────────────
+// LCD NDS1602A : piloté via le TCA6424A I/O Expander (objet global LCD)
+// Initialisation : LCD.begin(LCD_COLS, LCD_ROWS)
+#define LCD_COLS            16
+#define LCD_ROWS            2
+#define LCD_BACKLIGHT_MS    30000UL  // extinction rétroéclairage après 30s sans activité
+
+// Bouton poussoir sur le breakout Enclosure Kit
+// → à confirmer selon votre câblage (connecteur IOBRD du Edge Control)
+#define BUTTON_PIN          0        // GPIO du bouton (à adapter si nécessaire)
+#define BUTTON_DEBOUNCE_MS  50       // anti-rebond
+#define BUTTON_LONG_PRESS_MS 2000UL  // >2s = arrêt d'urgence vannes
+
+// Durée d'affichage de chaque écran en rotation automatique
+#define LCD_SCREEN_INTERVAL_MS  5000UL
+
 // ── Serveur HTTP embarqué ─────────────────────────────────────────────────
 #define HTTP_PORT           80
 #define HTTP_MAX_BODY       512
