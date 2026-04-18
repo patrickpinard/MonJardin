@@ -398,8 +398,9 @@ function closeConfirm() {
 }
 
 document.getElementById('confirm-ok').addEventListener('click', () => {
+  const cb = _confirmCallback;
   closeConfirm();
-  if (_confirmCallback) _confirmCallback();
+  if (cb) cb();
 });
 
 document.getElementById('confirm-overlay').addEventListener('click', e => {
