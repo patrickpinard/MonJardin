@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="845" viewBox="0 0 1200 845"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+<defs>
+  <!-- Arrows -->
+  <marker id="a-blue" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="6" markerHeight="6" orient="auto">
+    <polygon points="0 0,10 3.5,0 7" fill="#1565C0"/>
+  </marker>
+  <marker id="a-blue-r" viewBox="0 0 10 7" refX="1" refY="3.5" markerWidth="6" markerHeight="6" orient="auto">
+    <polygon points="10 0,0 3.5,10 7" fill="#1565C0"/>
+  </marker>
+  <marker id="a-orange" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="5" markerHeight="5" orient="auto">
+    <polygon points="0 0,10 3.5,0 7" fill="#E65100"/>
+  </marker>
+  <marker id="a-purple" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="5" markerHeight="5" orient="auto">
+    <polygon points="0 0,10 3.5,0 7" fill="#7B1FA2"/>
+  </marker>
+  <marker id="a-gray" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="5" markerHeight="5" orient="auto">
+    <polygon points="0 0,10 3.5,0 7" fill="#78909C"/>
+  </marker>
+  <marker id="a-gray-r" viewBox="0 0 10 7" refX="1" refY="3.5" markerWidth="5" markerHeight="5" orient="auto">
+    <polygon points="10 0,0 3.5,10 7" fill="#78909C"/>
+  </marker>
+</defs>
+
+<!-- ── Background ── -->
+<rect width="1200" height="845" fill="white"/>
+<rect x="8" y="8" width="1184" height="829" rx="10" fill="white" stroke="#ECEFF1" stroke-width="1"/>
+
+<!-- ── Title ── -->
+<text x="600" y="32" text-anchor="middle" font-size="19" font-weight="700" fill="#1C2833">MonJardin — Architecture matérielle</text>
+<text x="600" y="50" text-anchor="middle" font-size="11" fill="#78909C">Raspberry Pi 5 · Arduino Edge Control · Vullierens, Vaud, Suisse · Version 1.0</text>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- ROW 1 — iPhone · Raspberry Pi 5 · Open-Meteo          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- iPhone / iPad -->
+<rect x="18" y="78" width="220" height="138" rx="10" fill="#E0F2F1" stroke="#00796B" stroke-width="1.5"/>
+<rect x="18" y="78" width="220" height="32" rx="10" fill="#00796B"/>
+<rect x="18" y="98" width="220" height="12" fill="#00796B"/>
+<text x="128" y="99" text-anchor="middle" font-size="13" font-weight="700" fill="white">📱 Interface Web</text>
+<text x="128" y="110" text-anchor="middle" font-size="9" fill="#B2DFDB">iPhone · iPad · PC — PWA</text>
+<text x="32" y="127" font-size="11" font-weight="600" fill="#00796B">● http://monjardin.local:5000</text>
+<text x="32" y="142" font-size="10" fill="#546E7A">Dashboard · Plantation · Conseils</text>
+<text x="32" y="157" font-size="10" fill="#546E7A">Journal · Graphiques · Diagnostic</text>
+<text x="32" y="172" font-size="10" fill="#546E7A">Encyclopédie · Paramètres</text>
+<text x="32" y="187" font-size="10" fill="#546E7A">Mode sombre/clair · Installable iOS</text>
+
+<!-- ── Raspberry Pi 5 ── -->
+<rect x="282" y="58" width="636" height="208" rx="12" fill="#EBF5FB" stroke="#1565C0" stroke-width="2"/>
+<rect x="282" y="58" width="636" height="36" rx="12" fill="#1565C0"/>
+<rect x="282" y="82" width="636" height="12" fill="#1565C0"/>
+<text x="600" y="84" text-anchor="middle" font-size="15" font-weight="700" fill="white">🖥  Raspberry Pi 5</text>
+<text x="600" y="96" text-anchor="middle" font-size="10" fill="#BBDEFB">Serveur central · Logique décisionnelle · Base de données · Interface web</text>
+
+<!-- Pi — colonne gauche -->
+<text x="298" y="116" font-size="11" font-weight="700" fill="#1565C0">● Flask :5000</text>
+<text x="298" y="130" font-size="10" fill="#546E7A">Serveur web + API JSON REST complète</text>
+<text x="298" y="148" font-size="11" font-weight="700" fill="#1565C0">● SQLite — garden.db</text>
+<text x="298" y="162" font-size="10" fill="#546E7A">SensorReading · IrrigationLog · Planting · WeatherCache</text>
+<text x="298" y="180" font-size="11" font-weight="700" fill="#1565C0">● APScheduler</text>
+<text x="298" y="194" font-size="10" fill="#546E7A">Cycle automation 60s · Météo 30min</text>
+<text x="298" y="212" font-size="11" font-weight="700" fill="#1565C0">● Auth PIN · Journal · Alertes SMTP</text>
+<text x="298" y="226" font-size="10" fill="#546E7A">Notifications push · Encyclopédie 50+ légumes</text>
+<text x="298" y="244" font-size="11" font-weight="700" fill="#1565C0">● Simulateur Arduino :8081</text>
+
+<!-- Pi — colonne droite -->
+<text x="600" y="116" font-size="11" font-weight="700" fill="#1565C0">● Moteur arrosage</text>
+<text x="600" y="130" font-size="10" fill="#546E7A">Gel · Pluie · Canicule · Humidité · Besoins légumes</text>
+<text x="600" y="148" font-size="11" font-weight="700" fill="#1565C0">● Moteur toit serre</text>
+<text x="600" y="162" font-size="10" fill="#546E7A">Température · Vent · Pluie · Heure · Saison</text>
+<text x="600" y="180" font-size="11" font-weight="700" fill="#1565C0">● Conseiller plantation</text>
+<text x="600" y="194" font-size="10" fill="#546E7A">Compagnonnage · Calendrier suisse · Compatibilité</text>
+<text x="600" y="212" font-size="11" font-weight="700" fill="#1565C0">● WeatherService — Open-Meteo</text>
+<text x="600" y="226" font-size="10" fill="#546E7A">Cache 30min · Fallback simulateur · Profils météo</text>
+<text x="600" y="244" font-size="11" font-weight="700" fill="#1565C0">● PWA · Service Worker · Manifest iOS</text>
+
+<!-- ── Open-Meteo ── -->
+<rect x="962" y="78" width="220" height="138" rx="10" fill="#E3F2FD" stroke="#0277BD" stroke-width="1.5"/>
+<rect x="962" y="78" width="220" height="32" rx="10" fill="#0277BD"/>
+<rect x="962" y="98" width="220" height="12" fill="#0277BD"/>
+<text x="1072" y="99" text-anchor="middle" font-size="13" font-weight="700" fill="white">☁ Open-Meteo API</text>
+<text x="1072" y="110" text-anchor="middle" font-size="9" fill="#BBDEFB">Météo locale · Gratuit · Sans clé API</text>
+<text x="977" y="127" font-size="11" font-weight="600" fill="#0277BD">● 46.778°N · 6.641°E</text>
+<text x="977" y="141" font-size="10" fill="#546E7A">Vullierens, Vaud, Suisse</text>
+<text x="977" y="157" font-size="11" font-weight="600" fill="#0277BD">● Précipitations · Température</text>
+<text x="977" y="171" font-size="10" fill="#546E7A">Vent · Risque de gel · Prob. pluie</text>
+<text x="977" y="187" font-size="11" font-weight="600" fill="#0277BD">● Prévisions horaires 48h</text>
+<text x="977" y="201" font-size="10" fill="#546E7A">Actualisation toutes les 30 minutes</text>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CONNEXIONS ROW 1                                       -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- iPhone ↔ Pi (WiFi/HTTP) -->
+<line x1="238" y1="150" x2="282" y2="152" stroke="#78909C" stroke-width="1.5" stroke-dasharray="5,4"
+      marker-start="url(#a-gray-r)" marker-end="url(#a-gray)"/>
+<rect x="240" y="134" width="40" height="14" rx="3" fill="white"/>
+<text x="260" y="144" text-anchor="middle" font-size="9" fill="#78909C">HTTP</text>
+
+<!-- Pi → Open-Meteo (HTTPS) -->
+<line x1="918" y1="150" x2="962" y2="148" stroke="#78909C" stroke-width="1.5" stroke-dasharray="5,4"
+      marker-end="url(#a-gray)"/>
+<rect x="920" y="134" width="42" height="14" rx="3" fill="white"/>
+<text x="941" y="144" text-anchor="middle" font-size="9" fill="#78909C">HTTPS</text>
+
+<!-- Pi ↔ Arduino (HTTP REST / WiFi) -->
+<line x1="600" y1="266" x2="600" y2="332" stroke="#1565C0" stroke-width="2.5"
+      marker-start="url(#a-blue-r)" marker-end="url(#a-blue)"/>
+<rect x="540" y="292" width="120" height="14" rx="4" fill="white"/>
+<text x="600" y="302" text-anchor="middle" font-size="10" font-weight="600" fill="#1565C0">HTTP REST · WiFi LAN</text>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- ROW 2 — Arduino Edge Control                           -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<rect x="282" y="332" width="636" height="190" rx="12" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+<rect x="282" y="332" width="636" height="36" rx="12" fill="#2E7D32"/>
+<rect x="282" y="356" width="636" height="12" fill="#2E7D32"/>
+<text x="600" y="357" text-anchor="middle" font-size="15" font-weight="700" fill="white">⚡ Arduino Edge Control</text>
+<text x="600" y="369" text-anchor="middle" font-size="10" fill="#C8E6C9">Acquisition capteurs · Pilotage actionneurs · Firmware C++ / PlatformIO</text>
+
+<!-- Arduino — col 1 ENTRÉES -->
+<text x="300" y="390" font-size="11" font-weight="700" fill="#1B5E20">ENTRÉES</text>
+<text x="300" y="408" font-size="11" fill="#2E7D32">● 4× ADC SoilWatch 10</text>
+<text x="300" y="421" font-size="10" fill="#546E7A">Humidité sol 0–100% · canaux 1-4</text>
+<text x="300" y="438" font-size="11" fill="#2E7D32">● 2× DS18B20 OneWire</text>
+<text x="300" y="451" font-size="10" fill="#546E7A">Temp. extérieure + intérieure serre</text>
+<text x="300" y="468" font-size="11" fill="#2E7D32">● Anémomètre — impulsions</text>
+<text x="300" y="481" font-size="10" fill="#546E7A">Vitesse vent km/h · pin D5</text>
+<text x="300" y="498" font-size="11" fill="#2E7D32">● 2× fins de course vérin</text>
+<text x="300" y="511" font-size="10" fill="#546E7A">Endstop ouvert / fermé</text>
+
+<!-- Arduino — col 2 SORTIES -->
+<text x="510" y="390" font-size="11" font-weight="700" fill="#1B5E20">SORTIES</text>
+<text x="510" y="408" font-size="11" fill="#2E7D32">● 4× Relais latching 24V</text>
+<text x="510" y="421" font-size="10" fill="#546E7A">Vannes irrigation — pulse 50ms</text>
+<text x="510" y="438" font-size="11" fill="#2E7D32">● H-Bridge — vérin linéaire 24V</text>
+<text x="510" y="451" font-size="10" fill="#546E7A">Ouverture/fermeture toit serre</text>
+<text x="510" y="468" font-size="11" fill="#2E7D32">● Watchdog matériel</text>
+<text x="510" y="481" font-size="10" fill="#546E7A">Reset auto si blocage firmware</text>
+<text x="510" y="498" font-size="11" fill="#2E7D32">● Failsafe WiFi perte &gt; 5 min</text>
+<text x="510" y="511" font-size="10" fill="#546E7A">Fermeture préventive toutes vannes</text>
+
+<!-- Arduino — col 3 COMMUNICATION -->
+<text x="728" y="390" font-size="11" font-weight="700" fill="#1B5E20">COMMUNICATION</text>
+<text x="728" y="408" font-size="11" fill="#2E7D32">● WiFi NINA RP2040</text>
+<text x="728" y="421" font-size="10" fill="#546E7A">Reconnexion automatique</text>
+<text x="728" y="438" font-size="11" fill="#2E7D32">● REST API HTTP :80</text>
+<text x="728" y="451" font-size="10" fill="#546E7A">GET /api/sensors · GET /api/health</text>
+<text x="728" y="468" font-size="11" fill="#2E7D32">● POST /api/actuators/valve</text>
+<text x="728" y="481" font-size="10" fill="#546E7A">POST /api/actuators/roof</text>
+<text x="728" y="498" font-size="11" fill="#2E7D32">● ArduinoJson · Logger série</text>
+<text x="728" y="511" font-size="10" fill="#546E7A">Firmware simulator-1.0.0</text>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BUS CABLES                                             -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- Left sensor bus: from Arduino bottom-left → down -->
+<polyline points="330,522 286,522 286,806" fill="none" stroke="#E65100" stroke-width="2.5" stroke-linecap="round"/>
+
+<!-- Right actuator bus: from Arduino bottom-right → down -->
+<polyline points="870,522 914,522 914,784" fill="none" stroke="#7B1FA2" stroke-width="2.5" stroke-linecap="round"/>
+
+<!-- Section labels -->
+<text x="170" y="545" text-anchor="middle" font-size="10" font-weight="700" fill="#E65100" letter-spacing="1">CAPTEURS</text>
+<text x="1030" y="545" text-anchor="middle" font-size="10" font-weight="700" fill="#7B1FA2" letter-spacing="1">ACTIONNEURS</text>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CAPTEURS                                               -->
+<!-- x=18, w=260, right=278, h=32, step=42                 -->
+<!-- y: 555 597 639 681 723 765 807                         -->
+<!-- cy: 571 613 655 697 739 781 823                        -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- SoilWatch Z1 — Serre -->
+<rect x="18" y="555" width="260" height="34" rx="6" fill="#FFF8E1" stroke="#E65100" stroke-width="1.5"/>
+<rect x="18" y="555" width="6" height="34" rx="3" fill="#E65100"/>
+<text x="32" y="568" font-size="11" font-weight="600" fill="#E65100">SoilWatch 10 — Zone 1 · Serre</text>
+<text x="32" y="581" font-size="10" fill="#78909C">Humidité sol 0–100% · ADC canal 1</text>
+<line x1="278" y1="572" x2="286" y2="572" stroke="#E65100" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+<!-- SoilWatch Z2 — Potager -->
+<rect x="18" y="597" width="260" height="34" rx="6" fill="#FFF8E1" stroke="#E65100" stroke-width="1.5"/>
+<rect x="18" y="597" width="6" height="34" rx="3" fill="#E65100"/>
+<text x="32" y="610" font-size="11" font-weight="600" fill="#E65100">SoilWatch 10 — Zone 2 · Potager</text>
+<text x="32" y="623" font-size="10" fill="#78909C">Humidité sol 0–100% · ADC canal 2</text>
+<line x1="278" y1="614" x2="286" y2="614" stroke="#E65100" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+<!-- SoilWatch Z3 — Potager -->
+<rect x="18" y="639" width="260" height="34" rx="6" fill="#FFF8E1" stroke="#E65100" stroke-width="1.5"/>
+<rect x="18" y="639" width="6" height="34" rx="3" fill="#E65100"/>
+<text x="32" y="652" font-size="11" font-weight="600" fill="#E65100">SoilWatch 10 — Zone 3 · Potager</text>
+<text x="32" y="665" font-size="10" fill="#78909C">Humidité sol 0–100% · ADC canal 3</text>
+<line x1="278" y1="656" x2="286" y2="656" stroke="#E65100" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+<!-- SoilWatch Z4 — Fleurs -->
+<rect x="18" y="681" width="260" height="34" rx="6" fill="#FFF8E1" stroke="#E65100" stroke-width="1.5"/>
+<rect x="18" y="681" width="6" height="34" rx="3" fill="#E65100"/>
+<text x="32" y="694" font-size="11" font-weight="600" fill="#E65100">SoilWatch 10 — Zone 4 · Fleurs</text>
+<text x="32" y="707" font-size="10" fill="#78909C">Humidité sol 0–100% · ADC canal 4</text>
+<line x1="278" y1="698" x2="286" y2="698" stroke="#E65100" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+<!-- DS18B20 Extérieur -->
+<rect x="18" y="723" width="260" height="34" rx="6" fill="#FFF3E0" stroke="#F57C00" stroke-width="1.5"/>
+<rect x="18" y="723" width="6" height="34" rx="3" fill="#F57C00"/>
+<text x="32" y="736" font-size="11" font-weight="600" fill="#F57C00">DS18B20 — Température extérieure</text>
+<text x="32" y="749" font-size="10" fill="#78909C">°C · bus OneWire · résolution 12 bits</text>
+<line x1="278" y1="740" x2="286" y2="740" stroke="#E65100" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+<!-- DS18B20 Serre -->
+<rect x="18" y="765" width="260" height="34" rx="6" fill="#FFF3E0" stroke="#F57C00" stroke-width="1.5"/>
+<rect x="18" y="765" width="6" height="34" rx="3" fill="#F57C00"/>
+<text x="32" y="778" font-size="11" font-weight="600" fill="#F57C00">DS18B20 — Température serre</text>
+<text x="32" y="791" font-size="10" fill="#78909C">°C · bus OneWire · sonde intérieure</text>
+<line x1="278" y1="782" x2="286" y2="782" stroke="#E65100" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+<!-- Anémomètre -->
+<rect x="18" y="807" width="260" height="34" rx="6" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+<rect x="18" y="807" width="6" height="34" rx="3" fill="#1565C0"/>
+<text x="32" y="820" font-size="11" font-weight="600" fill="#1565C0">Anémomètre — impulsions</text>
+<text x="32" y="833" font-size="10" fill="#78909C">Vitesse vent km/h · pin D5 interrupt</text>
+<line x1="278" y1="824" x2="286" y2="824" stroke="#E65100" stroke-width="1.5" marker-end="url(#a-orange)"/>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- ACTIONNEURS                                            -->
+<!-- x=922, w=260, right=1182, h=44, step=54               -->
+<!-- y: 555 609 663 717 771                                 -->
+<!-- cy: 577 631 685 739 793                                -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- Vanne Z1 — Serre -->
+<rect x="922" y="555" width="260" height="44" rx="6" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1.5"/>
+<rect x="1176" y="555" width="6" height="44" rx="3" fill="#7B1FA2"/>
+<text x="936" y="571" font-size="11" font-weight="600" fill="#7B1FA2">Vanne 24V Latching — Zone 1</text>
+<text x="936" y="584" font-size="10" fill="#78909C">Irrigation serre · Relais 1 · pulse 50ms</text>
+<text x="936" y="596" font-size="10" fill="#78909C">Normalement fermée · fail-safe</text>
+<line x1="914" y1="577" x2="922" y2="577" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#a-purple)"/>
+
+<!-- Vanne Z2 — Potager -->
+<rect x="922" y="609" width="260" height="44" rx="6" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1.5"/>
+<rect x="1176" y="609" width="6" height="44" rx="3" fill="#7B1FA2"/>
+<text x="936" y="625" font-size="11" font-weight="600" fill="#7B1FA2">Vanne 24V Latching — Zone 2</text>
+<text x="936" y="638" font-size="10" fill="#78909C">Irrigation potager · Relais 2 · pulse 50ms</text>
+<text x="936" y="650" font-size="10" fill="#78909C">Mode auto / manuel / désactivé</text>
+<line x1="914" y1="631" x2="922" y2="631" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#a-purple)"/>
+
+<!-- Vanne Z3 — Potager -->
+<rect x="922" y="663" width="260" height="44" rx="6" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1.5"/>
+<rect x="1176" y="663" width="6" height="44" rx="3" fill="#7B1FA2"/>
+<text x="936" y="679" font-size="11" font-weight="600" fill="#7B1FA2">Vanne 24V Latching — Zone 3</text>
+<text x="936" y="692" font-size="10" fill="#78909C">Irrigation potager · Relais 3 · pulse 50ms</text>
+<text x="936" y="704" font-size="10" fill="#78909C">Seuils humidité configurables</text>
+<line x1="914" y1="685" x2="922" y2="685" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#a-purple)"/>
+
+<!-- Vanne Z4 — Fleurs -->
+<rect x="922" y="717" width="260" height="44" rx="6" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1.5"/>
+<rect x="1176" y="717" width="6" height="44" rx="3" fill="#7B1FA2"/>
+<text x="936" y="733" font-size="11" font-weight="600" fill="#7B1FA2">Vanne 24V Latching — Zone 4</text>
+<text x="936" y="746" font-size="10" fill="#78909C">Irrigation fleurs · Relais 4 · pulse 50ms</text>
+<text x="936" y="758" font-size="10" fill="#78909C">Seuil bas réduit (aromates/fleurs)</text>
+<line x1="914" y1="739" x2="922" y2="739" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#a-purple)"/>
+
+<!-- Vérin Linéaire — Toit Serre -->
+<rect x="922" y="771" width="260" height="44" rx="6" fill="#EDE7F6" stroke="#4527A0" stroke-width="1.5"/>
+<rect x="1176" y="771" width="6" height="44" rx="3" fill="#4527A0"/>
+<text x="936" y="787" font-size="11" font-weight="600" fill="#4527A0">Vérin Linéaire 24V — Toit serre</text>
+<text x="936" y="800" font-size="10" fill="#78909C">H-Bridge · 2 fins de course · timeout 60s</text>
+<text x="936" y="812" font-size="10" fill="#78909C">Ouverture si T&gt;25°C · Fermeture si pluie/gel</text>
+<line x1="914" y1="793" x2="922" y2="793" stroke="#7B1FA2" stroke-width="1.5" marker-end="url(#a-purple)"/>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- LÉGENDE                                                -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<rect x="330" y="560" width="540" height="72" rx="8" fill="#FAFAFA" stroke="#ECEFF1" stroke-width="1"/>
+<text x="600" y="578" text-anchor="middle" font-size="10" font-weight="700" fill="#546E7A">ALIMENTATION &amp; LÉGENDE</text>
+
+<rect x="344" y="586" width="8" height="8" rx="2" fill="#1565C0"/>
+<text x="358" y="594" font-size="10" fill="#546E7A">HTTP REST / WiFi (bidirectionnel)</text>
+
+<rect x="344" y="602" width="8" height="8" rx="2" fill="#E65100"/>
+<text x="358" y="610" font-size="10" fill="#546E7A">Bus capteurs — OneWire / ADC / GPIO</text>
+
+<rect x="344" y="618" width="8" height="8" rx="2" fill="#7B1FA2"/>
+<text x="358" y="626" font-size="10" fill="#546E7A">Bus actionneurs — Relais / H-Bridge 24V</text>
+
+<line x1="530" y1="590" x2="556" y2="590" stroke="#78909C" stroke-width="1.5" stroke-dasharray="4,3"/>
+<text x="562" y="594" font-size="10" fill="#546E7A">HTTP / HTTPS (externe)</text>
+
+<text x="700" y="594" font-size="10" fill="#546E7A">⚡ 5V USB-C → Raspberry Pi 5</text>
+<text x="700" y="610" font-size="10" fill="#546E7A">⚡ 24V DC → Arduino Edge Control</text>
+<text x="700" y="626" font-size="10" fill="#546E7A">⚡ 24V DC → Vannes latching + Vérin</text>
+
+</svg>

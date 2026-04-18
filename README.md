@@ -49,7 +49,7 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 ## Architecture matérielle
 
-![Schéma de connexion](docs/schema_connexion.png)
+![Schéma de connexion](docs/schema_connexion.svg)
 
 ---
 
