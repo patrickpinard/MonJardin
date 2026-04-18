@@ -39,12 +39,16 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 ### Interface mobile iPhone (PWA)
 
 <p align="center">
-  <img src="docs/screenshot_iphone_bord.png" alt="Tableau de bord iPhone" width="300">
-  &nbsp;&nbsp;
-  <img src="docs/screenshot_iphone_zones.png" alt="Mes zones iPhone" width="300">
+  <img src="docs/screenshot_iphone_bord.png" alt="Tableau de bord iPhone" width="220">
+  &nbsp;
+  <img src="docs/screenshot_iphone_zones.png" alt="Mes zones iPhone" width="220">
+  &nbsp;
+  <img src="docs/screenshot_iphone_encyclopedia.png" alt="Encyclopédie iPhone" width="220">
+  &nbsp;
+  <img src="docs/screenshot_iphone_plantation.png" alt="Plantation iPhone" width="220">
 </p>
 
-*Interface PWA installable sur iPhone — Tableau de bord et vue des zones avec barres d'humidité, plantations actives et contrôles.*
+*Interface PWA installable sur iPhone — Tableau de bord, vue des zones, encyclopédie de 50 légumes et gestion des plantations.*
 
 
 ## Architecture matérielle

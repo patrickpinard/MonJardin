@@ -242,80 +242,73 @@
     </div>
 
     {% if plantings %}
-    <div style="overflow-x:auto;">
-      <table class="table-modern">
-        <thead><tr>
-          <th>Légume</th><th>Variété</th><th>Planté</th><th>Récolte</th>
-          <th>Progression</th><th>Eau</th><th>Statut</th><th></th>
-        </tr></thead>
-        <tbody>
-          {% for p in plantings %}
-          <tr>
-            <td style="font-weight:600;">
-              <a href="/plants/{{ p.vegetable_name }}" style="color:var(--text-primary);">{{ p.vegetable_name }}</a>
-            </td>
-            <td>{{ p.variety or '—' }}</td>
-            <td>{{ p.planted_date.strftime('%d.%m.%y') if p.planted_date else '—' }}</td>
-            <td>{{ p.expected_harvest_date.strftime('%d.%m.%y') if p.expected_harvest_date else '—' }}</td>
-            <td>
-              {% if p.planted_date and p.expected_harvest_date and p.status == 'active' %}
-                {% set total_days = (p.expected_harvest_date - p.planted_date).days %}
-                {% set elapsed_days = (today_date - p.planted_date).days %}
-                {% set days_left = (p.expected_harvest_date - today_date).days %}
-                {% if total_days > 0 %}
-                  {% set pct_raw = ((elapsed_days / total_days) * 100) | int %}
-                  {% set pct = pct_raw if pct_raw > 0 else 0 %}
-                  {% set pct = pct if pct < 100 else 100 %}
-                {% else %}
-                  {% set pct = 100 %}{% set days_left = 0 %}
-                {% endif %}
-                <div style="min-width:90px;">
-                  <div style="height:5px;border-radius:3px;background:var(--bg-tertiary);overflow:hidden;margin-bottom:3px;">
-                    <div style="height:100%;width:{{ pct }}%;border-radius:3px;background:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--green){% endif %};"></div>
-                  </div>
-                  <div style="font-size:10px;color:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--text-tertiary){% endif %};">
-                    {% if days_left < 0 %}⚠️ {{ -days_left }}j retard
-                    {% elif days_left == 0 %}🎉 Aujourd'hui
-                    {% else %}dans {{ days_left }}j{% endif %}
-                  </div>
-                </div>
-              {% else %}
-                <span style="color:var(--text-tertiary)">—</span>
-              {% endif %}
-            </td>
-            <td>
-              <span class="attr {% if p.water_need == 'high' %}water-high{% elif p.water_need == 'low' %}water-low{% else %}water-medium{% endif %}">
-                {{ {'high':'💧💧💧 Élevé','medium':'💧💧 Moyen','low':'💧 Faible'}.get(p.water_need, p.water_need) }}
-              </span>
-            </td>
-            <td>
-              <span class="badge {% if p.status == 'active' %}badge-plant{% elif p.status == 'harvested' %}badge-roof-open{% else %}badge-valve-close{% endif %}">
-                {{ {'active':'Active','harvested':'Récoltée','planned':'Planifiée','removed':'Supprimée'}.get(p.status, p.status) }}
-              </span>
-            </td>
-            <td style="display:flex;gap:5px;">
-              <button type="button" class="btn btn-secondary btn-xs" title="Modifier"
-                onclick="openEditModal({{ p.id }}, '{{ p.vegetable_name|e }}', '{{ (p.variety or '')|e }}', '{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}', '{{ p.status }}', '{{ p.water_need }}', '{{ (p.notes or '')|e }}', 'zone')">
-                <i class="bi bi-pencil"></i>
-              </button>
-              {% if p.status == 'active' %}
-              <form action="{{ url_for('config.harvest_planting', planting_id=p.id) }}" method="post">
-                <button class="btn btn-secondary btn-xs" title="Marquer récoltée">
-                  <i class="bi bi-check2-circle"></i>
-                </button>
-              </form>
-              {% endif %}
-              <form id="del-z-{{ p.id }}" action="{{ url_for('config.delete_planting', planting_id=p.id) }}" method="post">
-                <button type="button" class="btn btn-danger btn-xs"
-                  onclick="showConfirm({title:'Supprimer la plantation',body:'Supprimer {{ p.vegetable_name }}{% if p.variety %} ({{ p.variety }}){% endif %} ?',okLabel:'Supprimer'},()=>document.getElementById('del-z-{{ p.id }}').submit())">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="planting-cards">
+      {% for p in plantings %}
+      {% if p.planted_date and p.expected_harvest_date and p.status == 'active' %}
+        {% set total_days = (p.expected_harvest_date - p.planted_date).days %}
+        {% set elapsed_days = (today_date - p.planted_date).days %}
+        {% set days_left = (p.expected_harvest_date - today_date).days %}
+        {% if total_days > 0 %}
+          {% set pct = [[((elapsed_days / total_days) * 100) | int, 0] | max, 100] | min %}
+        {% else %}
+          {% set pct = 100 %}{% set days_left = 0 %}
+        {% endif %}
+      {% else %}
+        {% set pct = 0 %}{% set days_left = none %}
+      {% endif %}
+      <div class="planting-card">
+        <div class="planting-card-top">
+          <div class="planting-card-name">
+            <a href="/plants/{{ p.vegetable_name }}" style="color:var(--text-primary);text-decoration:none;font-weight:700;font-size:14px;">{{ p.vegetable_name }}</a>
+            {% if p.variety %}<span style="font-size:11px;color:var(--text-tertiary);margin-left:4px;">{{ p.variety }}</span>{% endif %}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span class="badge {% if p.status == 'active' %}badge-plant{% elif p.status == 'harvested' %}badge-roof-open{% else %}badge-valve-close{% endif %}">
+              {{ {'active':'Active','harvested':'Récoltée','planned':'Planifiée','removed':'Supprimée'}.get(p.status, p.status) }}
+            </span>
+            <span class="attr {% if p.water_need == 'high' %}water-high{% elif p.water_need == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:11px;">
+              {{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(p.water_need, '') }}
+            </span>
+          </div>
+        </div>
+        <div class="planting-card-dates">
+          <span><i class="bi bi-calendar-event"></i> {{ p.planted_date.strftime('%d.%m.%y') if p.planted_date else '—' }}</span>
+          <span>→</span>
+          <span><i class="bi bi-basket"></i> {{ p.expected_harvest_date.strftime('%d.%m.%y') if p.expected_harvest_date else '—' }}</span>
+        </div>
+        {% if p.status == 'active' and days_left is not none %}
+        <div style="margin-top:8px;">
+          <div style="height:5px;border-radius:3px;background:var(--bg-tertiary);overflow:hidden;margin-bottom:4px;">
+            <div style="height:100%;width:{{ pct }}%;border-radius:3px;background:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--green){% endif %};"></div>
+          </div>
+          <div style="font-size:11px;color:{% if days_left < 0 %}var(--red){% elif days_left <= 7 %}var(--orange){% else %}var(--text-tertiary){% endif %};">
+            {% if days_left < 0 %}⚠️ {{ -days_left }}j de retard
+            {% elif days_left == 0 %}🎉 Récolte aujourd'hui
+            {% else %}dans {{ days_left }}j{% endif %}
+          </div>
+        </div>
+        {% endif %}
+        <div class="planting-card-actions">
+          <button type="button" class="btn btn-secondary btn-xs" title="Modifier"
+            onclick="openEditModal({{ p.id }}, '{{ p.vegetable_name|e }}', '{{ (p.variety or '')|e }}', '{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}', '{{ p.status }}', '{{ p.water_need }}', '{{ (p.notes or '')|e }}', 'zone')">
+            <i class="bi bi-pencil"></i> Modifier
+          </button>
+          {% if p.status == 'active' %}
+          <form action="{{ url_for('config.harvest_planting', planting_id=p.id) }}" method="post" style="display:inline;">
+            <button class="btn btn-secondary btn-xs" title="Marquer récoltée">
+              <i class="bi bi-check2-circle"></i> Récoltée
+            </button>
+          </form>
+          {% endif %}
+          <form id="del-z-{{ p.id }}" action="{{ url_for('config.delete_planting', planting_id=p.id) }}" method="post" style="display:inline;">
+            <button type="button" class="btn btn-danger btn-xs"
+              onclick="showConfirm({title:'Supprimer la plantation',body:'Supprimer {{ p.vegetable_name }}{% if p.variety %} ({{ p.variety }}){% endif %} ?',okLabel:'Supprimer'},()=>document.getElementById('del-z-{{ p.id }}').submit())">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
     </div>
     {% else %}
     <div class="empty-state" style="padding:24px;">

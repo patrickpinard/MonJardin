@@ -309,6 +309,24 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .zone-goto-btn:hover { transform: scale(1.15); opacity: .85; }
 
+/* ── Planting cards (zone detail) ── */
+.planting-cards { display: flex; flex-direction: column; gap: 10px; }
+.planting-card {
+  padding: 12px 14px; border: 1px solid var(--border);
+  border-radius: var(--r-md); background: var(--bg-secondary);
+}
+.planting-card-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px;
+}
+.planting-card-name { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.planting-card-dates {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text-tertiary);
+}
+.planting-card-actions {
+  display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap;
+}
+
 .zone-card-body { padding: 15px 17px; }
 .moisture-row { display: flex; align-items: center; gap: 13px; margin-bottom: 12px; }
 .gauge-wrap { position: relative; width: 68px; height: 68px; flex-shrink: 0; }
