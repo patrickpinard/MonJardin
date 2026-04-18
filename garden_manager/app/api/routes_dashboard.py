@@ -70,16 +70,10 @@ def dashboard():
         else:
             moisture = z_sensor.get("soil_moisture_pct", 50.0)
 
-        # Classe CSS selon humidité
-        if moisture < 30:
-            moisture_class = "moisture-low"
-        elif moisture > 65:
-            moisture_class = "moisture-high"
-        else:
-            moisture_class = "moisture-ok"
+        mc = ("low" if moisture < zone.moisture_threshold_low
+              else "high" if moisture > zone.moisture_threshold_high else "ok")
 
         plantings = Planting.query.filter_by(zone_id=zone.zone_id, status="active").all()
-        # Alerte : zone sous seuil depuis 2h+
         alert_since = datetime.utcnow() - timedelta(hours=2)
         recent = (SensorReading.query
                   .filter(SensorReading.zone_id == zone.zone_id,
@@ -90,7 +84,7 @@ def dashboard():
         zones_data.append({
             "zone": zone,
             "moisture": round(moisture, 1),
-            "moisture_class": moisture_class,
+            "mc": mc,
             "valve_state": valve_map.get(zone.zone_id, "close"),
             "plantings": plantings,
             "is_alerting": is_alerting,
@@ -252,8 +246,8 @@ def zones_overview():
     return render_template(
         "zones_overview.html",
         zones_data=zones_data,
-        temp_ext=round(temp_ext, 1) if temp_ext is not None else weather.get("temperature"),
-        temp_serre=round(temp_serre, 1) if temp_serre is not None else None,
+        temperature_c=round(temp_ext, 1) if temp_ext is not None else weather.get("temperature"),
+        temp_serre_c=round(temp_serre, 1) if temp_serre is not None else None,
         roof_state=actuator_status.get("roof_state", "close"),
     )
 

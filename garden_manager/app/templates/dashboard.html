@@ -25,7 +25,7 @@
   <!-- ── Zone cards ── -->
   <div class="zones-grid mb-3">
     {% for zd in zones_data %}
-    {% set mc = 'low' if zd.moisture_class == 'moisture-low' else ('high' if zd.moisture_class == 'moisture-high' else 'ok') %}
+    {% set mc = zd.mc %}
     {% set dash = (zd.moisture / 100 * 175.9) | round(1) %}
     <div class="zone-card">
 

@@ -7,8 +7,8 @@
     <div>
       <div class="page-title">Mes zones</div>
       <div class="page-subtitle">
-        {% if temp_serre is not none %}🏠 Serre {{ temp_serre }}°C&nbsp;&nbsp;{% endif %}
-        🌡️ Extérieur {% if temp_ext is not none %}{{ temp_ext }}°C{% else %}—{% endif %}
+        {% if temp_serre_c is not none %}🏠 Serre {{ temp_serre_c }}°C&nbsp;&nbsp;{% endif %}
+        🌡️ Extérieur {% if temperature_c is not none %}{{ temperature_c }}°C{% else %}—{% endif %}
       </div>
     </div>
     <button class="btn btn-ghost btn-icon" onclick="location.reload()" title="Rafraîchir">
@@ -84,13 +84,13 @@
           <div class="zo-temp-item">
             <i class="bi bi-house-door-fill" style="color:var(--green);font-size:12px;"></i>
             <span>Serre</span>
-            <strong>{% if temp_serre is not none %}{{ temp_serre }}°C{% else %}—{% endif %}</strong>
+            <strong>{% if temp_serre_c is not none %}{{ temp_serre_c }}°C{% else %}—{% endif %}</strong>
           </div>
           {% endif %}
           <div class="zo-temp-item">
             <i class="bi bi-thermometer-half" style="color:var(--orange);font-size:12px;"></i>
             <span>Extérieur</span>
-            <strong>{% if temp_ext is not none %}{{ temp_ext }}°C{% else %}—{% endif %}</strong>
+            <strong>{% if temperature_c is not none %}{{ temperature_c }}°C{% else %}—{% endif %}</strong>
           </div>
           {% if zd.zone.has_roof %}
           <div class="zo-temp-item">
