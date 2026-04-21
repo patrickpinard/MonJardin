@@ -491,6 +491,16 @@ def admin_page():
     except Exception:
         db_size_kb = None
     total_readings = SensorReading.query.count()
+    weather = current_app.extensions["weather_service"].get_current()
+    sim_speed = int(current_app.config.get("SIMULATION_SPEED", 1))
+    sim_profiles = [
+        {"id": "printemps_normal", "label": "🌸 Printemps normal"},
+        {"id": "ete_chaud",        "label": "☀️ Été chaud"},
+        {"id": "ete_orageux",      "label": "⛈ Été orageux"},
+        {"id": "automne_humide",   "label": "🍂 Automne humide"},
+        {"id": "gel_tardif",       "label": "❄️ Gel tardif (Saints de Glace)"},
+        {"id": "canicule",         "label": "🔥 Canicule"},
+    ]
     return render_template(
         "admin.html",
         users=users,
@@ -505,6 +515,9 @@ def admin_page():
         total_readings=total_readings,
         simulation_mode=current_app.config.get("SIMULATION_MODE", False),
         current_user=session.get("auth_user"),
+        weather=weather,
+        sim_speed=sim_speed,
+        sim_profiles=sim_profiles,
     )
 
 

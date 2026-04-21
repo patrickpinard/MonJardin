@@ -79,124 +79,21 @@
     {% endfor %}
   </div>
 
-  <!-- Système -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-cpu"></i> État du système</div>
-    <div class="grid-3" style="gap:12px;margin-bottom:16px;">
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Mode</div>
-        <div style="font-weight:700;">{% if simulation_mode %}Simulation{% else %}Production{% endif %}</div>
+  <!-- Lien vers Administration -->
+  <div class="card" style="padding:14px 16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <i class="bi bi-gear-fill" style="font-size:20px;color:var(--text-tertiary);"></i>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;">État du système &amp; simulation</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Arduino, météo, vitesse simulation, alertes email</div>
       </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Météo</div>
-        <div style="font-weight:700;">{{ weather.source }}</div>
-      </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Dernière MAJ</div>
-        <div style="font-weight:700;font-size:13px;">{{ weather.timestamp[:16] if weather.timestamp else '—' }}</div>
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm" onclick="checkHealth()">
-        <i class="bi bi-heart-pulse"></i> Vérifier Arduino
-      </button>
-      <button class="btn btn-secondary btn-sm" onclick="forceCycle()">
-        <i class="bi bi-arrow-clockwise"></i> Forcer cycle
-      </button>
-    </div>
-    <div id="healthResult" class="mt-2"></div>
-  </div>
-
-  <!-- Simulation controls -->
-  {% if simulation_mode %}
-  <div class="card">
-    <div class="card-title"><i class="bi bi-cpu-fill" style="color:var(--orange);"></i> Contrôles simulation</div>
-
-    <!-- Vitesse de simulation -->
-    <div style="margin-bottom:18px;">
-      <label class="form-label mb-2">Vitesse de simulation</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-        {% for spd in [1, 5, 10, 20, 50, 100] %}
-        <form action="/settings/sim_speed" method="post" style="display:inline;">
-          <input type="hidden" name="speed" value="{{ spd }}">
-          <button type="submit" class="btn btn-sm {% if sim_speed == spd %}btn-warning{% else %}btn-secondary{% endif %}"
-                  style="min-width:52px;font-weight:{% if sim_speed == spd %}700{% else %}500{% endif %};">
-            {{ spd }}×
-          </button>
-        </form>
-        {% endfor %}
-      </div>
-      <div style="font-size:11px;color:var(--text-tertiary);margin-top:7px;">
-        Actuelle : <strong style="color:var(--orange);">{{ sim_speed }}×</strong> —
-        cycle automation toutes les <strong>{{ [5, (60 // sim_speed)] | max }}s</strong>,
-        météo toutes les <strong>{{ [30, (1800 // sim_speed)] | max }}s</strong>
-      </div>
-    </div>
-
-    <hr style="border:none;border-top:1px solid var(--border);margin:0 0 16px;">
-
-    <!-- Profil météo -->
-    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
-      <div style="flex:1;min-width:200px;">
-        <label class="form-label">Profil météo</label>
-        <select id="weatherProfileSelect" class="form-select">
-          {% for p in sim_profiles %}
-          <option value="{{ p.id }}">{{ p.label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <button class="btn btn-warning btn-sm" onclick="applyWeatherProfile()">
-        <i class="bi bi-cloud-lightning"></i> Appliquer
-      </button>
-      <button class="btn btn-danger btn-sm" onclick="resetSimulation()">
-        <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
-      </button>
-    </div>
-    <div>
-      <label class="form-label mb-2">Sécher une zone (test déclenchement arrosage)</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        {% for z in range(1, 5) %}
-        <button class="btn btn-warning btn-sm" onclick="dryZone({{ z }})">
-          <i class="bi bi-droplet-slash"></i> Zone {{ z }}
-        </button>
-        {% endfor %}
-      </div>
+      <a href="/admin" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-right"></i> Administration</a>
     </div>
   </div>
-  {% endif %}
 
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
-<script>
-async function checkHealth() {
-  const resp = await fetch('/api/system/health');
-  const data = await resp.json();
-  const el = document.getElementById('healthResult');
-  el.innerHTML = data.arduino_reachable
-    ? '<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle me-1"></i>Arduino accessible</span>'
-    : '<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);"><i class="bi bi-x-circle me-1"></i>Arduino inaccessible</span>';
-}
-async function applyWeatherProfile() {
-  const profile = document.getElementById('weatherProfileSelect').value;
-  await fetch('http://127.0.0.1:8081/admin/inject_failure', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({weather_profile: profile}),
-  }).catch(() => {});
-  showToast('Profil météo appliqué : ' + profile, 'success');
-}
-async function resetSimulation() {
-  await fetch('http://127.0.0.1:8081/admin/reset', {method: 'POST'}).catch(() => {});
-  showToast('Simulation réinitialisée', 'success');
-}
-async function dryZone(zoneId) {
-  await fetch('http://127.0.0.1:8081/admin/inject_failure', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({dry_zone: zoneId}),
-  }).catch(() => {});
-  showToast(`Zone ${zoneId} asséchée — arrosage devrait se déclencher`, 'info');
-}
-</script>
 {% endblock %}

@@ -6,14 +6,23 @@
   <div class="page-header-row">
     <div>
       <div class="page-title">Administration</div>
-      <div class="page-subtitle">Utilisateurs · Notifications · Système</div>
+      <div class="page-subtitle">Accès · Système · Simulation</div>
     </div>
-    {% if current_user %}
     <div style="display:flex;align-items:center;gap:10px;">
+      {% if simulation_mode %}
+      <span class="badge" style="background:rgba(255,159,10,.1);color:var(--orange);border:1px solid rgba(255,159,10,.25);font-size:12px;">
+        <i class="bi bi-cpu-fill"></i> SIMULATION ×{{ sim_speed }}
+      </span>
+      {% else %}
+      <span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.25);font-size:12px;">
+        <i class="bi bi-broadcast"></i> PRODUCTION
+      </span>
+      {% endif %}
+      {% if current_user %}
       <span style="font-size:12px;color:var(--text-tertiary);"><i class="bi bi-person-circle"></i> {{ current_user }}</span>
       <a href="/logout" class="btn btn-ghost btn-sm"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
 </div>
 
@@ -34,264 +43,338 @@
   </div>
   {% endif %}
 
-  <!-- ── Accès & Authentification ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-shield-lock-fill"></i> Accès &amp; Authentification</div>
-
-    {% if users %}
-    <div style="overflow-x:auto;margin-bottom:16px;">
-      <table class="table-modern">
-        <thead>
-          <tr>
-            <th>Utilisateur</th>
-            <th>Statut</th>
-            <th>Créé le</th>
-            <th>Dernière connexion</th>
-            <th style="text-align:right;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for u in users %}
-          <tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <i class="bi bi-person-circle" style="font-size:16px;color:var(--text-tertiary);"></i>
-                <strong>{{ u.username }}</strong>
-                {% if current_user == u.username %}
-                <span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);font-size:10px;">Vous</span>
-                {% endif %}
-              </div>
-            </td>
-            <td>
-              <span class="badge {% if u.enabled %}badge-valve-open{% else %}badge-valve-close{% endif %}">
-                <i class="bi bi-{% if u.enabled %}check-circle-fill{% else %}x-circle{% endif %}"></i>
-                {{ 'Actif' if u.enabled else 'Désactivé' }}
-              </span>
-            </td>
-            <td style="color:var(--text-tertiary);font-size:12px;">{{ u.created_at.strftime('%d.%m.%Y') if u.created_at else '—' }}</td>
-            <td style="color:var(--text-tertiary);font-size:12px;">{{ u.last_login.strftime('%d.%m.%Y %H:%M') if u.last_login else '—' }}</td>
-            <td>
-              <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
-                <!-- Toggle actif/inactif -->
-                <form method="post" action="/admin/users/{{ u.id }}/toggle" style="display:inline;">
-                  <button type="submit" class="btn btn-xs {% if u.enabled %}btn-warning{% else %}btn-secondary{% endif %}"
-                          title="{{ 'Désactiver' if u.enabled else 'Activer' }}">
-                    <i class="bi bi-toggle-{% if u.enabled %}on{% else %}off{% endif %}"></i>
-                    {{ 'Désactiver' if u.enabled else 'Activer' }}
-                  </button>
-                </form>
-                <!-- Changer PIN -->
-                <button class="btn btn-secondary btn-xs" onclick="showPinModal({{ u.id }}, '{{ u.username }}')"
-                        title="Changer le PIN">
-                  <i class="bi bi-key-fill"></i> PIN
-                </button>
-                <!-- Supprimer -->
-                {% if current_user != u.username %}
-                <form method="post" action="/admin/users/{{ u.id }}/delete" style="display:inline;"
-                      onsubmit="return confirm('Supprimer {{ u.username }} ?')">
-                  <button type="submit" class="btn btn-danger btn-xs" title="Supprimer">
-                    <i class="bi bi-trash3-fill"></i>
-                  </button>
-                </form>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="empty-state mb-3" style="padding:20px;">
-      <i class="bi bi-shield-slash" style="font-size:28px;display:block;margin-bottom:6px;"></i>
-      <p>Aucun utilisateur — l'application est accessible sans authentification.</p>
-    </div>
+  <!-- ── TABS ── -->
+  <div class="time-tabs" style="margin-bottom:16px;" id="admin-tab-bar">
+    <button class="time-tab active" onclick="switchTab(this,'acces')">
+      <i class="bi bi-shield-lock-fill"></i> Accès
+    </button>
+    <button class="time-tab" onclick="switchTab(this,'systeme')">
+      <i class="bi bi-cpu"></i> Système
+    </button>
+    {% if simulation_mode %}
+    <button class="time-tab" onclick="switchTab(this,'simulation')">
+      <i class="bi bi-cpu-fill" style="color:var(--orange);"></i> Simulation
+    </button>
     {% endif %}
+  </div>
 
-    <!-- Info statut auth -->
-    <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;font-size:12px;">
-      {% set active_count = users | selectattr('enabled') | list | length %}
-      {% if active_count > 0 %}
-      <i class="bi bi-lock-fill" style="color:var(--green);"></i>
-      <strong style="color:var(--green);">Authentification activée</strong> — {{ active_count }} utilisateur(s) actif(s).
-      L'application demande un login à chaque accès.
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 1 : ACCÈS & AUTHENTIFICATION
+       ══════════════════════════════════════════════════════ -->
+  <div id="tab-acces">
+
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-shield-lock-fill"></i> Accès &amp; Authentification</div>
+
+      {% if users %}
+      <div style="overflow-x:auto;margin-bottom:16px;">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th>Utilisateur</th><th>Statut</th><th>Créé le</th>
+              <th>Dernière connexion</th><th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <i class="bi bi-person-circle" style="font-size:16px;color:var(--text-tertiary);"></i>
+                  <strong>{{ u.username }}</strong>
+                  {% if current_user == u.username %}
+                  <span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);font-size:10px;">Vous</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                <span class="badge {% if u.enabled %}badge-valve-open{% else %}badge-valve-close{% endif %}">
+                  <i class="bi bi-{% if u.enabled %}check-circle-fill{% else %}x-circle{% endif %}"></i>
+                  {{ 'Actif' if u.enabled else 'Désactivé' }}
+                </span>
+              </td>
+              <td style="color:var(--text-tertiary);font-size:12px;">{{ u.created_at.strftime('%d.%m.%Y') if u.created_at else '—' }}</td>
+              <td style="color:var(--text-tertiary);font-size:12px;">{{ u.last_login.strftime('%d.%m.%Y %H:%M') if u.last_login else '—' }}</td>
+              <td>
+                <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+                  <form method="post" action="/admin/users/{{ u.id }}/toggle" style="display:inline;">
+                    <button type="submit" class="btn btn-xs {% if u.enabled %}btn-warning{% else %}btn-secondary{% endif %}">
+                      <i class="bi bi-toggle-{% if u.enabled %}on{% else %}off{% endif %}"></i>
+                      {{ 'Désactiver' if u.enabled else 'Activer' }}
+                    </button>
+                  </form>
+                  <button class="btn btn-secondary btn-xs" onclick="showPinModal({{ u.id }}, '{{ u.username }}')">
+                    <i class="bi bi-key-fill"></i> PIN
+                  </button>
+                  {% if current_user != u.username %}
+                  <form method="post" action="/admin/users/{{ u.id }}/delete" style="display:inline;"
+                        onsubmit="return confirm('Supprimer {{ u.username }} ?')">
+                    <button type="submit" class="btn btn-danger btn-xs"><i class="bi bi-trash3-fill"></i></button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
-      <i class="bi bi-unlock-fill" style="color:var(--orange);"></i>
-      <strong style="color:var(--orange);">Authentification désactivée</strong> — Aucun utilisateur actif.
-      Créez un utilisateur et activez-le pour protéger l'accès.
+      <div class="empty-state mb-3" style="padding:20px;">
+        <i class="bi bi-shield-slash" style="font-size:28px;display:block;margin-bottom:6px;"></i>
+        <p>Aucun utilisateur — l'application est accessible sans authentification.</p>
+      </div>
       {% endif %}
+
+      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;font-size:12px;">
+        {% set active_count = users | selectattr('enabled') | list | length %}
+        {% if active_count > 0 %}
+        <i class="bi bi-lock-fill" style="color:var(--green);"></i>
+        <strong style="color:var(--green);">Authentification activée</strong> — {{ active_count }} utilisateur(s) actif(s).
+        {% else %}
+        <i class="bi bi-unlock-fill" style="color:var(--orange);"></i>
+        <strong style="color:var(--orange);">Authentification désactivée</strong> — Créez un utilisateur actif pour protéger l'accès.
+        {% endif %}
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">
+        Ajouter un utilisateur
+      </div>
+      <form method="post" action="/admin/users/add" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="form-group mb-0" style="flex:1;min-width:140px;">
+          <label class="form-label">Nom d'utilisateur</label>
+          <input type="text" name="username" class="form-control" placeholder="ex: patrick" required maxlength="32">
+        </div>
+        <div class="form-group mb-0" style="flex:1;min-width:120px;">
+          <label class="form-label">PIN (4–8 chiffres)</label>
+          <input type="password" name="pin" class="form-control" placeholder="••••"
+                 inputmode="numeric" minlength="4" maxlength="8" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" style="white-space:nowrap;">
+          <i class="bi bi-person-plus-fill"></i> Ajouter
+        </button>
+      </form>
     </div>
 
-    <!-- Ajout utilisateur -->
-    <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">
-      Ajouter un utilisateur
-    </div>
-    <form method="post" action="/admin/users/add" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-      <div class="form-group mb-0" style="flex:1;min-width:140px;">
-        <label class="form-label">Nom d'utilisateur</label>
-        <input type="text" name="username" class="form-control" placeholder="ex: patrick" required maxlength="32">
-      </div>
-      <div class="form-group mb-0" style="flex:1;min-width:120px;">
-        <label class="form-label">PIN (4–8 chiffres)</label>
-        <input type="password" name="pin" class="form-control" placeholder="••••"
-               inputmode="numeric" minlength="4" maxlength="8" required>
-      </div>
-      <button type="submit" class="btn btn-primary btn-sm" style="white-space:nowrap;">
-        <i class="bi bi-person-plus-fill"></i> Ajouter
-      </button>
-    </form>
-  </div>
+  </div><!-- /#tab-acces -->
 
-  <!-- ── Alertes email ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-envelope-fill"></i> Alertes email</div>
-    <div class="grid-3" style="gap:10px;margin-bottom:16px;">
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Serveur SMTP</div>
-        <div style="font-weight:700;font-size:12px;">{{ smtp_host }}:{{ smtp_port }}</div>
-        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">TLS : {{ 'Oui' if mail_tls else 'Non' }}</div>
-      </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Expéditeur</div>
-        <div style="font-weight:700;font-size:12px;">{{ mail_sender if mail_sender else '—' }}</div>
-        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">SMTP_USER : {{ smtp_user if smtp_user else '—' }}</div>
-      </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Destinataire alertes</div>
-        <div style="font-weight:700;font-size:12px;">{{ mail_dest if mail_dest else '—' }}</div>
-        <div style="font-size:11px;margin-top:2px;">
-          {% if smtp_configured %}
-          <span style="color:var(--green);"><i class="bi bi-check-circle-fill"></i> Configuré</span>
-          {% else %}
-          <span style="color:var(--red);"><i class="bi bi-x-circle-fill"></i> Non configuré</span>
-          {% endif %}
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 2 : SYSTÈME
+       ══════════════════════════════════════════════════════ -->
+  <div id="tab-systeme" style="display:none;">
+
+    <!-- État du système -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-cpu"></i> État du système</div>
+      <div class="grid-3" style="gap:12px;margin-bottom:16px;">
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Mode</div>
+          <div style="font-weight:700;">{% if simulation_mode %}<span style="color:var(--orange);">Simulation</span>{% else %}<span style="color:var(--green);">Production</span>{% endif %}</div>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Météo</div>
+          <div style="font-weight:700;">{{ weather.source }}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ weather.timestamp[:16] if weather.timestamp else '—' }}</div>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:13px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Base de données</div>
+          <div style="font-weight:700;">{{ db_size_kb }} Ko</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ total_readings | default(0) }} relevés</div>
         </div>
       </div>
-    </div>
-    {% if not smtp_configured %}
-    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
-      <i class="bi bi-info-circle"></i> Définissez <code>SMTP_USER</code>, <code>SMTP_PASSWORD</code>,
-      <code>MAIL_DEFAULT_SENDER</code> et <code>ADMIN_NOTIFICATION_EMAIL</code> dans le fichier <code>.env</code>.
-    </div>
-    {% endif %}
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <button class="btn btn-primary btn-sm" onclick="testEmail()" {% if not smtp_configured %}disabled{% endif %}>
-        <i class="bi bi-send-fill"></i> Envoyer email de test
-      </button>
-      <div id="emailResult"></div>
-    </div>
-  </div>
-
-  <!-- ── Tests d'alertes ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-send-exclamation-fill" style="color:var(--orange);"></i> Tests d'alertes email</div>
-    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">
-      Envoie un email HTML formaté et ajoute une entrée dans le journal pour simuler chaque type d'alerte.
-      Destinataire : <strong>{{ mail_dest }}</strong>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;">
-
-      <!-- Gel -->
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:20px;">🌡️</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;">Gel nocturne</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">T°=-2.3°C · fermeture vannes</div>
-          </div>
-        </div>
-        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('frost', this)">
-          <i class="bi bi-send"></i> Envoyer
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="checkHealth()">
+          <i class="bi bi-heart-pulse"></i> Vérifier Arduino
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="forceCycle()">
+          <i class="bi bi-arrow-clockwise"></i> Forcer cycle automation
         </button>
       </div>
-
-      <!-- Sécheresse -->
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:20px;">💧</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;">Sécheresse critique</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">Zone 2 · 12% · 2 arrosages</div>
-          </div>
-        </div>
-        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('drought', this)">
-          <i class="bi bi-send"></i> Envoyer
-        </button>
-      </div>
-
-      <!-- Capteur HS -->
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:20px;">🔌</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;">Capteur hors service</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">Zone 3 · aucune donnée 2h15</div>
-          </div>
-        </div>
-        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('sensor_failure', this)">
-          <i class="bi bi-send"></i> Envoyer
-        </button>
-      </div>
-
-      <!-- Inondation -->
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:20px;">🌊</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;">Risque inondation</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">Zone 1 serre · 94%</div>
-          </div>
-        </div>
-        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('flood', this)">
-          <i class="bi bi-send"></i> Envoyer
-        </button>
-      </div>
-
-      <!-- Arduino offline -->
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:20px;">📡</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;">Arduino injoignable</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">15 échecs · failsafe activé</div>
-          </div>
-        </div>
-        <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('arduino_offline', this)">
-          <i class="bi bi-send"></i> Envoyer
-        </button>
-      </div>
-
+      <div id="healthResult" class="mt-2"></div>
     </div>
-    <div id="alert-test-result" style="margin-top:12px;"></div>
-  </div>
 
-  <!-- ── Informations système ── -->
-  <div class="card">
-    <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
-    <div class="grid-3" style="gap:10px;">
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Mode</div>
-        <div style="font-weight:700;">{% if simulation_mode %}<span style="color:var(--orange);">Simulation</span>{% else %}<span style="color:var(--green);">Production</span>{% endif %}</div>
-      </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Base de données</div>
-        <div style="font-weight:700;">{{ db_size_kb }} Ko</div>
-        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ total_readings | default(0) }} relevés capteurs</div>
-      </div>
-      <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Utilisateurs</div>
-        <div style="font-weight:700;">{{ users | length }} compte(s)</div>
-        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">
-          {{ users | selectattr('enabled') | list | length }} actif(s)
+    <!-- Alertes email -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-envelope-fill"></i> Alertes email</div>
+      <div class="grid-3" style="gap:10px;margin-bottom:16px;">
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Serveur SMTP</div>
+          <div style="font-weight:700;font-size:12px;">{{ smtp_host }}:{{ smtp_port }}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">TLS : {{ 'Oui' if mail_tls else 'Non' }}</div>
         </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Expéditeur</div>
+          <div style="font-weight:700;font-size:12px;">{{ mail_sender if mail_sender else '—' }}</div>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Destinataire alertes</div>
+          <div style="font-weight:700;font-size:12px;">{{ mail_dest if mail_dest else '—' }}</div>
+          <div style="font-size:11px;margin-top:2px;">
+            {% if smtp_configured %}
+            <span style="color:var(--green);"><i class="bi bi-check-circle-fill"></i> Configuré</span>
+            {% else %}
+            <span style="color:var(--red);"><i class="bi bi-x-circle-fill"></i> Non configuré</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% if not smtp_configured %}
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
+        <i class="bi bi-info-circle"></i> Définissez <code>SMTP_USER</code>, <code>SMTP_PASSWORD</code>,
+        <code>MAIL_DEFAULT_SENDER</code> et <code>ADMIN_NOTIFICATION_EMAIL</code> dans <code>.env</code>.
+      </div>
+      {% endif %}
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="testEmail()" {% if not smtp_configured %}disabled{% endif %}>
+          <i class="bi bi-send-fill"></i> Envoyer email de test
+        </button>
+        <div id="emailResult"></div>
       </div>
     </div>
-  </div>
 
-</div>
+    <!-- Tests d'alertes -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-send-exclamation-fill" style="color:var(--orange);"></i> Tests d'alertes email</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">
+        Envoie un email HTML formaté et ajoute une entrée dans le journal. Destinataire : <strong>{{ mail_dest }}</strong>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:20px;">🌡️</span>
+            <div><div style="font-size:13px;font-weight:700;">Gel nocturne</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">T°=-2.3°C · fermeture vannes</div></div>
+          </div>
+          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('frost', this)"><i class="bi bi-send"></i> Envoyer</button>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:20px;">💧</span>
+            <div><div style="font-size:13px;font-weight:700;">Sécheresse critique</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Zone 2 · 12% · 2 arrosages</div></div>
+          </div>
+          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('drought', this)"><i class="bi bi-send"></i> Envoyer</button>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:20px;">🔌</span>
+            <div><div style="font-size:13px;font-weight:700;">Capteur hors service</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Zone 3 · aucune donnée 2h15</div></div>
+          </div>
+          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('sensor_failure', this)"><i class="bi bi-send"></i> Envoyer</button>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:20px;">🌊</span>
+            <div><div style="font-size:13px;font-weight:700;">Risque inondation</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Zone 1 serre · 94%</div></div>
+          </div>
+          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('flood', this)"><i class="bi bi-send"></i> Envoyer</button>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:20px;">📡</span>
+            <div><div style="font-size:13px;font-weight:700;">Arduino injoignable</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">15 échecs · failsafe activé</div></div>
+          </div>
+          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('arduino_offline', this)"><i class="bi bi-send"></i> Envoyer</button>
+        </div>
+      </div>
+      <div id="alert-test-result" style="margin-top:12px;"></div>
+    </div>
 
-<!-- Modal changement de PIN -->
+    <!-- Informations système -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
+      <div class="grid-3" style="gap:10px;">
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Mode</div>
+          <div style="font-weight:700;">{% if simulation_mode %}<span style="color:var(--orange);">Simulation</span>{% else %}<span style="color:var(--green);">Production</span>{% endif %}</div>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Base de données</div>
+          <div style="font-weight:700;">{{ db_size_kb }} Ko</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ total_readings | default(0) }} relevés capteurs</div>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Utilisateurs</div>
+          <div style="font-weight:700;">{{ users | length }} compte(s)</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ users | selectattr('enabled') | list | length }} actif(s)</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#tab-systeme -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 3 : SIMULATION (uniquement si simulation_mode)
+       ══════════════════════════════════════════════════════ -->
+  {% if simulation_mode %}
+  <div id="tab-simulation" style="display:none;">
+
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-speedometer2" style="color:var(--orange);"></i> Vitesse de simulation</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+        {% for spd in [1, 5, 10, 20, 50, 100] %}
+        <form action="/settings/sim_speed" method="post" style="display:inline;">
+          <input type="hidden" name="speed" value="{{ spd }}">
+          <button type="submit" class="btn btn-sm {% if sim_speed == spd %}btn-warning{% else %}btn-secondary{% endif %}"
+                  style="min-width:52px;font-weight:{% if sim_speed == spd %}700{% else %}500{% endif %};">
+            {{ spd }}×
+          </button>
+        </form>
+        {% endfor %}
+      </div>
+      <div style="font-size:11px;color:var(--text-tertiary);">
+        Actuelle : <strong style="color:var(--orange);">{{ sim_speed }}×</strong> —
+        cycle automation toutes les <strong>{{ [5, (60 // sim_speed)] | max }}s</strong>,
+        météo toutes les <strong>{{ [30, (1800 // sim_speed)] | max }}s</strong>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-cloud-lightning-fill" style="color:var(--blue);"></i> Profil météo</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:0;">
+        <div style="flex:1;min-width:200px;">
+          <label class="form-label">Profil actif</label>
+          <select id="weatherProfileSelect" class="form-select">
+            {% for p in sim_profiles %}
+            <option value="{{ p.id }}">{{ p.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button class="btn btn-warning btn-sm" onclick="applyWeatherProfile()">
+          <i class="bi bi-cloud-lightning"></i> Appliquer
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="resetSimulation()">
+          <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser tout
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="bi bi-droplet-slash-fill" style="color:var(--orange);"></i> Sécher une zone</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
+        Force l'humidité d'une zone à 18% pour tester le déclenchement automatique de l'arrosage.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        {% for z in range(1, 5) %}
+        <button class="btn btn-warning btn-sm" onclick="dryZone({{ z }})">
+          <i class="bi bi-droplet-slash"></i> Zone {{ z }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div><!-- /#tab-simulation -->
+  {% endif %}
+
+</div><!-- /.page-body -->
+
+<!-- Modal PIN -->
 <div class="modal-overlay" id="pin-overlay">
   <div class="modal-box">
     <div class="modal-header">
@@ -315,7 +398,41 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
 <script>
+// ── Tab switching ───────────────────────────────────────
+const ADMIN_TABS = ['acces','systeme','simulation'];
+function switchTab(btn, tab) {
+  document.querySelectorAll('#admin-tab-bar .time-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ADMIN_TABS.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+  });
+  if (tab === 'systeme') checkHealthSilent();
+}
+
+async function checkHealthSilent() {
+  try {
+    const resp = await fetch('/api/system/health');
+    const data = await resp.json();
+    const el = document.getElementById('healthResult');
+    if (el) el.innerHTML = data.arduino_reachable
+      ? '<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle me-1"></i>Arduino accessible</span>'
+      : '<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);"><i class="bi bi-x-circle me-1"></i>Arduino inaccessible</span>';
+  } catch {}
+}
+
+async function checkHealth() {
+  const el = document.getElementById('healthResult');
+  el.innerHTML = '<span style="font-size:12px;color:var(--text-tertiary);">Vérification…</span>';
+  const resp = await fetch('/api/system/health');
+  const data = await resp.json();
+  el.innerHTML = data.arduino_reachable
+    ? '<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle me-1"></i>Arduino accessible</span>'
+    : '<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);"><i class="bi bi-x-circle me-1"></i>Arduino inaccessible</span>';
+}
+
 async function sendTestAlert(type, btn) {
   const res = document.getElementById('alert-test-result');
   const orig = btn.innerHTML;
@@ -325,15 +442,11 @@ async function sendTestAlert(type, btn) {
   try {
     const resp = await fetch(`/api/system/test_alert/${type}`, {method: 'POST'});
     const data = await resp.json();
-    if (data.ok) {
-      res.innerHTML = `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);">
-        <i class="bi bi-check-circle-fill"></i> Email "${type}" envoyé + entrée journal ajoutée</span>`;
-    } else {
-      res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">
-        <i class="bi bi-x-circle-fill"></i> ${data.error}</span>`;
-    }
-  } catch(e) {
-    res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">Erreur réseau</span>`;
+    res.innerHTML = data.ok
+      ? `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle-fill"></i> Email "${type}" envoyé</span>`
+      : `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);"><i class="bi bi-x-circle-fill"></i> ${data.error}</span>`;
+  } catch {
+    res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);">Erreur réseau</span>`;
   }
   btn.disabled = false;
   btn.innerHTML = orig;
@@ -344,23 +457,37 @@ async function testEmail() {
   const res = document.getElementById('emailResult');
   btn.disabled = true;
   btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Envoi…';
-  res.innerHTML = '';
   try {
     const resp = await fetch('/api/system/test_email', {method: 'POST'});
     const data = await resp.json();
-    if (data.ok) {
-      res.innerHTML = `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);">
-        <i class="bi bi-check-circle-fill"></i> Email envoyé à ${data.to}</span>`;
-    } else {
-      res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">
-        <i class="bi bi-x-circle-fill"></i> ${data.error}</span>`;
-    }
-  } catch(e) {
-    res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">
-      <i class="bi bi-x-circle-fill"></i> Erreur réseau</span>`;
+    res.innerHTML = data.ok
+      ? `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle-fill"></i> Email envoyé à ${data.to}</span>`
+      : `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);"><i class="bi bi-x-circle-fill"></i> ${data.error}</span>`;
+  } catch {
+    res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);">Erreur réseau</span>`;
   }
   btn.disabled = false;
   btn.innerHTML = '<i class="bi bi-send-fill"></i> Envoyer email de test';
+}
+
+async function applyWeatherProfile() {
+  const profile = document.getElementById('weatherProfileSelect').value;
+  await fetch('http://127.0.0.1:8081/admin/inject_failure', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({weather_profile: profile}),
+  }).catch(() => {});
+  showToast('Profil météo appliqué : ' + profile, 'success');
+}
+async function resetSimulation() {
+  await fetch('http://127.0.0.1:8081/admin/reset', {method: 'POST'}).catch(() => {});
+  showToast('Simulation réinitialisée', 'success');
+}
+async function dryZone(zoneId) {
+  await fetch('http://127.0.0.1:8081/admin/inject_failure', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({dry_zone: zoneId}),
+  }).catch(() => {});
+  showToast(`Zone ${zoneId} asséchée — arrosage devrait se déclencher`, 'info');
 }
 
 function showPinModal(uid, username) {
