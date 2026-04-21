@@ -149,10 +149,9 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .theme-toggle:hover, .sidebar-collapse-btn:hover { background: var(--bg-secondary); color: var(--text-primary); }
 .brand-icon {
   width: 34px; height: 34px;
-  background: linear-gradient(135deg, #30d158, #25a244);
   border-radius: var(--r-sm); display: flex; align-items: center;
   justify-content: center; font-size: 17px; flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(48,209,88,.25);
+  overflow: hidden;
 }
 .brand-name { font-size: 15px; font-weight: 700; letter-spacing: -.3px; }
 .brand-sub  { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
@@ -875,7 +874,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   padding: 0; white-space: nowrap; opacity: .8;
 }
 .notif-clear-all:hover { opacity: 1; text-decoration: underline; }
-.notif-list { overflow-y: auto; flex: 1; }
+.notif-list { overflow-y: auto; flex: 1; overscroll-behavior: contain; }
 .notif-item {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 11px 12px 11px 16px; border-bottom: 1px solid var(--border);

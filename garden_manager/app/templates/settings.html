@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <div class="page-title">Paramètres</div>
-      <div class="page-subtitle">Configuration des zones et du système</div>
+      <div class="page-subtitle">Informations générales du jardin et état du système</div>
     </div>
     {% if simulation_mode %}
     <span class="badge" style="background:rgba(255,159,10,.1);color:var(--orange);border:1px solid rgba(255,159,10,.25);font-size:12px;">
@@ -46,56 +46,36 @@
     </form>
   </div>
 
-  <!-- Zone configs -->
+  <!-- Zones summary -->
   <div class="card-title mb-2" style="padding-left:2px;">
-    <i class="bi bi-sliders"></i> Configuration des zones
+    <i class="bi bi-grid-1x2"></i> Zones du jardin
   </div>
   <div class="grid-2 mb-4">
     {% for zone in zones %}
-    <div class="card">
-      <div class="card-title">
-        <div class="zone-icon z{{ zone.zone_id }}" style="width:28px;height:28px;font-size:14px;">
-          {% if zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
-          {% elif zone.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
-          {% elif zone.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
-          {% else %}<i class="bi bi-flower3"></i>{% endif %}
+    <a href="{{ url_for('dashboard.zone_detail', zone_id=zone.zone_id) }}" style="text-decoration:none;">
+      <div class="card" style="cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor=''">
+        <div class="card-title" style="margin-bottom:8px;">
+          <div class="zone-icon z{{ zone.zone_id }}" style="width:28px;height:28px;font-size:14px;">
+            {% if zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+            {% elif zone.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+            {% elif zone.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+            {% else %}<i class="bi bi-flower3"></i>{% endif %}
+          </div>
+          Zone {{ zone.zone_id }} — {{ zone.name }}
+          <i class="bi bi-chevron-right" style="margin-left:auto;color:var(--text-tertiary);font-size:12px;"></i>
         </div>
-        Zone {{ zone.zone_id }} — {{ zone.name }}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);">
+          <span>{{ zone.length_m | default(2.0) }}m × {{ zone.width_m | default(1.0) }}m</span>
+          <span style="color:var(--border-strong);">·</span>
+          <span style="color:var(--green);font-weight:600;">{{ zone.area_m2 }} m²</span>
+          <span style="color:var(--border-strong);">·</span>
+          <span>{{ '🏠 Serre' if zone.has_roof else '☀️ Extérieur' }}</span>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--text-tertiary);">
+          Cliquez pour configurer cette zone
+        </div>
       </div>
-      <form action="{{ url_for('config.update_zone', zone_id=zone.zone_id) }}" method="post">
-        <div class="form-group">
-          <label class="form-label">Nom de la zone</label>
-          <input type="text" name="zone_name" class="form-control"
-                 value="{{ zone.name }}" maxlength="40" placeholder="Ex: Serre, Potager…">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mode arrosage</label>
-          <select name="irrigation_mode" class="form-select">
-            <option value="auto"     {% if zone.irrigation_mode == 'auto'     %}selected{% endif %}>Automatique</option>
-            <option value="manual"   {% if zone.irrigation_mode == 'manual'   %}selected{% endif %}>Manuel</option>
-            <option value="disabled" {% if zone.irrigation_mode == 'disabled' %}selected{% endif %}>Désactivé</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <div class="form-group mb-0">
-            <label class="form-label">Seuil bas (%)</label>
-            <input type="number" name="moisture_threshold_low" class="form-control"
-                   value="{{ zone.moisture_threshold_low | int }}" min="5" max="80">
-          </div>
-          <div class="form-group mb-0">
-            <label class="form-label">Seuil haut (%)</label>
-            <input type="number" name="moisture_threshold_high" class="form-control"
-                   value="{{ zone.moisture_threshold_high | int }}" min="20" max="95">
-          </div>
-        </div>
-        <div class="form-group mt-2">
-          <label class="form-label">Durée arrosage (min)</label>
-          <input type="number" name="irrigation_duration_min" class="form-control"
-                 value="{{ zone.irrigation_duration_min }}" min="1" max="120">
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
-      </form>
-    </div>
+    </a>
     {% endfor %}
   </div>
 

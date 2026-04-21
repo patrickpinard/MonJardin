@@ -22,6 +22,9 @@ def update_zone(zone_id: int):
     if mode in ("auto", "manual", "disabled"):
         zone.irrigation_mode = mode
 
+    # Serre vitrée (checkbox — absent si non coché)
+    zone.has_roof = 'has_roof' in form
+
     try:
         low = float(form.get("moisture_threshold_low", zone.moisture_threshold_low))
         high = float(form.get("moisture_threshold_high", zone.moisture_threshold_high))
@@ -31,10 +34,19 @@ def update_zone(zone_id: int):
             zone.moisture_threshold_high = high
         if duration > 0:
             zone.irrigation_duration_min = duration
+        length = float(form.get("length_m", zone.length_m or 2.0))
+        width  = float(form.get("width_m",  zone.width_m  or 1.0))
+        if 0.1 <= length <= 50:
+            zone.length_m = round(length, 2)
+        if 0.1 <= width <= 50:
+            zone.width_m = round(width, 2)
     except (ValueError, TypeError):
         pass
 
     db.session.commit()
+    redirect_to = form.get("redirect_to", "settings")
+    if redirect_to == "zone":
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
     return redirect(url_for("dashboard.settings"))
 
 

@@ -177,6 +177,19 @@ def zone_detail(zone_id: int):
         diff = (sum(second_half)/len(second_half)) - (sum(first_half)/len(first_half))
         trend = "up" if diff > 1.5 else ("down" if diff < -1.5 else "stable")
 
+    # Plant DB index for spacing, depth, tips, companions
+    plants_db = _load_plants_db()
+    plant_info = {v["name"]: v for v in plants_db}
+
+    # Seasonal advice for current month
+    current_month = date.today().month
+    seasonal_plants = [
+        v for v in plants_db
+        if current_month in v.get("planting_months_ch", [])
+        and (zone.has_roof or not v.get("greenhouse_recommended", False))
+    ]
+    seasonal_plants.sort(key=lambda v: v.get("difficulty", "medium"))
+
     return render_template(
         "zone_detail.html",
         zone=zone,
@@ -193,6 +206,9 @@ def zone_detail(zone_id: int):
         last_irrigation=last_irrigation,
         recent_events=recent_events,
         trend=trend,
+        plant_info=plant_info,
+        seasonal_plants=seasonal_plants[:8],
+        current_month=current_month,
     )
 
 
