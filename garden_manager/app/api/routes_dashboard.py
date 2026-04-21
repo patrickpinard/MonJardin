@@ -1,4 +1,4 @@
-"""Routes HTML — pages web du dashboard."""
+"""Routes HTML — pages web du dashboard. plant_info passé à zone_detail."""
 import json
 import logging
 import os
