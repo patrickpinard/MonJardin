@@ -489,16 +489,83 @@ def test_email():
 
 @api_bp.get("/notifications")
 def notifications():
-    """Entrées journal de niveau warning/danger/error pour le panneau de notifications."""
-    try:
-        limit = min(int(request.args.get("limit", 20)), 100)
-    except (ValueError, TypeError):
-        limit = 20
-    entries = (JournalEntry.query
-               .filter(JournalEntry.level.in_(["warning", "danger", "error"]))
-               .order_by(JournalEntry.timestamp.desc())
-               .limit(limit).all())
-    return jsonify({"entries": [e.to_dict() for e in entries]})
+    """Notifications pertinentes pour l'utilisateur, triées par importance."""
+    now = datetime.utcnow()
+    results = []
+    seen_ids = set()
+
+    def _add(nid, ts, level, message, kind):
+        if nid not in seen_ids:
+            seen_ids.add(nid)
+            results.append({"id": nid,
+                            "timestamp": ts.isoformat() if ts else None,
+                            "level": level, "message": message, "kind": kind})
+
+    # 1. danger/error entries — 7 derniers jours (priorité max)
+    for e in (JournalEntry.query
+              .filter(JournalEntry.level.in_(["danger", "error"]),
+                      JournalEntry.timestamp >= now - timedelta(days=7))
+              .order_by(JournalEntry.timestamp.desc()).limit(20).all()):
+        _add(f"je-{e.id}", e.timestamp, e.level, e.message, "system")
+
+    # 2. warning entries — 48 dernières heures
+    for e in (JournalEntry.query
+              .filter(JournalEntry.level == "warning",
+                      JournalEntry.timestamp >= now - timedelta(hours=48))
+              .order_by(JournalEntry.timestamp.desc()).limit(15).all()):
+        _add(f"je-{e.id}", e.timestamp, "warning", e.message, "system")
+
+    # 3. Arrosages d'urgence (gel, canicule, météo) — 7 derniers jours
+    # Dédupliqués par tranche de 5 minutes (un seul par cycle d'automatisation)
+    seen_irr_slots: set = set()
+    emergency_raw = (IrrigationLog.query
+                     .filter(IrrigationLog.trigger_type.in_(["frost", "heatwave", "weather"]),
+                             IrrigationLog.timestamp >= now - timedelta(days=7))
+                     .order_by(IrrigationLog.timestamp.desc()).limit(50).all())
+    for e in emergency_raw:
+        slot = e.timestamp.strftime("%Y-%m-%d %H:%M") if e.timestamp else "?"
+        slot = slot[:-1] + "0"  # arrondi à 10 min
+        key = f"{e.trigger_type}-{slot}"
+        if key in seen_irr_slots:
+            continue
+        seen_irr_slots.add(key)
+        icons = {"frost": "❄️", "heatwave": "🌡️", "weather": "🌦️"}
+        icon = icons.get(e.trigger_type, "💧")
+        lvl = "danger" if e.trigger_type == "frost" else "warning"
+        msg = e.reason or f"Zone {e.zone_id} — {e.trigger_type}"
+        _add(f"il-{e.id}", e.timestamp, lvl, f"{icon} {msg}", "irrigation")
+        if len(seen_irr_slots) >= 5:
+            break
+
+    # 4. Arrosages manuels — 24 dernières heures (ouvertures seulement)
+    for e in (IrrigationLog.query
+              .filter(IrrigationLog.trigger_type == "manual",
+                      IrrigationLog.action == "open",
+                      IrrigationLog.timestamp >= now - timedelta(hours=24))
+              .order_by(IrrigationLog.timestamp.desc()).limit(5).all()):
+        _add(f"il-{e.id}", e.timestamp, "info",
+             f"💧 Arrosage manuel démarré — Zone {e.zone_id}", "irrigation")
+
+    # 5. Changements d'état de la lucarne — seulement les transitions (open↔close)
+    roof_recent = (RoofLog.query
+                   .filter(RoofLog.timestamp >= now - timedelta(hours=48))
+                   .order_by(RoofLog.timestamp.desc()).limit(200).all())
+    last_roof_action = None
+    transitions_added = 0
+    for e in roof_recent:
+        if e.action != last_roof_action:
+            action_fr = "ouverte" if e.action == "open" else "fermée"
+            icon = "🔓" if e.action == "open" else "🔒"
+            msg = e.reason or f"Lucarne {action_fr}"
+            _add(f"rl-{e.id}", e.timestamp, "info", f"{icon} {msg}", "roof")
+            last_roof_action = e.action
+            transitions_added += 1
+            if transitions_added >= 4:
+                break
+
+    # Tri par timestamp desc, limite 30
+    results.sort(key=lambda x: x["timestamp"] or "", reverse=True)
+    return jsonify({"entries": results[:30]})
 
 
 _TEST_ALERTS = {
@@ -602,3 +669,29 @@ def journal():
                .order_by(JournalEntry.timestamp.desc())
                .limit(limit).all())
     return jsonify({"entries": [e.to_dict() for e in entries]})
+
+
+@api_bp.post("/journal/purge")
+def purge_journal():
+    """Purge tous les événements (arrosage, lucarne, journal) antérieurs à une date."""
+    body = request.get_json(silent=True) or {}
+    before_str = body.get("before_date", "")
+    try:
+        before_dt = datetime.strptime(before_str, "%Y-%m-%d")
+    except (ValueError, TypeError):
+        return jsonify({"ok": False, "error": "Format attendu : YYYY-MM-DD"}), 400
+
+    try:
+        n_irr = IrrigationLog.query.filter(IrrigationLog.timestamp < before_dt)\
+                    .delete(synchronize_session=False)
+        n_roof = RoofLog.query.filter(RoofLog.timestamp < before_dt)\
+                    .delete(synchronize_session=False)
+        n_sys = JournalEntry.query.filter(JournalEntry.timestamp < before_dt)\
+                    .delete(synchronize_session=False)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+    total = n_irr + n_roof + n_sys
+    return jsonify({"ok": True, "deleted": {"irrigation": n_irr, "roof": n_roof, "system": n_sys}, "total": total})

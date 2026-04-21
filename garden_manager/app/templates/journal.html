@@ -8,40 +8,39 @@
       <div class="page-title">Journal</div>
       <div class="page-subtitle">Historique des décisions et événements</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <select class="form-select" style="width:auto;min-width:160px;"
               onchange="location.href='?period='+this.value">
-        <option value="day"   {% if period == 'day'   %}selected{% endif %}>Aujourd'hui</option>
-        <option value="week"  {% if period == 'week'  %}selected{% endif %}>7 derniers jours</option>
-        <option value="month" {% if period == 'month' %}selected{% endif %}>30 derniers jours</option>
-        <option value="year"  {% if period == 'year'  %}selected{% endif %}>12 derniers mois</option>
+        <option value="day"   {% if period == 'day'   %}selected {% endif %}>Aujourd'hui</option>
+        <option value="week"  {% if period == 'week'  %}selected {% endif %}>7 derniers jours</option>
+        <option value="month" {% if period == 'month' %}selected {% endif %}>30 derniers jours</option>
+        <option value="year"  {% if period == 'year'  %}selected {% endif %}>12 derniers mois</option>
       </select>
+      <button class="btn btn-secondary btn-sm" onclick="openPurgeModal()"
+              style="display:flex;align-items:center;gap:6px;">
+        <i class="bi bi-trash3"></i> Purger
+      </button>
     </div>
   </div>
 </div>
 
 <div class="page-body">
 
-  <!-- Tabs -->
-  <div class="time-tabs" style="margin-bottom:14px;">
-    <button class="time-tab active" id="tab-irrigation" onclick="switchTab('irrigation')">
-      <i class="bi bi-droplet-fill"></i> Arrosage
-      <span class="badge" style="margin-left:4px;font-size:10px;">{{ irrigation_logs | length }}</span>
-    </button>
-    <button class="time-tab" id="tab-roof" onclick="switchTab('roof')">
-      <i class="bi bi-house"></i> Lucarne
-      <span class="badge" style="margin-left:4px;font-size:10px;">{{ roof_logs | length }}</span>
-    </button>
-    <button class="time-tab" id="tab-system" onclick="switchTab('system')">
-      <i class="bi bi-cpu"></i> Système
-      <span class="badge" style="margin-left:4px;font-size:10px;">{{ journal_entries | length }}</span>
-    </button>
+  <!-- Filtre Source (remplace les onglets) -->
+  <div class="filter-bar" style="margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <span class="filter-label">Source</span>
+      <button class="filter-chip active" data-kind-filter="all"         onclick="setKind(this,'all')">Tout <span class="fc-count" id="cnt-all"></span></button>
+      <button class="filter-chip"        data-kind-filter="irrigation"  onclick="setKind(this,'irrigation')">💧 Arrosage <span class="fc-count" id="cnt-irrigation"></span></button>
+      <button class="filter-chip"        data-kind-filter="roof"        onclick="setKind(this,'roof')">🏠 Lucarne <span class="fc-count" id="cnt-roof"></span></button>
+      <button class="filter-chip"        data-kind-filter="system"      onclick="setKind(this,'system')">⚙️ Système <span class="fc-count" id="cnt-system"></span></button>
+    </div>
   </div>
 
-  <!-- Filtres -->
+  <!-- Filtres Zone + Type -->
   <div class="filter-bar" style="margin-bottom:14px;">
     <div id="zone-filter-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-      <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;">Zone</span>
+      <span class="filter-label">Zone</span>
       <button class="filter-chip active" data-zone="all" onclick="setZone(this,'all')">Toutes</button>
       {% for z in zones_nav %}
       <button class="filter-chip" data-zone="{{ z.zone_id }}" onclick="setZone(this,'{{ z.zone_id }}')">
@@ -52,255 +51,267 @@
         {{ z.name }}
       </button>
       {% endfor %}
-      <div style="width:1px;height:20px;background:var(--border);margin:0 2px;"></div>
     </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-      <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;">Type</span>
-      <button class="filter-chip active" data-type="all"    onclick="setType(this,'all')">Tous</button>
-      <button class="filter-chip" data-type="auto"   onclick="setType(this,'auto')">⚙️ Auto</button>
-      <button class="filter-chip" data-type="manual" onclick="setType(this,'manual')">👤 Manuel</button>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">
+      <span class="filter-label">Type</span>
+      <button class="filter-chip active" data-type="all"      onclick="setType(this,'all')">Tous</button>
+      <button class="filter-chip" data-type="auto"    onclick="setType(this,'auto')">⚙️ Auto</button>
+      <button class="filter-chip" data-type="manual"  onclick="setType(this,'manual')">👤 Manuel</button>
       <button class="filter-chip" data-type="weather" onclick="setType(this,'weather')">🌦️ Météo</button>
-      <button class="filter-chip" data-type="frost"  onclick="setType(this,'frost')">❄️ Gel</button>
-      <button class="filter-chip" data-type="alert"  onclick="setType(this,'alert')">🚨 Alerte</button>
+      <button class="filter-chip" data-type="frost"   onclick="setType(this,'frost')">❄️ Gel</button>
+      <button class="filter-chip" data-type="alert"   onclick="setType(this,'alert')">🚨 Alerte</button>
+      <button class="filter-chip" data-type="system"  onclick="setType(this,'system')">ℹ️ Système</button>
     </div>
   </div>
 
-  <!-- Irrigation log -->
-  <div id="section-irrigation">
-    {% if irrigation_logs %}
-    <div class="journal-table-wrap">
-      <table class="table-modern" id="irrigation-table">
-        <thead><tr>
-          <th>Date/Heure</th><th>Zone</th><th>Action</th>
-          <th>Déclencheur</th><th>Humidité</th><th>Raison</th>
-        </tr></thead>
-        <tbody>
-          {% for log in irrigation_logs %}
-          <tr data-zone="{{ log.zone_id }}" data-type="{{ log.trigger_type or 'auto' }}">
-            <td class="jcol-date">
-              <span class="jdate">{{ log.timestamp.strftime('%d.%m.%y') }}</span>
-              <span class="jtime">{{ log.timestamp.strftime('%H:%M') }}</span>
-            </td>
-            <td class="jcol-zone"><span class="badge badge-plant">Z{{ log.zone_id }}</span></td>
-            <td class="jcol-action">
-              <span class="badge {% if log.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
-                <i class="bi bi-droplet{% if log.action == 'open' %}-fill{% endif %}"></i>
-                {{ 'Ouvert' if log.action == 'open' else 'Fermé' }}
-              </span>
-            </td>
-            <td class="jcol-trigger">
-              <span class="attr{% if log.trigger_type == 'manual' %} water-medium{% elif log.trigger_type == 'weather' %} water-high{% elif log.trigger_type == 'frost' %} medium{% else %} easy{% endif %}">
-                {%- if log.trigger_type == 'auto' %}⚙️ Auto
-                {%- elif log.trigger_type == 'manual' %}👤 Manuel
-                {%- elif log.trigger_type == 'weather' %}🌦️ Météo
-                {%- elif log.trigger_type == 'frost' %}❄️ Gel
-                {%- elif log.trigger_type == 'heatwave' %}🌡️ Canicule
-                {%- else %}{{ log.trigger_type or '—' }}{%- endif %}
-              </span>
-            </td>
-            <td class="jcol-humidity">
-              {% if log.moisture_at_trigger is not none %}
-              <span style="font-weight:600;font-size:12px;color:{% if log.moisture_at_trigger < 30 %}var(--red){% elif log.moisture_at_trigger > 65 %}var(--blue){% else %}var(--green){% endif %};">
-                {{ log.moisture_at_trigger | round(1) }}%
-              </span>
-              {% else %}<span style="color:var(--text-tertiary)">—</span>{% endif %}
-            </td>
-            <td class="jcol-reason">{{ log.reason or '—' }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <div id="pager-irrigation"></div>
-    {% else %}
-    <div class="empty-state"><i class="bi bi-droplet"></i><p>Aucun événement d'arrosage enregistré.</p></div>
-    {% endif %}
-  </div>
-
-  <!-- Roof log -->
-  <div id="section-roof" style="display:none;">
-    {% if roof_logs %}
-    <div class="journal-table-wrap">
-      <table class="table-modern" id="roof-table">
-        <thead><tr>
-          <th>Date/Heure</th><th>Action</th><th>Déclencheur</th><th>Raison</th>
-        </tr></thead>
-        <tbody>
-          {% for log in roof_logs %}
-          <tr data-type="{{ log.trigger_type or 'auto' }}">
-            <td class="jcol-date">
-              <span class="jdate">{{ log.timestamp.strftime('%d.%m.%y') }}</span>
-              <span class="jtime">{{ log.timestamp.strftime('%H:%M') }}</span>
-            </td>
-            <td class="jcol-action">
-              <span class="badge {% if log.action == 'open' %}badge-roof-open{% else %}badge-roof-close{% endif %}">
-                <i class="bi bi-house{% if log.action == 'open' %}-door{% endif %}"></i>
-                {{ 'Ouvert' if log.action == 'open' else 'Fermé' }}
-              </span>
-            </td>
-            <td class="jcol-trigger">
-              <span class="attr{% if log.trigger_type == 'manual' %} water-medium{% elif log.trigger_type == 'weather' %} water-high{% elif log.trigger_type == 'frost' %} medium{% else %} easy{% endif %}">
-                {%- if log.trigger_type == 'auto' %}⚙️ Auto
-                {%- elif log.trigger_type == 'manual' %}👤 Manuel
-                {%- elif log.trigger_type == 'weather' %}🌦️ Météo
-                {%- elif log.trigger_type == 'temperature' %}🌡️ Temp.
-                {%- elif log.trigger_type == 'frost' %}❄️ Gel
-                {%- else %}{{ log.trigger_type or '—' }}{%- endif %}
-              </span>
-            </td>
-            <td class="jcol-reason">{{ log.reason or '—' }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <div id="pager-roof"></div>
-    {% else %}
-    <div class="empty-state"><i class="bi bi-house"></i><p>Aucun événement de lucarne enregistré.</p></div>
-    {% endif %}
-  </div>
-
-  <!-- System journal -->
-  <div id="section-system" style="display:none;">
-    {% if journal_entries %}
-    <div class="journal-list" id="system-journal-list">
-      {% for entry in journal_entries %}
-      {% set lvl = entry.level if entry.level in ('success','warning','danger','error') else 'info' %}
-      {% if 'alerte' in entry.message | lower or entry.level in ('danger','error') %}
-        {% set etype = 'alert' %}
-      {% elif 'manuel' in entry.message | lower %}
-        {% set etype = 'manual' %}
-      {% elif 'arrosage' in entry.message | lower or 'vanne' in entry.message | lower %}
-        {% set etype = 'auto' %}
-      {% else %}
-        {% set etype = 'system' %}
-      {% endif %}
-      <div class="journal-item" data-type="{{ etype }}">
-        <div class="j-icon {{ 'danger' if lvl == 'error' else lvl }}">
-          <i class="bi bi-{% if lvl == 'warning' %}exclamation-triangle-fill{% elif lvl in ('danger','error') %}x-circle-fill{% elif lvl == 'success' %}check-circle-fill{% else %}info-circle-fill{% endif %}"></i>
+  <!-- Liste unifiée des événements -->
+  <div id="events-list">
+    {% if events %}
+      {% for ev in events %}
+      {%- if ev.kind == 'irrigation' -%}
+        {%- set kcolor = '#2196F3' -%}{%- set kicon = 'bi-droplet-fill' -%}
+      {%- elif ev.kind == 'roof' -%}
+        {%- set kcolor = '#4CAF50' -%}{%- set kicon = 'bi-house-fill' -%}
+      {%- elif ev.level in ('danger','error') -%}
+        {%- set kcolor = '#ef4444' -%}{%- set kicon = 'bi-x-circle-fill' -%}
+      {%- elif ev.level == 'warning' -%}
+        {%- set kcolor = '#f59e0b' -%}{%- set kicon = 'bi-exclamation-triangle-fill' -%}
+      {%- elif ev.level == 'success' -%}
+        {%- set kcolor = '#22c55e' -%}{%- set kicon = 'bi-check-circle-fill' -%}
+      {%- else -%}
+        {%- set kcolor = '#8b5cf6' -%}{%- set kicon = 'bi-info-circle-fill' -%}
+      {%- endif -%}
+      <div class="ev-card"
+           data-kind="{{ ev.kind }}"
+           data-zone="{{ ev.zone_id or 'none' }}"
+           data-type="{{ ev.trigger or 'system' }}"
+           style="border-left-color:{{ kcolor }};">
+        <div class="ev-row1">
+          <i class="bi {{ kicon }}" style="color:{{ kcolor }};font-size:13px;flex-shrink:0;"></i>
+          <span class="ev-time">
+            <span class="ev-date">{{ ev.ts.strftime('%d.%m.%y') }}</span>
+            <span class="ev-hour">{{ ev.ts.strftime('%H:%M') }}</span>
+          </span>
+          {% if ev.zone_id %}<span class="badge badge-plant">Z{{ ev.zone_id }}</span>{% endif %}
+          {% if ev.action %}
+            {% if ev.kind == 'irrigation' %}
+            <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
+              <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
+              {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
+            </span>
+            {% else %}
+            <span class="badge {% if ev.action == 'open' %}badge-roof-open{% else %}badge-roof-close{% endif %}">
+              <i class="bi bi-house{% if ev.action == 'open' %}-door{% endif %}"></i>
+              {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
+            </span>
+            {% endif %}
+          {% endif %}
+          {% if ev.moisture is not none %}
+          <span class="ev-moisture {% if ev.moisture < 30 %}ev-m-low{% elif ev.moisture > 65 %}ev-m-high{% else %}ev-m-ok{% endif %}">
+            {{ ev.moisture | round(1) }}%
+          </span>
+          {% endif %}
         </div>
-        <div class="j-body">
-          <div class="j-msg">{{ entry.message }}</div>
-          <div class="j-time">{{ entry.timestamp.strftime('%d.%m.%y à %H:%M') if entry.timestamp else '' }}</div>
+        <div class="ev-row2">
+          <span class="ev-trigger">
+            {%- if ev.trigger == 'auto' %}⚙️ Auto
+            {%- elif ev.trigger == 'manual' %}👤 Manuel
+            {%- elif ev.trigger == 'weather' %}🌦️ Météo
+            {%- elif ev.trigger == 'frost' %}❄️ Gel
+            {%- elif ev.trigger == 'heatwave' %}🌡️ Canicule
+            {%- elif ev.trigger == 'temperature' %}🌡️ Temp.
+            {%- elif ev.trigger == 'alert' %}🚨 Alerte
+            {%- else %}ℹ️ Système{%- endif %}
+          </span>
+          <span class="ev-reason">{{ ev.reason or '—' }}</span>
         </div>
       </div>
       {% endfor %}
-    </div>
-    <div id="pager-system"></div>
     {% else %}
-    <div class="empty-state"><i class="bi bi-journal"></i><p>Aucune entrée système.</p></div>
+    <div class="empty-state"><i class="bi bi-journal"></i><p>Aucun événement sur cette période.</p></div>
     {% endif %}
   </div>
+  <div id="pager-events"></div>
 
+</div>
+
+<!-- ── Modal purge ─────────────────────────────────────── -->
+<div class="modal-overlay" id="purge-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-icon" style="background:rgba(255,69,58,.15);color:var(--red);">
+        <i class="bi bi-trash3-fill"></i>
+      </div>
+      <div class="modal-title">Purger le journal</div>
+      <div class="modal-body" style="font-size:13px;color:var(--text-secondary);margin-top:6px;">
+        Supprime définitivement tous les événements <strong>antérieurs</strong> à la date choisie.
+      </div>
+    </div>
+    <div style="padding:0 20px 8px;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">
+          Supprimer avant le
+        </label>
+        <input type="date" id="purge-date" class="form-input" style="width:100%;" />
+      </div>
+      <div id="purge-warning" style="display:none;background:rgba(255,69,58,.08);border:1px solid rgba(255,69,58,.25);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--red);">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span id="purge-warning-text"></span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closePurgeModal()">Annuler</button>
+      <button class="modal-btn confirm-danger" id="purge-confirm-btn" onclick="executePurge()">
+        <i class="bi bi-trash3-fill"></i> Supprimer
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 const PAGE_SIZE = 50;
-let _zone = 'all', _type = 'all', _tab = 'irrigation';
-let _pages = {irrigation: 1, roof: 1, system: 1};
+let _kind = 'all', _zone = 'all', _type = 'all', _page = 1;
+
+// Gather all event cards once
+const allCards = Array.from(document.querySelectorAll('#events-list .ev-card'));
+
+// Count badges on source chips
+function updateCounts() {
+  const counts = {all: 0, irrigation: 0, roof: 0, system: 0};
+  allCards.forEach(c => {
+    counts.all++;
+    const k = c.dataset.kind;
+    if (counts[k] !== undefined) counts[k]++;
+  });
+  for (const [k, v] of Object.entries(counts)) {
+    const el = document.getElementById('cnt-' + k);
+    if (el) el.textContent = v > 0 ? v : '';
+  }
+}
+updateCounts();
+
+function setKind(btn, val) {
+  document.querySelectorAll('[data-kind-filter]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _kind = val; _page = 1;
+  // Zone filter only relevant for irrigation
+  document.getElementById('zone-filter-row').style.display = (val === 'all' || val === 'irrigation') ? '' : 'none';
+  applyFilters();
+}
 
 function setZone(btn, val) {
-  document.querySelectorAll('button[data-zone]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('[data-zone]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  _zone = val;
-  _pages.irrigation = 1;
-  applyFilters();
+  _zone = val; _page = 1; applyFilters();
 }
 
 function setType(btn, val) {
-  document.querySelectorAll('button[data-type]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  _type = val;
-  _pages[_tab] = 1;
-  applyFilters();
-}
-
-function switchTab(tab) {
-  _tab = tab;
-  ['irrigation', 'roof', 'system'].forEach(t => {
-    document.getElementById(`section-${t}`).style.display = t === tab ? '' : 'none';
-    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-  });
-  document.getElementById('zone-filter-row').style.display = tab === 'irrigation' ? '' : 'none';
-  applyFilters();
+  _type = val; _page = 1; applyFilters();
 }
 
 function applyFilters() {
-  if (_tab === 'irrigation') {
-    filterTable('irrigation-table', row => {
-      const zm = _zone === 'all' || row.dataset.zone === String(_zone);
-      const tm = _type === 'all' || row.dataset.type === _type;
-      return zm && tm;
-    }, 'irrigation');
-  } else if (_tab === 'roof') {
-    filterTable('roof-table', row => {
-      return _type === 'all' || row.dataset.type === _type;
-    }, 'roof');
-  } else if (_tab === 'system') {
-    filterItems('#system-journal-list .journal-item', item => {
-      return _type === 'all' || item.dataset.type === _type;
-    }, 'system');
-  }
-}
-
-function filterTable(tableId, predicate, tab) {
-  const rows = Array.from(document.querySelectorAll(`#${tableId} tbody tr`));
-  const visible = rows.filter(r => {
-    const show = predicate(r);
-    r.style.display = show ? '' : 'none';
-    return show;
+  const visible = allCards.filter(c => {
+    if (_kind !== 'all' && c.dataset.kind !== _kind) return false;
+    if (_zone !== 'all' && c.dataset.zone !== String(_zone)) return false;
+    if (_type !== 'all' && c.dataset.type !== _type) return false;
+    return true;
   });
-  paginate(visible, tab);
-}
-
-function filterItems(selector, predicate, tab) {
-  const items = Array.from(document.querySelectorAll(selector));
-  const visible = items.filter(el => {
-    const show = predicate(el);
-    el.style.display = show ? '' : 'none';
-    return show;
-  });
-  paginate(visible, tab);
-}
-
-function paginate(visible, tab) {
-  const page = _pages[tab];
-  const start = (page - 1) * PAGE_SIZE;
+  // Hide all first
+  allCards.forEach(c => c.style.display = 'none');
+  // Paginate visible
+  const start = (_page - 1) * PAGE_SIZE;
   const end   = start + PAGE_SIZE;
-  visible.forEach((el, i) => { el.style.display = (i >= start && i < end) ? '' : 'none'; });
-  renderPager(tab, page, visible.length);
+  visible.forEach((c, i) => { c.style.display = (i >= start && i < end) ? '' : 'none'; });
+  renderPager(visible.length);
 }
 
-function renderPager(tab, page, total) {
-  const el = document.getElementById(`pager-${tab}`);
+function renderPager(total) {
+  const el = document.getElementById('pager-events');
   if (!el) return;
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (total === 0) { el.innerHTML = '<div style="padding:12px;color:var(--text-tertiary);font-size:13px;text-align:center;">Aucun résultat pour ce filtre.</div>'; return; }
-  if (pageCount === 1) { el.innerHTML = `<div style="padding:8px 0;font-size:11px;color:var(--text-tertiary);text-align:right;">${total} élément(s)</div>`; return; }
+  if (total === 0) {
+    el.innerHTML = '<div style="padding:16px;color:var(--text-tertiary);font-size:13px;text-align:center;">Aucun résultat pour ce filtre.</div>';
+    return;
+  }
+  if (pageCount === 1) {
+    el.innerHTML = `<div style="padding:8px 0;font-size:11px;color:var(--text-tertiary);text-align:right;">${total} élément(s)</div>`;
+    return;
+  }
   el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 0;">
-      <button class="btn btn-secondary btn-sm" onclick="goPage('${tab}',-1)" ${page<=1?'disabled':''}>
+      <button class="btn btn-secondary btn-sm" onclick="goPage(-1)" ${_page<=1?'disabled':''}>
         <i class="bi bi-chevron-left"></i>
       </button>
       <span style="font-size:13px;color:var(--text-secondary);">
-        Page <strong>${page}</strong> / ${pageCount}
+        Page <strong>${_page}</strong> / ${pageCount}
         <span style="color:var(--text-tertiary);margin-left:6px;">(${total} éléments)</span>
       </span>
-      <button class="btn btn-secondary btn-sm" onclick="goPage('${tab}',1)" ${page>=pageCount?'disabled':''}>
+      <button class="btn btn-secondary btn-sm" onclick="goPage(1)" ${_page>=pageCount?'disabled':''}>
         <i class="bi bi-chevron-right"></i>
       </button>
     </div>`;
 }
 
-function goPage(tab, delta) {
-  _pages[tab] = Math.max(1, (_pages[tab] || 1) + delta);
+function goPage(delta) {
+  _page = Math.max(1, _page + delta);
   applyFilters();
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 // Init
 applyFilters();
+
+// ── Purge modal ──────────────────────────────────────────
+function openPurgeModal() {
+  const d = new Date();
+  d.setDate(d.getDate() - 30);
+  document.getElementById('purge-date').value = d.toISOString().slice(0, 10);
+  document.getElementById('purge-warning').style.display = 'none';
+  document.getElementById('purge-confirm-btn').disabled = false;
+  document.getElementById('purge-overlay').classList.add('visible');
+}
+
+function closePurgeModal() {
+  document.getElementById('purge-overlay').classList.remove('visible');
+}
+
+document.getElementById('purge-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closePurgeModal();
+});
+
+async function executePurge() {
+  const dateVal = document.getElementById('purge-date').value;
+  if (!dateVal) { showToast('Veuillez choisir une date.', 'warning'); return; }
+  const btn = document.getElementById('purge-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Suppression...';
+  try {
+    const resp = await fetch('/api/journal/purge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ before_date: dateVal })
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      closePurgeModal();
+      showToast(`${data.total} événement(s) supprimé(s).`, 'success');
+      setTimeout(() => location.reload(), 800);
+    } else {
+      const w = document.getElementById('purge-warning');
+      document.getElementById('purge-warning-text').textContent = data.error || 'Erreur inconnue';
+      w.style.display = 'flex'; w.style.gap = '6px';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-trash3-fill"></i> Supprimer';
+    }
+  } catch (e) {
+    showToast('Erreur lors de la purge.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-trash3-fill"></i> Supprimer';
+  }
+}
 </script>
 {% endblock %}

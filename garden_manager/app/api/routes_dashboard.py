@@ -268,25 +268,43 @@ def journal_page():
         period_hours = {"week": 168, "month": 720, "year": 8760}.get(period, 168)
         since = datetime.utcnow() - timedelta(hours=period_hours)
 
+    MAX_EVENTS = 500
     irrigation_logs = (IrrigationLog.query
                        .filter(IrrigationLog.timestamp >= since)
                        .order_by(IrrigationLog.timestamp.desc())
-                       .all())
+                       .limit(MAX_EVENTS).all())
     roof_logs = (RoofLog.query
                  .filter(RoofLog.timestamp >= since)
                  .order_by(RoofLog.timestamp.desc())
-                 .all())
+                 .limit(MAX_EVENTS).all())
     journal_entries = (JournalEntry.query
                        .filter(JournalEntry.timestamp >= since)
                        .order_by(JournalEntry.timestamp.desc())
-                       .all())
-    return render_template(
-        "journal.html",
-        irrigation_logs=irrigation_logs,
-        roof_logs=roof_logs,
-        journal_entries=journal_entries,
-        period=period,
-    )
+                       .limit(MAX_EVENTS).all())
+
+    # Liste unifiée triée par timestamp desc
+    events = []
+    for e in irrigation_logs:
+        events.append(dict(kind="irrigation", ts=e.timestamp,
+                           action=e.action, trigger=e.trigger_type,
+                           reason=e.reason, zone_id=e.zone_id,
+                           moisture=e.moisture_at_trigger, level=None))
+    for e in roof_logs:
+        events.append(dict(kind="roof", ts=e.timestamp,
+                           action=e.action, trigger=e.trigger_type,
+                           reason=e.reason, zone_id=None,
+                           moisture=None, level=None))
+    for e in journal_entries:
+        ttype = ("alert" if e.level in ("danger", "error", "warning") else "system")
+        events.append(dict(kind="system", ts=e.timestamp,
+                           action=None, trigger=ttype,
+                           reason=e.message, zone_id=None,
+                           moisture=None, level=e.level))
+    events.sort(key=lambda x: x["ts"], reverse=True)
+    events = events[:MAX_EVENTS]
+
+    return render_template("journal.html", events=events, period=period,
+                           zones_count=len(set(e["zone_id"] for e in events if e["zone_id"])))
 
 
 def _load_plants_db() -> list:

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}MonJardin{% endblock %} — MonJardin</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=9">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
   <!-- PWA -->
@@ -112,6 +112,10 @@
       <button class="tb-hamburger" onclick="toggleMobileMenu()" id="mobile-menu-btn" aria-label="Menu">
         <img src="{{ url_for('static', filename='logo.svg') }}" alt="" style="width:28px;height:28px;border-radius:8px;display:block;">
       </button>
+      <!-- Theme toggle (mobile only) -->
+      <button class="tb-theme-mobile" onclick="toggleTheme()" title="Mode clair/sombre">
+        <i class="bi bi-moon-fill" id="theme-icon-mobile"></i>
+      </button>
 
       <!-- Horloge -->
       <div class="top-bar-clock">
@@ -147,7 +151,10 @@
         <div class="notif-panel" id="notif-panel">
           <div class="notif-panel-header">
             <span class="notif-panel-title"><i class="bi bi-bell-fill"></i> Notifications</span>
-            <button class="notif-mark-read" onclick="markAllRead()">Tout marquer lu</button>
+            <div class="notif-header-actions">
+              <button class="notif-mark-read" onclick="markAllRead()">Tout lu</button>
+              <button class="notif-clear-all" onclick="clearAllNotif()">Tout effacer</button>
+            </div>
           </div>
           <div class="notif-list" id="notif-list">
             <div class="notif-empty">Chargement...</div>
@@ -200,7 +207,6 @@
 
 <!-- Wrapper : display:none sur desktop = rien ne peut rendre -->
 <div id="mobile-menu-wrapper">
-<div class="mobile-menu-backdrop" id="mobile-menu-backdrop" onclick="closeMobileMenu()"></div>
 <nav class="mobile-menu" id="mobile-menu">
   <a href="/dashboard" class="mobile-menu-item {% if request.path in ('/', '/dashboard') %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-grid-1x2-fill"></i> Tableau de bord
@@ -370,10 +376,55 @@ document.addEventListener('click', e => {
   if (_notifOpen && !btn.contains(e.target) && !panel.contains(e.target)) closeNotifPanel();
 });
 
+// localStorage helpers — dismissed IDs + cleared-before timestamp
+function _getDismissed() {
+  try { return new Set(JSON.parse(localStorage.getItem('notif_dismissed') || '[]')); }
+  catch { return new Set(); }
+}
+function _saveDismissed(set) {
+  const arr = [...set];
+  // Cap to last 300 to avoid unbounded growth
+  localStorage.setItem('notif_dismissed', JSON.stringify(arr.slice(-300)));
+}
+function _getClearedBefore() {
+  return new Date(localStorage.getItem('notif_cleared_before') || 0);
+}
+
+function dismissNotif(id, el) {
+  el.closest('.notif-item').style.transition = 'opacity .2s';
+  el.closest('.notif-item').style.opacity = '0';
+  setTimeout(() => {
+    el.closest('.notif-item').remove();
+    const list = document.getElementById('notif-list');
+    if (!list.querySelector('.notif-item')) {
+      list.innerHTML = '<div class="notif-empty"><i class="bi bi-bell-slash" style="font-size:24px;display:block;margin-bottom:6px;"></i>Aucune notification</div>';
+    }
+  }, 210);
+  const dismissed = _getDismissed();
+  dismissed.add(id);
+  _saveDismissed(dismissed);
+  _updateBadgeFromDOM();
+}
+
 function markAllRead() {
   localStorage.setItem('notif_last_read', new Date().toISOString());
   document.getElementById('notif-badge').classList.remove('visible');
   document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+}
+
+function clearAllNotif() {
+  localStorage.setItem('notif_cleared_before', new Date().toISOString());
+  const list = document.getElementById('notif-list');
+  list.innerHTML = '<div class="notif-empty"><i class="bi bi-bell-slash" style="font-size:24px;display:block;margin-bottom:6px;"></i>Aucune notification</div>';
+  document.getElementById('notif-badge').classList.remove('visible');
+  markAllRead();
+}
+
+function _updateBadgeFromDOM() {
+  const unread = document.querySelectorAll('#notif-list .notif-item.unread').length;
+  const badge = document.getElementById('notif-badge');
+  if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.classList.add('visible'); }
+  else badge.classList.remove('visible');
 }
 
 const _ICON_MAP = {
@@ -383,14 +434,21 @@ const _ICON_MAP = {
   success: {cls:'success', icon:'bi-check-circle-fill'},
   info:    {cls:'info',    icon:'bi-info-circle-fill'},
 };
+const _KIND_LABELS = {system:'Système', irrigation:'Arrosage', roof:'Lucarne'};
 
 async function loadNotifications() {
   try {
-    const resp = await fetch('/api/notifications?limit=20');
+    const resp = await fetch('/api/notifications');
     const data = await resp.json();
     const list = document.getElementById('notif-list');
-    const lastRead = new Date(localStorage.getItem('notif_last_read') || 0);
-    const entries = data.entries || [];
+    const lastRead   = new Date(localStorage.getItem('notif_last_read') || 0);
+    const clearedBef = _getClearedBefore();
+    const dismissed  = _getDismissed();
+    const entries = (data.entries || []).filter(e => {
+      if (dismissed.has(e.id)) return false;
+      if (e.timestamp && new Date(e.timestamp) <= clearedBef) return false;
+      return true;
+    });
 
     if (!entries.length) {
       list.innerHTML = '<div class="notif-empty"><i class="bi bi-bell-slash" style="font-size:24px;display:block;margin-bottom:6px;"></i>Aucune notification</div>';
@@ -404,37 +462,71 @@ async function loadNotifications() {
       if (isUnread) unreadCount++;
       const style = _ICON_MAP[e.level] || _ICON_MAP.info;
       const timeStr = ts ? ts.toLocaleString('fr-CH', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-      return `<div class="notif-item${isUnread ? ' unread' : ''}">
+      const kindLabel = _KIND_LABELS[e.kind] || '';
+      const kindCls   = e.kind ? `notif-kind-${e.kind}` : '';
+      const safeMsg = (e.message || '').replace(/</g,'&lt;');
+      return `<div class="notif-item${isUnread ? ' unread' : ''}" data-notif-id="${e.id}">
         <div class="notif-icon ${style.cls}"><i class="bi ${style.icon}"></i></div>
-        <div class="notif-body">
-          <div class="notif-msg">${e.message}</div>
-          <div class="notif-time">${timeStr}</div>
+        <div class="notif-body" onclick="toggleNotifExpand(this.parentElement)">
+          <div class="notif-msg">${safeMsg}</div>
+          <div class="notif-expand-hint"><i class="bi bi-chevron-down" style="font-size:9px;"></i> voir plus</div>
+          <div class="notif-meta">
+            <span class="notif-time">${timeStr}</span>
+            ${kindLabel ? `<span class="notif-kind-tag ${kindCls}">${kindLabel}</span>` : ''}
+          </div>
         </div>
+        <button class="notif-dismiss" onclick="dismissNotif('${e.id}', this)" title="Effacer">
+          <i class="bi bi-x"></i>
+        </button>
       </div>`;
     }).join('');
 
+    // Detect clipped messages after render
+    requestAnimationFrame(() => {
+      list.querySelectorAll('.notif-item').forEach(item => {
+        const msg = item.querySelector('.notif-msg');
+        if (msg && msg.scrollHeight > msg.clientHeight + 2) {
+          item.classList.add('clipped');
+        }
+      });
+    });
+
     // Badge
+    const badge = document.getElementById('notif-badge');
     if (unreadCount > 0) {
-      const badge = document.getElementById('notif-badge');
       badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
       badge.classList.add('visible');
     }
-  } catch(e) {}
+  } catch(e) { console.warn('Notif load failed:', e); }
+}
+
+function toggleNotifExpand(item) {
+  const wasExpanded = item.classList.contains('expanded');
+  item.classList.toggle('expanded');
+  const hint = item.querySelector('.notif-expand-hint');
+  if (hint) hint.innerHTML = item.classList.contains('expanded')
+    ? '<i class="bi bi-chevron-up" style="font-size:9px;"></i> réduire'
+    : '<i class="bi bi-chevron-down" style="font-size:9px;"></i> voir plus';
+  // Mark as read when expanded
+  item.classList.remove('unread');
+  _updateBadgeFromDOM();
 }
 
 async function _pollNotifBadge() {
   try {
-    const resp = await fetch('/api/notifications?limit=50');
+    const resp = await fetch('/api/notifications');
     const data = await resp.json();
-    const lastRead = new Date(localStorage.getItem('notif_last_read') || 0);
-    const unread = (data.entries || []).filter(e => e.timestamp && new Date(e.timestamp) > lastRead).length;
+    const lastRead   = new Date(localStorage.getItem('notif_last_read') || 0);
+    const clearedBef = _getClearedBefore();
+    const dismissed  = _getDismissed();
+    const unread = (data.entries || []).filter(e => {
+      if (dismissed.has(e.id)) return false;
+      if (e.timestamp && new Date(e.timestamp) <= clearedBef) return false;
+      return e.timestamp && new Date(e.timestamp) > lastRead;
+    }).length;
     const badge = document.getElementById('notif-badge');
-    if (unread > 0) {
-      badge.textContent = unread > 9 ? '9+' : unread;
-      badge.classList.add('visible');
-    } else {
-      badge.classList.remove('visible');
-    }
+    if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.classList.add('visible'); }
+    else badge.classList.remove('visible');
   } catch(e) {}
 }
 _pollNotifBadge();
@@ -478,20 +570,21 @@ async function updateSidebarZones() {
 }
 
 // ── Mobile menu ──────────────────────────────────────────
+let _mobileMenuOpen = false;
 function toggleMobileMenu() {
-  const menu     = document.getElementById('mobile-menu');
-  const backdrop = document.getElementById('mobile-menu-backdrop');
-  const open     = menu.classList.toggle('open');
-  backdrop.classList.toggle('open', open);
-  document.body.style.overflow = open ? 'hidden' : '';
+  _mobileMenuOpen = !_mobileMenuOpen;
+  document.getElementById('mobile-menu').classList.toggle('open', _mobileMenuOpen);
 }
 function closeMobileMenu() {
-  const menu     = document.getElementById('mobile-menu');
-  const backdrop = document.getElementById('mobile-menu-backdrop');
-  menu.classList.remove('open');
-  backdrop.classList.remove('open');
-  document.body.style.overflow = '';
+  _mobileMenuOpen = false;
+  document.getElementById('mobile-menu').classList.remove('open');
 }
+document.addEventListener('click', e => {
+  if (!_mobileMenuOpen) return;
+  const btn  = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  if (!btn.contains(e.target) && !menu.contains(e.target)) closeMobileMenu();
+});
 
 // ── Sim reset ────────────────────────────────────────────
 async function resetSim() {
