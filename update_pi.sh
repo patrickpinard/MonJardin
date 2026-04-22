@@ -34,7 +34,6 @@ _find_repo() {
 REPO_DIR="$(_find_repo)" || { echo "[ERR] Dépôt git MonJardin introuvable."; echo "      Lancez : cd ~/MonJardin && bash update_pi.sh"; exit 1; }
 BRANCH="${BRANCH:-v2.0}"
 APP_DIR="$REPO_DIR/garden_manager"
-VENV="$APP_DIR/venv"
 LOG_DIR="$APP_DIR/logs"
 SERVICE_NAME="monjardin"
 AUTO_RESTART=false
@@ -98,18 +97,6 @@ else
   info "Code mis à jour"
 fi
 
-# ── Mise à jour des dépendances Python ──────────────────────
-section "Dépendances Python"
-PIP="$VENV/bin/pip"
-if [[ ! -d "$VENV" ]]; then
-  warn "Environnement virtuel absent — création…"
-  python3 -m venv "$VENV"
-fi
-# Appel direct au pip du venv (contourne PEP 668 / Bookworm "externally-managed-environment")
-"$PIP" install --quiet --upgrade pip
-"$PIP" install --quiet -r "$APP_DIR/requirements.txt"
-info "Dépendances à jour"
-
 # ── Création du dossier logs ─────────────────────────────────
 mkdir -p "$LOG_DIR"
 
@@ -142,7 +129,7 @@ restart_manual() {
   pkill -f "python3 run.py" 2>/dev/null && sleep 1 || true
   info "Démarrage de l'application…"
   cd "$APP_DIR"
-  nohup "$VENV/bin/python" run.py > "$LOG_DIR/app.log" 2>&1 &
+  nohup python3 run.py > "$LOG_DIR/app.log" 2>&1 &
   NEW_PID=$!
   sleep 3
   if kill -0 "$NEW_PID" 2>/dev/null; then
