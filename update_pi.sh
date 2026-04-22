@@ -2,11 +2,36 @@
 # ============================================================
 #  MonJardin — Script de mise à jour sur Raspberry Pi
 #  Usage : bash update_pi.sh [--branch v2.0] [--restart]
+#  Peut être lancé depuis n'importe quel répertoire.
 # ============================================================
 set -euo pipefail
 
-# ── Paramètres ──────────────────────────────────────────────
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+# ── Détection automatique du repo ───────────────────────────
+# Cherche le .git en partant du répertoire du script, puis des emplacements
+# connus sur le Pi (/home/pi/MonJardin, ~/MonJardin, répertoire courant).
+_find_repo() {
+  local candidates=(
+    "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    "$HOME/MonJardin"
+    "/home/pi/MonJardin"
+    "$(pwd)"
+  )
+  for dir in "${candidates[@]}"; do
+    if [[ -d "$dir/.git" ]]; then
+      echo "$dir"
+      return 0
+    fi
+    # Remonte d'un niveau (cas où le script est dans un sous-dossier)
+    parent="$(dirname "$dir")"
+    if [[ -d "$parent/.git" ]]; then
+      echo "$parent"
+      return 0
+    fi
+  done
+  return 1
+}
+
+REPO_DIR="$(_find_repo)" || { echo "[ERR] Dépôt git MonJardin introuvable."; echo "      Lancez : cd ~/MonJardin && bash update_pi.sh"; exit 1; }
 BRANCH="${BRANCH:-v2.0}"
 APP_DIR="$REPO_DIR/garden_manager"
 VENV="$APP_DIR/venv"
