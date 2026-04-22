@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <div class="page-title">Raspberry Pi 5</div>
-      <div class="page-subtitle">Diagnostic système · CPU · mémoire · stockage · réseau</div>
+      <div class="page-subtitle" id="rpi-status-hdr">Chargement…</div>
     </div>
     <button class="btn btn-secondary btn-sm" onclick="refreshRpi()">
       <i class="bi bi-arrow-clockwise"></i> Rafraîchir
@@ -16,145 +16,135 @@
 
 <div class="page-body">
 
-  <!-- ── Informations système ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
-    <div class="diag-grid">
+  <!-- ── Tabs ── -->
+  <div class="time-tabs mb-3" id="rpi-tabs">
+    <button class="time-tab active" data-tab="systeme" onclick="switchRpiTab(this,'systeme')">
+      <i class="bi bi-cpu-fill"></i> Système
+    </button>
+    <button class="time-tab" data-tab="stockage" onclick="switchRpiTab(this,'stockage')">
+      <i class="bi bi-hdd-fill"></i> Stockage
+    </button>
+    <button class="time-tab" data-tab="reseau" onclick="switchRpiTab(this,'reseau')">
+      <i class="bi bi-ethernet"></i> Réseau
+    </button>
+  </div>
 
-      <!-- CPU -->
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z2"><i class="bi bi-cpu-fill"></i></div>
-          <div>
-            <div class="diag-ch-name">Processeur</div>
-            <div class="diag-ch-sub" id="rpi-cpu-cores-sub">— cœurs</div>
+  <!-- ── Onglet Système ── -->
+  <div id="rpi-tab-systeme">
+
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-cpu-fill"></i> Processeur</div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Charge</div>
+            <div class="diag-val" id="rpi-cpu-pct">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Température</div>
+            <div class="diag-val" id="rpi-cpu-temp">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Fréquence</div>
+            <div class="diag-val" id="rpi-cpu-freq">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Cœurs</div>
+            <div class="diag-val" id="rpi-cpu-cores">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Charge 1/5/15 min</div>
+            <div class="diag-val" id="rpi-load-avg">—</div>
           </div>
         </div>
-        <div class="diag-ch-body">
-          <div style="display:flex;gap:14px;flex-wrap:wrap;">
-            <div class="diag-stat-sm">
-              <div class="diag-label">Charge</div>
-              <div class="diag-val-lg" id="rpi-cpu-pct">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Température</div>
-              <div class="diag-val-lg" id="rpi-cpu-temp">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Fréquence</div>
-              <div class="diag-val" id="rpi-cpu-freq">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Charge 1/5/15 min</div>
-              <div class="diag-val" id="rpi-load-avg">—</div>
-            </div>
-          </div>
-          <div class="diag-bar-wrap">
-            <div class="diag-bar-track">
-              <div class="diag-bar-fill ok" id="rpi-cpu-bar" style="width:0%"></div>
-            </div>
+        <div class="diag-bar-wrap" style="margin-top:10px;">
+          <div class="diag-bar-track">
+            <div class="diag-bar-fill ok" id="rpi-cpu-bar" style="width:0%"></div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- RAM -->
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z3"><i class="bi bi-memory"></i></div>
-          <div>
-            <div class="diag-ch-name">Mémoire RAM</div>
-            <div class="diag-ch-sub" id="rpi-mem-total-sub">— total</div>
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-memory"></i> Mémoire RAM</div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Utilisée</div>
+            <div class="diag-val" id="rpi-mem-used">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Disponible</div>
+            <div class="diag-val" id="rpi-mem-avail">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Total</div>
+            <div class="diag-val" id="rpi-mem-total">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Usage</div>
+            <div class="diag-val" id="rpi-mem-pct">—</div>
           </div>
         </div>
-        <div class="diag-ch-body">
-          <div style="display:flex;gap:14px;flex-wrap:wrap;">
-            <div class="diag-stat-sm">
-              <div class="diag-label">Utilisée</div>
-              <div class="diag-val-lg" id="rpi-mem-used">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Disponible</div>
-              <div class="diag-val" id="rpi-mem-avail">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Usage</div>
-              <div class="diag-val" id="rpi-mem-pct">—</div>
-            </div>
-          </div>
-          <div class="diag-bar-wrap">
-            <div class="diag-bar-track">
-              <div class="diag-bar-fill ok" id="rpi-mem-bar" style="width:0%"></div>
-            </div>
+        <div class="diag-bar-wrap" style="margin-top:10px;">
+          <div class="diag-bar-track">
+            <div class="diag-bar-fill ok" id="rpi-mem-bar" style="width:0%"></div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Logiciel -->
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z2"><i class="bi bi-terminal-fill"></i></div>
-          <div>
-            <div class="diag-ch-name">Logiciel</div>
-            <div class="diag-ch-sub" id="rpi-hostname-sub">—</div>
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-terminal-fill"></i> Logiciel &amp; Temps</div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Hôte</div>
+            <div class="diag-val" id="rpi-hostname">—</div>
           </div>
-        </div>
-        <div class="diag-ch-body">
-          <div style="display:flex;gap:14px;flex-wrap:wrap;">
-            <div class="diag-stat-sm">
-              <div class="diag-label">Système d'exploitation</div>
-              <div class="diag-val" id="rpi-os">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Kernel</div>
-              <div class="diag-val" id="rpi-kernel">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Python</div>
-              <div class="diag-val" id="rpi-python">—</div>
-            </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Système</div>
+            <div class="diag-val" id="rpi-os">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Kernel</div>
+            <div class="diag-val" id="rpi-kernel">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Python</div>
+            <div class="diag-val" id="rpi-python">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Uptime</div>
+            <div class="diag-val" id="rpi-uptime">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Heure système</div>
+            <div class="diag-val" id="rpi-time">—</div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Temps système -->
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z4"><i class="bi bi-clock-fill"></i></div>
-          <div>
-            <div class="diag-ch-name">Temps système</div>
-            <div class="diag-ch-sub">Activité du serveur</div>
-          </div>
-        </div>
-        <div class="diag-ch-body">
-          <div style="display:flex;gap:14px;flex-wrap:wrap;">
-            <div class="diag-stat-sm">
-              <div class="diag-label">Uptime</div>
-              <div class="diag-val-lg" id="rpi-uptime">—</div>
-            </div>
-            <div class="diag-stat-sm">
-              <div class="diag-label">Heure système</div>
-              <div class="diag-val" id="rpi-time">—</div>
-            </div>
-          </div>
-        </div>
+  </div><!-- /rpi-tab-systeme -->
+
+  <!-- ── Onglet Stockage ── -->
+  <div id="rpi-tab-stockage" style="display:none;">
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-hdd-fill"></i> Volumes montés</div>
+      <div class="diag-ch-body" id="rpi-disk-list" style="padding:4px 0;">
+        <div class="diag-label">Chargement…</div>
       </div>
-
     </div>
   </div>
 
-  <!-- ── Stockage ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-hdd-fill"></i> Stockage</div>
-    <div class="diag-ch-body" id="rpi-disk-list" style="padding:4px 0;">
-      <div class="diag-label">Chargement…</div>
-    </div>
-  </div>
-
-  <!-- ── Réseau ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-ethernet"></i> Réseau</div>
-    <div class="diag-ch-body" id="rpi-net-list" style="padding:4px 0;">
-      <div class="diag-label">Chargement…</div>
+  <!-- ── Onglet Réseau ── -->
+  <div id="rpi-tab-reseau" style="display:none;">
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-ethernet"></i> Interfaces réseau</div>
+      <div class="diag-ch-body" id="rpi-net-list" style="padding:4px 0;">
+        <div class="diag-label">Chargement…</div>
+      </div>
     </div>
   </div>
 
@@ -163,6 +153,17 @@
 
 {% block scripts %}
 <script>
+const _RPI_TABS = ['systeme', 'stockage', 'reseau'];
+
+function switchRpiTab(btn, tab) {
+  _RPI_TABS.forEach(t => {
+    const el = document.getElementById('rpi-tab-' + t);
+    if (el) el.style.display = (t === tab) ? '' : 'none';
+  });
+  document.querySelectorAll('#rpi-tabs .time-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
 function fmt(bytes) {
   if (bytes > 1e9) return (bytes/1e9).toFixed(1) + ' Go';
   if (bytes > 1e6) return (bytes/1e6).toFixed(0) + ' Mo';
@@ -180,25 +181,36 @@ async function refreshRpi() {
   try {
     const d = await fetch('/api/system/rpi').then(r => r.json());
 
+    document.getElementById('rpi-status-hdr').textContent =
+      `${d.hostname || '—'} · Uptime ${fmtUptime(d.uptime_s || 0)}`;
+
     // CPU
-    document.getElementById('rpi-cpu-pct').textContent      = d.cpu_percent.toFixed(1) + ' %';
-    document.getElementById('rpi-cpu-temp').textContent     = d.cpu_temp_c != null ? d.cpu_temp_c.toFixed(1) + ' °C' : '—';
-    document.getElementById('rpi-cpu-freq').textContent     = d.cpu_freq_mhz ? d.cpu_freq_mhz.toFixed(0) + ' MHz' : '—';
-    document.getElementById('rpi-load-avg').textContent     = d.load_avg ? d.load_avg.join(' / ') : '—';
-    document.getElementById('rpi-cpu-cores-sub').textContent = `${d.cpu_count || '?'} cœurs physiques`;
+    document.getElementById('rpi-cpu-pct').textContent  = d.cpu_percent.toFixed(1) + ' %';
+    document.getElementById('rpi-cpu-temp').textContent = d.cpu_temp_c != null ? d.cpu_temp_c.toFixed(1) + ' °C' : '—';
+    document.getElementById('rpi-cpu-freq').textContent = d.cpu_freq_mhz ? d.cpu_freq_mhz.toFixed(0) + ' MHz' : '—';
+    document.getElementById('rpi-cpu-cores').textContent = (d.cpu_count || '?') + ' cœurs';
+    document.getElementById('rpi-load-avg').textContent = d.load_avg ? d.load_avg.join(' / ') : '—';
     const cpuBar = document.getElementById('rpi-cpu-bar');
     cpuBar.style.width = d.cpu_percent + '%';
     cpuBar.className = `diag-bar-fill ${barColor(d.cpu_percent)}`;
 
     // Memory
     const mem = d.memory;
-    document.getElementById('rpi-mem-used').textContent      = fmt(mem.used);
-    document.getElementById('rpi-mem-avail').textContent     = fmt(mem.available);
-    document.getElementById('rpi-mem-pct').textContent       = mem.percent.toFixed(1) + ' %';
-    document.getElementById('rpi-mem-total-sub').textContent = fmt(mem.total) + ' total';
+    document.getElementById('rpi-mem-used').textContent  = fmt(mem.used);
+    document.getElementById('rpi-mem-avail').textContent = fmt(mem.available);
+    document.getElementById('rpi-mem-total').textContent = fmt(mem.total);
+    document.getElementById('rpi-mem-pct').textContent   = mem.percent.toFixed(1) + ' %';
     const memBar = document.getElementById('rpi-mem-bar');
     memBar.style.width = mem.percent + '%';
     memBar.className = `diag-bar-fill ${barColor(mem.percent)}`;
+
+    // Software
+    document.getElementById('rpi-hostname').textContent = d.hostname;
+    document.getElementById('rpi-os').textContent       = d.os;
+    document.getElementById('rpi-kernel').textContent   = d.kernel;
+    document.getElementById('rpi-python').textContent   = d.python_version;
+    document.getElementById('rpi-uptime').textContent   = fmtUptime(d.uptime_s);
+    document.getElementById('rpi-time').textContent     = new Date(d.current_time).toLocaleString('fr-CH');
 
     // Disks
     document.getElementById('rpi-disk-list').innerHTML = d.disks.map(disk => `
@@ -223,19 +235,14 @@ async function refreshRpi() {
       </div>
     `).join('');
 
-    // System info
-    document.getElementById('rpi-hostname-sub').textContent = d.hostname;
-    document.getElementById('rpi-os').textContent           = d.os;
-    document.getElementById('rpi-kernel').textContent       = d.kernel;
-    document.getElementById('rpi-python').textContent       = d.python_version;
-    document.getElementById('rpi-uptime').textContent       = fmtUptime(d.uptime_s);
-    document.getElementById('rpi-time').textContent         = new Date(d.current_time).toLocaleString('fr-CH');
   } catch(e) {
+    document.getElementById('rpi-status-hdr').textContent = 'Erreur de chargement';
     console.error('Erreur RPi:', e);
   }
 }
 
 refreshRpi();
-setInterval(refreshRpi, 10000);
+const _rpiTimer = setInterval(refreshRpi, 10000);
+window.addEventListener('beforeunload', () => clearInterval(_rpiTimer));
 </script>
 {% endblock %}

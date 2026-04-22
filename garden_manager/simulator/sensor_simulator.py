@@ -8,10 +8,31 @@ from typing import Optional
 
 log = logging.getLogger(__name__)
 
-# Température de base pour Vullierens (°C)
+# Température de base pour Vullierens (°C) — utilisé comme fallback uniquement
 T_BASE = 18.0
 # Amplitude sinusoïdale jour/nuit
 T_AMP_DAY = 8.0
+
+# Température de base et amplitude par profil météo
+PROFILE_TEMP: dict[str, tuple[float, float]] = {
+    "printemps_normal": (14.0, 7.0),
+    "ete_chaud":        (26.0, 8.0),
+    "ete_orageux":      (24.0, 7.0),
+    "automne_humide":   (10.0, 5.0),
+    "gel_tardif":       ( 4.0, 6.0),
+    "canicule":         (34.0, 5.0),
+}
+
+# Delta d'humidité appliqué immédiatement lors d'un changement de profil (%)
+# Simule l'état "on arrive dans cette météo" plutôt que de commencer à sec/mouillé
+PROFILE_MOISTURE_DELTA: dict[str, float] = {
+    "printemps_normal":  0.0,
+    "ete_chaud":        -8.0,
+    "ete_orageux":      +10.0,
+    "automne_humide":   +14.0,
+    "gel_tardif":       +5.0,
+    "canicule":         -16.0,
+}
 # Température serre : offset au-dessus de l'extérieur (effet de serre)
 T_SERRE_OFFSET_BASE = 5.0   # +5°C de base
 T_SERRE_OFFSET_SUN  = 8.0   # +8°C supplémentaires en plein soleil (14h)
@@ -80,9 +101,10 @@ class SensorSimulator:
         _now = datetime.datetime.now()
         hour = _now.hour + _now.minute / 60.0
 
-        # Température sinusoïdale (pic à 14h)
+        # Température sinusoïdale (pic à 14h) — base et amplitude selon profil
+        t_base, t_amp = PROFILE_TEMP.get(self._weather_profile, (T_BASE, T_AMP_DAY))
         self._temperature_c = (
-            T_BASE + T_AMP_DAY * math.sin((hour - 14.0) * math.pi / 12.0)
+            t_base + t_amp * math.sin((hour - 14.0) * math.pi / 12.0)
             + random.gauss(0, T_NOISE)
         )
         self._temperature_c = round(self._temperature_c, 2)
@@ -155,5 +177,11 @@ class SensorSimulator:
         self._offline_sensors = zones
 
     def set_weather_profile(self, profile: str) -> None:
-        if profile in WEATHER_DRAIN_MULTIPLIERS:
-            self._weather_profile = profile
+        if profile not in WEATHER_DRAIN_MULTIPLIERS:
+            return
+        self._weather_profile = profile
+        # Applique un delta d'humidité immédiat pour rendre le changement visible
+        delta = PROFILE_MOISTURE_DELTA.get(profile, 0.0)
+        if delta != 0.0:
+            for z in range(1, 5):
+                self._moisture[z] = max(5.0, min(98.0, self._moisture[z] + delta))

@@ -441,8 +441,9 @@
         <div style="flex:1;min-width:200px;">
           <label class="form-label">Profil actif</label>
           <select id="weatherProfileSelect" class="form-select">
+            {% set cur = current_weather_profile if current_weather_profile is defined else 'printemps_normal' %}
             {% for p in sim_profiles %}
-            <option value="{{ p.id }}">{{ p.label }}</option>
+            <option value="{{ p.id }}" {% if p.id == cur %}selected{% endif %}>{{ p.label }}</option>
             {% endfor %}
           </select>
         </div>
@@ -622,11 +623,19 @@ async function testEmail() {
 
 async function applyWeatherProfile() {
   const profile = document.getElementById('weatherProfileSelect').value;
-  await fetch('http://127.0.0.1:8081/admin/inject_failure', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({weather_profile: profile}),
-  }).catch(() => {});
-  showToast('Profil météo appliqué : ' + profile, 'success');
+  try {
+    const fd = new FormData();
+    fd.append('profile', profile);
+    const resp = await fetch('/settings/sim_profile', { method: 'POST', body: fd });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast('Profil météo sauvegardé et appliqué : ' + profile, 'success');
+    } else {
+      showToast('Erreur : ' + (data.error || 'inconnue'), 'danger');
+    }
+  } catch (e) {
+    showToast('Impossible de contacter le serveur', 'danger');
+  }
 }
 async function resetSimulation() {
   await fetch('http://127.0.0.1:8081/admin/reset', {method: 'POST'}).catch(() => {});

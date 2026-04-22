@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <div class="page-title">Arduino Edge Control</div>
-      <div class="page-subtitle">Diagnostic matériel · interfaces I/O · actionneurs</div>
+      <div class="page-subtitle">Diagnostic matériel · <span id="ard-status-hdr">—</span></div>
     </div>
     <button class="btn btn-secondary btn-sm" onclick="refreshAll()">
       <i class="bi bi-arrow-clockwise"></i> Rafraîchir
@@ -16,358 +16,494 @@
 
 <div class="page-body">
 
-  <!-- ── Connection status ── -->
-  <div class="card mb-3">
-    <div class="card-title">
-      <i class="bi bi-wifi"></i> État de la connexion
-      <span class="badge badge-plant" style="margin-left:8px;font-size:10px;" id="mkr-module-badge">
-        <i class="bi bi-cpu"></i> MKR WiFi 1010
-      </span>
+  <!-- Tab bar -->
+  <div class="time-tabs mb-3" id="ard-tab-bar">
+    <button class="time-tab active" onclick="switchArdTab(this,'systeme')">
+      <i class="bi bi-cpu-fill"></i><span class="tab-label"> Système</span>
+    </button>
+    <button class="time-tab" onclick="switchArdTab(this,'reseau')">
+      <i class="bi bi-wifi"></i><span class="tab-label"> Réseau</span>
+    </button>
+    <button class="time-tab" onclick="switchArdTab(this,'capteurs')">
+      <i class="bi bi-activity"></i><span class="tab-label"> Capteurs</span>
+    </button>
+    <button class="time-tab" onclick="switchArdTab(this,'actionneurs')">
+      <i class="bi bi-toggles"></i><span class="tab-label"> Actionneurs</span>
+    </button>
+    <button class="time-tab" onclick="switchArdTab(this,'io')">
+      <i class="bi bi-plug"></i><span class="tab-label"> I/O &amp; Bus</span>
+    </button>
+    <button class="time-tab" onclick="switchArdTab(this,'api')">
+      <i class="bi bi-code-slash"></i><span class="tab-label"> API brute</span>
+    </button>
+  </div>
+
+  <!-- ══ TAB SYSTÈME ══ -->
+  <div id="ard-tab-systeme">
+
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-cpu-fill"></i> Microcontrôleur
+        <span class="badge badge-plant" style="margin-left:8px;font-size:10px;" id="ard-board-badge">Arduino Edge Control</span>
+      </div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">MCU</div>
+            <div class="diag-val" id="ard-mcu">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Architecture</div>
+            <div class="diag-val" id="ard-arch">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Fréquence</div>
+            <div class="diag-val" id="ard-cpu-freq">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Température MCU</div>
+            <div class="diag-val" id="ard-mcu-temp">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Firmware</div>
+            <div class="diag-val" id="ard-firmware">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Uptime</div>
+            <div class="diag-val" id="ard-uptime">—</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Ligne 1 : statut global -->
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;" id="conn-status-row">
-      <div class="diag-stat">
-        <div class="diag-label">Statut</div>
-        <div class="diag-val" id="ard-status">—</div>
-      </div>
-      <div class="diag-stat">
-        <div class="diag-label">Latence RPi → Arduino</div>
-        <div class="diag-val" id="ard-latency">—</div>
-      </div>
-      <div class="diag-stat">
-        <div class="diag-label">Uptime Arduino</div>
-        <div class="diag-val" id="ard-uptime">—</div>
-      </div>
-      <div class="diag-stat">
-        <div class="diag-label">Firmware</div>
-        <div class="diag-val" id="ard-firmware">—</div>
-      </div>
-      <div class="diag-stat">
-        <div class="diag-label">Mode</div>
-        <div class="diag-val" id="ard-mode">—</div>
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-memory"></i> Mémoire SRAM</div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Utilisée</div>
+            <div class="diag-val" id="ard-sram-used">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Libre</div>
+            <div class="diag-val" id="ard-sram-free">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Total</div>
+            <div class="diag-val" id="ard-sram-total">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Usage</div>
+            <div class="diag-val" id="ard-sram-pct">—</div>
+          </div>
+        </div>
+        <div class="diag-bar-wrap" style="margin-top:10px;">
+          <div class="diag-bar-track">
+            <div class="diag-bar-fill ok" id="ard-sram-bar" style="width:0%"></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Ligne 2 : détails MKR WiFi 1010 -->
-    <div style="border-top:1px solid var(--border);padding-top:12px;">
-      <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">
-        <i class="bi bi-broadcast"></i> MKR WiFi 1010 — Module NINA-W102
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-device-hdd-fill"></i> Flash programme</div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Sketch utilisé</div>
+            <div class="diag-val" id="ard-flash-used">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Disponible</div>
+            <div class="diag-val" id="ard-flash-free">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Capacité totale</div>
+            <div class="diag-val" id="ard-flash-total">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Occupation</div>
+            <div class="diag-val" id="ard-flash-pct">—</div>
+          </div>
+        </div>
+        <div class="diag-bar-wrap" style="margin-top:10px;">
+          <div class="diag-bar-track">
+            <div class="diag-bar-fill ok" id="ard-flash-bar" style="width:0%"></div>
+          </div>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-        <div class="diag-stat">
-          <div class="diag-label">SSID</div>
-          <div class="diag-val" id="ard-ssid">—</div>
+    </div>
+
+  </div><!-- /#ard-tab-systeme -->
+
+  <!-- ══ TAB RÉSEAU ══ -->
+  <div id="ard-tab-reseau" style="display:none;">
+
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-ethernet"></i> Identité réseau</div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">Adresse IP</div>
+            <div class="diag-val" id="ard-ip">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Adresse MAC</div>
+            <div class="diag-val" id="ard-mac">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Statut</div>
+            <div class="diag-val" id="ard-status">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Latence RPi → Arduino</div>
+            <div class="diag-val" id="ard-latency">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Mode</div>
+            <div class="diag-val" id="ard-mode">—</div>
+          </div>
         </div>
-        <div class="diag-stat">
-          <div class="diag-label">RSSI</div>
-          <div class="diag-val" id="ard-rssi">—</div>
-        </div>
-        <div class="diag-stat">
-          <div class="diag-label">Qualité signal</div>
-          <div class="diag-val" id="ard-wifi-quality">—</div>
-        </div>
-        <div class="diag-stat" style="min-width:120px;">
-          <div class="diag-label">Force du signal</div>
-          <div style="margin-top:4px;">
-            <div class="diag-bar-track" style="height:8px;">
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-broadcast"></i> Module WiFi NINA-W102
+      </div>
+      <div class="diag-ch-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <div class="diag-stat-sm">
+            <div class="diag-label">SSID</div>
+            <div class="diag-val" id="ard-ssid">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">RSSI</div>
+            <div class="diag-val" id="ard-rssi">—</div>
+          </div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Qualité signal</div>
+            <div class="diag-val" id="ard-wifi-quality">—</div>
+          </div>
+          <div class="diag-stat-sm" style="min-width:120px;">
+            <div class="diag-label">Force</div>
+            <div class="diag-bar-track" style="height:8px;margin-top:6px;">
               <div id="wifi-quality-bar" class="diag-bar-fill ok" style="width:0%;height:8px;"></div>
             </div>
           </div>
-        </div>
-        <div class="diag-stat">
-          <div class="diag-label">Module WiFi/BLE</div>
-          <div class="diag-val" id="ard-wifi-module" style="font-size:11px;">—</div>
+          <div class="diag-stat-sm">
+            <div class="diag-label">Module</div>
+            <div class="diag-val" id="ard-wifi-module" style="font-size:11px;">—</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── Analog inputs ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-activity"></i> Entrées analogiques (capteurs sol)</div>
-    <div class="diag-grid" id="analog-grid">
-      {% for z in range(1, 5) %}
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon {% if z == 1 %}z1{% elif z == 2 %}z2{% elif z == 3 %}z3{% else %}z4{% endif %}">
-            {% if z == 1 %}<i class="bi bi-house-door-fill"></i>
-            {% elif z == 2 %}<i class="bi bi-sun-fill"></i>
-            {% elif z == 3 %}<i class="bi bi-cloud-sun-fill"></i>
-            {% else %}<i class="bi bi-flower3"></i>{% endif %}
+  </div><!-- /#ard-tab-reseau -->
+
+  <!-- ══ TAB CAPTEURS ══ -->
+  <div id="ard-tab-capteurs" style="display:none;">
+
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-activity"></i> Capteurs sol — SoilWatch 10 (ADC 0–3.3V)</div>
+      <div class="diag-grid" id="analog-grid">
+        {% for z in range(1, 5) %}
+        <div class="diag-channel">
+          <div class="diag-ch-header">
+            <div class="diag-ch-icon {% if z == 1 %}z1{% elif z == 2 %}z2{% elif z == 3 %}z3{% else %}z4{% endif %}">
+              {% if z == 1 %}<i class="bi bi-house-door-fill"></i>
+              {% elif z == 2 %}<i class="bi bi-sun-fill"></i>
+              {% elif z == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+              {% else %}<i class="bi bi-flower3"></i>{% endif %}
+            </div>
+            <div>
+              <div class="diag-ch-name">Zone {{ z }} — {{ ['Serre','Soleil','Mi-ombre','Aromates'][z-1] }}</div>
+              <div class="diag-ch-sub">CH0{{ z }} · SoilWatch 10</div>
+            </div>
           </div>
-          <div>
-            <div class="diag-ch-name">Zone {{ z }} — {{ ['Serre','Soleil','Mi-ombre','Aromates'][z-1] }}</div>
-            <div class="diag-ch-sub">Input 0-5V CH0{{ z }} · SoilWatch 10</div>
-          </div>
-        </div>
-        <div class="diag-ch-body">
-          <div class="diag-stat-sm">
-            <div class="diag-label">Humidité</div>
-            <div class="diag-val-lg" id="adc-pct-{{ z }}">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Valeur brute ADC</div>
-            <div class="diag-val" id="adc-raw-{{ z }}">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Tension estimée</div>
-            <div class="diag-val" id="adc-v-{{ z }}">—</div>
-          </div>
-          <div class="diag-bar-wrap">
-            <div class="diag-bar-track">
-              <div class="diag-bar-fill" id="adc-bar-{{ z }}" style="width:0%"></div>
+          <div class="diag-ch-body">
+            <div class="diag-stat-sm"><div class="diag-label">Humidité</div><div class="diag-val" id="adc-pct-{{ z }}">—</div></div>
+            <div class="diag-stat-sm"><div class="diag-label">ADC brut</div><div class="diag-val" id="adc-raw-{{ z }}">—</div></div>
+            <div class="diag-stat-sm"><div class="diag-label">Tension</div><div class="diag-val" id="adc-v-{{ z }}">—</div></div>
+            <div class="diag-bar-wrap">
+              <div class="diag-bar-track"><div class="diag-bar-fill" id="adc-bar-{{ z }}" style="width:0%"></div></div>
             </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
 
-  <!-- ── Temperature + Wind sensors ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-thermometer-half"></i> Capteurs température &amp; vent</div>
-    <div class="diag-grid">
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z2"><i class="bi bi-thermometer-half"></i></div>
-          <div>
-            <div class="diag-ch-name">Température extérieure</div>
-            <div class="diag-ch-sub">DS18B20 · bus OneWire</div>
+    <div class="card">
+      <div class="card-title"><i class="bi bi-thermometer-half"></i> Température &amp; vent</div>
+      <div class="diag-grid">
+        <div class="diag-channel">
+          <div class="diag-ch-header">
+            <div class="diag-ch-icon z2"><i class="bi bi-thermometer-half"></i></div>
+            <div><div class="diag-ch-name">Température extérieure</div><div class="diag-ch-sub">DS18B20 · OneWire</div></div>
           </div>
-        </div>
-        <div class="diag-ch-body">
-          <div style="display:flex;align-items:baseline;gap:5px;">
-            <div class="diag-val-lg" id="temp-ext">—</div>
-            <span class="diag-val-lg" style="color:var(--text-secondary);">°C</span>
-          </div>
-        </div>
-      </div>
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z1"><i class="bi bi-house-door-fill"></i></div>
-          <div>
-            <div class="diag-ch-name">Température serre</div>
-            <div class="diag-ch-sub">DS18B20 · sonde intérieure</div>
-          </div>
-        </div>
-        <div class="diag-ch-body">
-          <div style="display:flex;align-items:baseline;gap:5px;">
-            <div class="diag-val-lg" id="temp-serre">—</div>
-            <span class="diag-val-lg" style="color:var(--text-secondary);">°C</span>
-          </div>
-        </div>
-      </div>
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z4"><i class="bi bi-wind"></i></div>
-          <div>
-            <div class="diag-ch-name">Anémomètre QS-FS01</div>
-            <div class="diag-ch-sub">Tension 0.4–2.0 V · Input CH05</div>
-          </div>
-        </div>
-        <div class="diag-ch-body">
-          <div style="display:flex;align-items:baseline;gap:5px;">
-            <div class="diag-val-lg" id="wind-kmh">—</div>
-            <span class="diag-val-lg" style="color:var(--text-secondary);">km/h</span>
-          </div>
-          <div class="diag-bar-wrap" style="margin-top:8px;">
-            <div class="diag-bar-track">
-              <div class="diag-bar-fill ok" id="wind-bar" style="width:0%"></div>
+          <div class="diag-ch-body">
+            <div style="display:flex;align-items:baseline;gap:5px;">
+              <div class="diag-val" id="temp-ext">—</div>
+              <span class="diag-val" style="color:var(--text-secondary);">°C</span>
             </div>
           </div>
-          <div class="diag-label" id="wind-beaufort" style="margin-top:4px;font-size:10px;">—</div>
+        </div>
+        <div class="diag-channel">
+          <div class="diag-ch-header">
+            <div class="diag-ch-icon z1"><i class="bi bi-house-door-fill"></i></div>
+            <div><div class="diag-ch-name">Température serre</div><div class="diag-ch-sub">DS18B20 · sonde int.</div></div>
+          </div>
+          <div class="diag-ch-body">
+            <div style="display:flex;align-items:baseline;gap:5px;">
+              <div class="diag-val" id="temp-serre">—</div>
+              <span class="diag-val" style="color:var(--text-secondary);">°C</span>
+            </div>
+          </div>
+        </div>
+        <div class="diag-channel">
+          <div class="diag-ch-header">
+            <div class="diag-ch-icon z4"><i class="bi bi-wind"></i></div>
+            <div><div class="diag-ch-name">Anémomètre QS-FS01</div><div class="diag-ch-sub">0.4–2.0 V · CH05</div></div>
+          </div>
+          <div class="diag-ch-body">
+            <div style="display:flex;align-items:baseline;gap:5px;">
+              <div class="diag-val" id="wind-kmh">—</div>
+              <span class="diag-val" style="color:var(--text-secondary);">km/h</span>
+            </div>
+            <div class="diag-bar-wrap" style="margin-top:8px;">
+              <div class="diag-bar-track"><div class="diag-bar-fill ok" id="wind-bar" style="width:0%"></div></div>
+            </div>
+            <div class="diag-label" id="wind-beaufort" style="margin-top:4px;font-size:10px;">—</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── Relays / Valves ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-toggles"></i> Relais de sortie (vannes 24V latching)</div>
-    <div class="diag-relay-grid" id="relay-grid">
-      {% for z in zones_nav %}
-      <div class="diag-relay" id="relay-card-{{ z.zone_id }}">
-        <div class="diag-relay-header">
-          <span class="diag-relay-id">Relais {{ z.zone_id }}</span>
-          <div class="diag-relay-led" id="relay-led-{{ z.zone_id }}"></div>
-        </div>
-        <div class="diag-relay-name">Zone {{ z.zone_id }} — {{ z.name }}</div>
-        <div class="diag-relay-state" id="relay-state-{{ z.zone_id }}">—</div>
-        <div style="display:flex;gap:6px;margin-top:10px;">
-          <button class="btn btn-blue btn-xs" onclick="manualValve({{ z.zone_id }}, 'open')">
-            <i class="bi bi-droplet-fill"></i> Ouvrir
-          </button>
-          <button class="btn btn-secondary btn-xs" onclick="manualValve({{ z.zone_id }}, 'close')">
-            <i class="bi bi-stop-circle"></i> Fermer
-          </button>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
+  </div><!-- /#ard-tab-capteurs -->
 
-  <!-- ── Linear actuator (roof) ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-arrows-vertical"></i> Vérin linéaire (lucarne serre)</div>
-    <div class="diag-grid">
-      <div class="diag-channel">
-        <div class="diag-ch-header">
-          <div class="diag-ch-icon z3"><i class="bi bi-arrows-vertical"></i></div>
-          <div>
-            <div class="diag-ch-name">Vérin H-bridge</div>
-            <div class="diag-ch-sub">H-bridge · IN1/IN2 · fins de course D6/D7</div>
+  <!-- ══ TAB ACTIONNEURS ══ -->
+  <div id="ard-tab-actionneurs" style="display:none;">
+
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-toggles"></i> Vannes 24V latching (relais K1–K4)</div>
+      <div class="diag-relay-grid" id="relay-grid">
+        {% for z in zones_nav %}
+        <div class="diag-relay" id="relay-card-{{ z.zone_id }}">
+          <div class="diag-relay-header">
+            <span class="diag-relay-id">Relais {{ z.zone_id }}</span>
+            <div class="diag-relay-led" id="relay-led-{{ z.zone_id }}"></div>
           </div>
-        </div>
-        <div class="diag-ch-body">
-          <div class="diag-stat-sm">
-            <div class="diag-label">Position</div>
-            <div class="diag-val-lg" id="roof-pos">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Fin de course ouvert</div>
-            <div class="diag-val" id="roof-endstop-open">—</div>
-          </div>
-          <div class="diag-stat-sm">
-            <div class="diag-label">Fin de course fermé</div>
-            <div class="diag-val" id="roof-endstop-close">—</div>
-          </div>
+          <div class="diag-relay-name">Zone {{ z.zone_id }} — {{ z.name }}</div>
+          <div class="diag-relay-state" id="relay-state-{{ z.zone_id }}">—</div>
           <div style="display:flex;gap:6px;margin-top:10px;">
-            <button class="btn btn-warning btn-xs" onclick="manualRoof('open')">
-              <i class="bi bi-chevron-up"></i> Ouvrir
+            <button class="btn btn-blue btn-xs" onclick="manualValve({{ z.zone_id }}, 'open')">
+              <i class="bi bi-droplet-fill"></i> Ouvrir
             </button>
-            <button class="btn btn-secondary btn-xs" onclick="manualRoof('close')">
-              <i class="bi bi-chevron-down"></i> Fermer
+            <button class="btn btn-secondary btn-xs" onclick="manualValve({{ z.zone_id }}, 'close')">
+              <i class="bi bi-stop-circle"></i> Fermer
             </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="bi bi-arrows-vertical"></i> Vérin linéaire (lucarne serre)</div>
+      <div class="diag-grid">
+        <div class="diag-channel">
+          <div class="diag-ch-header">
+            <div class="diag-ch-icon z3"><i class="bi bi-arrows-vertical"></i></div>
+            <div><div class="diag-ch-name">Vérin H-bridge</div><div class="diag-ch-sub">IN1/IN2 · fins de course D6/D7</div></div>
+          </div>
+          <div class="diag-ch-body">
+            <div class="diag-stat-sm"><div class="diag-label">Position</div><div class="diag-val" id="roof-pos">—</div></div>
+            <div class="diag-stat-sm"><div class="diag-label">Fin de course ouvert</div><div class="diag-val" id="roof-endstop-open">—</div></div>
+            <div class="diag-stat-sm"><div class="diag-label">Fin de course fermé</div><div class="diag-val" id="roof-endstop-close">—</div></div>
+            <div style="display:flex;gap:6px;margin-top:10px;">
+              <button class="btn btn-warning btn-xs" onclick="manualRoof('open')"><i class="bi bi-chevron-up"></i> Ouvrir</button>
+              <button class="btn btn-secondary btn-xs" onclick="manualRoof('close')"><i class="bi bi-chevron-down"></i> Fermer</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── Free I/O ── -->
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-plug"></i> Entrées / Sorties disponibles</div>
-    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
-      Canaux non utilisés de l'Arduino Edge Control — disponibles pour extensions futures.
-    </div>
+  </div><!-- /#ard-tab-actionneurs -->
 
-    <!-- Relais latching libres K5–K16 -->
-    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
-      Relais latching libres — 24V SPDT 2A (K5 à K16)
-    </div>
-    <div style="overflow-x:auto;margin-bottom:16px;">
-      <table class="table-modern" style="font-size:12px;">
-        <thead>
-          <tr><th>Canal</th><th>Interface</th><th>Adresse I²C</th><th>Usage suggéré</th><th>Statut</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>RELAY_5</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 4</td><td>Vanne zone 5 (extension)</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_6</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 5</td><td>Vanne zone 6 (extension)</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_7</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 6</td><td>Pompe de circulation</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_8</code></td><td>Relais latching 24V SPDT</td><td>0x20 · bit 7</td><td>Éclairage horticole</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_9</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 0</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_10</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 1</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_11</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 2</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_12</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 3</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_13</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 4</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_14</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 5</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_15</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 6</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>RELAY_16</code></td><td>Relais latching 24V SPDT</td><td>0x21 · bit 7</td><td>Disponible</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-        </tbody>
-      </table>
-    </div>
+  <!-- ══ TAB I/O & BUS ══ -->
+  <div id="ard-tab-io" style="display:none;">
 
-    <!-- SSR + H-Bridge + Analog -->
-    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
-      Autres sorties &amp; entrées disponibles
-    </div>
-    <div style="overflow-x:auto;margin-bottom:16px;">
-      <table class="table-modern" style="font-size:12px;">
-        <thead>
-          <tr><th>Canal</th><th>Type</th><th>Pin MCU</th><th>Caractéristiques</th><th>Statut</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>SSR_1</code></td><td>Relais solide (sortie)</td><td>D8</td><td>24VAC/DC · 1.5A · commutation rapide · zéro-crossing</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>SSR_2</code></td><td>Relais solide (sortie)</td><td>D9</td><td>24VAC/DC · 1.5A · commutation rapide · zéro-crossing</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>ADC_CH5</code></td><td>Entrée analogique</td><td>A4 (ADC ch 4)</td><td>0–3.3V · 12 bit · capteur capacitif ou pression</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>ADC_CH6</code></td><td>Entrée analogique</td><td>A5 (ADC ch 5)</td><td>0–3.3V · 12 bit · capteur capacitif ou pression</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>IRQ_1</code></td><td>Entrée digitale / IRQ</td><td>D2 (INT0)</td><td>3.3V · pull-up interne · interrupt capable · pluviomètre</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-          <tr><td><code>IRQ_2</code></td><td>Entrée digitale / IRQ</td><td>D3 (INT1)</td><td>3.3V · pull-up interne · interrupt capable</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
-        </tbody>
-      </table>
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-plug"></i> Entrées/Sorties disponibles</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
+        Canaux non utilisés — disponibles pour extensions futures.
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Relais latching libres — 24V SPDT 2A (K5–K16)</div>
+      <div style="overflow-x:auto;margin-bottom:16px;">
+        <table class="table-modern" style="font-size:12px;">
+          <thead><tr><th>Canal</th><th>Interface</th><th>Adresse I²C</th><th>Usage suggéré</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr><td><code>RELAY_5</code></td><td>Latching 24V SPDT</td><td>0x20 · bit 4</td><td>Vanne zone 5</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+            <tr><td><code>RELAY_6</code></td><td>Latching 24V SPDT</td><td>0x20 · bit 5</td><td>Vanne zone 6</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+            <tr><td><code>RELAY_7</code></td><td>Latching 24V SPDT</td><td>0x20 · bit 6</td><td>Pompe circulation</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+            <tr><td><code>RELAY_8–16</code></td><td>Latching 24V SPDT</td><td>0x20–0x21</td><td>Disponibles</td><td><span class="badge badge-ok" style="font-size:10px;">Libre</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Autres sorties &amp; entrées</div>
+      <div style="overflow-x:auto;margin-bottom:16px;">
+        <table class="table-modern" style="font-size:12px;">
+          <thead><tr><th>Canal</th><th>Type</th><th>Pin MCU</th><th>Caractéristiques</th></tr></thead>
+          <tbody>
+            <tr><td><code>SSR_1</code></td><td>Relais solide</td><td>D8</td><td>24VAC/DC · 1.5A · zéro-crossing</td></tr>
+            <tr><td><code>SSR_2</code></td><td>Relais solide</td><td>D9</td><td>24VAC/DC · 1.5A · zéro-crossing</td></tr>
+            <tr><td><code>ADC_CH5/6</code></td><td>Entrée analogique</td><td>A4/A5</td><td>0–3.3V · 12 bit</td></tr>
+            <tr><td><code>IRQ_1/2</code></td><td>Digitale / IRQ</td><td>D2/D3</td><td>3.3V · pull-up · pluviomètre</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Bus de communication</div>
+      <div style="overflow-x:auto;">
+        <table class="table-modern" style="font-size:12px;">
+          <thead><tr><th>Bus</th><th>Pins</th><th>Usage actuel</th><th>Capacité restante</th></tr></thead>
+          <tbody>
+            <tr><td><code>I²C</code></td><td>SDA D11 · SCL D12</td><td>Expanders relais (0x20, 0x21), ADC sol</td><td>Adresses 0x22–0x77 libres</td></tr>
+            <tr><td><code>SPI</code></td><td>MISO/MOSI/SCK</td><td>Non utilisé</td><td>Carte SD, OLED, logger</td></tr>
+            <tr><td><code>UART</code></td><td>TX D14 · RX D13</td><td>Debug série 115200</td><td>CO₂ UART, GPS</td></tr>
+            <tr><td><code>OneWire</code></td><td>D4 (partagé)</td><td>2× DS18B20</td><td>Jusqu'à 10 sondes</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Bus disponibles -->
-    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
-      Bus de communication disponibles
-    </div>
-    <div style="overflow-x:auto;">
-      <table class="table-modern" style="font-size:12px;">
-        <thead>
-          <tr><th>Bus</th><th>Pins</th><th>Usage actuel</th><th>Capacité restante</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>I²C</code></td><td>SDA (D11) · SCL (D12)</td><td>Expanders relais (0x20, 0x21), ADC capteurs sol</td><td>Adresses 0x22–0x77 libres · capteurs RH, CO₂, luminosité</td></tr>
-          <tr><td><code>SPI</code></td><td>MISO/MOSI/SCK + CS libre</td><td>Non utilisé</td><td>Carte SD, afficheur OLED, logger externe</td></tr>
-          <tr><td><code>UART</code></td><td>TX (D14) · RX (D13)</td><td>Debug série (115200 baud)</td><td>Capteur CO₂ UART (ex. MH-Z19), GPS</td></tr>
-          <tr><td><code>OneWire</code></td><td>D4 (partagé)</td><td>2 capteurs DS18B20 (ext + serre)</td><td>Jusqu'à 10 sondes sur le même bus (adresse 64-bit unique)</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  </div><!-- /#ard-tab-io -->
 
-  <!-- ── Raw JSON dump ── -->
-  <div class="card">
-    <div class="card-title">
-      <i class="bi bi-code-slash"></i> Réponse brute API Arduino
-      <button class="btn btn-secondary btn-xs" style="margin-left:auto;" onclick="toggleRaw()">
-        <i class="bi bi-eye"></i> Afficher/masquer
-      </button>
-    </div>
-    <pre id="raw-dump" style="display:none;font-size:11px;color:var(--text-secondary);background:var(--bg-secondary);padding:12px;border-radius:var(--r-md);overflow-x:auto;line-height:1.6;"></pre>
-  </div>
+  <!-- ══ TAB API BRUTE ══ -->
+  <div id="ard-tab-api" style="display:none;">
 
-</div>
+    <div class="card">
+      <div class="card-title">
+        <i class="bi bi-code-slash"></i> Réponse brute API Arduino
+        <button class="btn btn-secondary btn-xs" style="margin-left:auto;" onclick="refreshAll()">
+          <i class="bi bi-arrow-clockwise"></i> Actualiser
+        </button>
+      </div>
+      <pre id="raw-dump" style="font-size:11px;color:var(--text-secondary);background:var(--bg-secondary);padding:12px;border-radius:var(--r-md);overflow-x:auto;line-height:1.6;">Chargement…</pre>
+    </div>
+
+  </div><!-- /#ard-tab-api -->
+
+</div><!-- /.page-body -->
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
 <script>
+const _ARD_TABS = ['systeme','reseau','capteurs','actionneurs','io','api'];
 let _rawData = {};
 
-async function refreshAll() {
-  await Promise.all([fetchHealth(), fetchSensors(), fetchActuators()]);
+function switchArdTab(btn, tab) {
+  document.querySelectorAll('#ard-tab-bar .time-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _ARD_TABS.forEach(t => {
+    const el = document.getElementById('ard-tab-' + t);
+    if (el) el.style.display = (t === tab) ? '' : 'none';
+  });
+  if (tab === 'api') refreshAll();
 }
 
-async function fetchHealth() {
+function fmtBytes(b) {
+  if (b == null) return '—';
+  if (b >= 1048576) return (b/1048576).toFixed(0) + ' Mo';
+  if (b >= 1024)    return (b/1024).toFixed(0) + ' Ko';
+  return b + ' o';
+}
+function fmtUptime(s) {
+  if (!s) return '—';
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return `${h}h ${m}m`;
+}
+function barColor(pct) {
+  return pct > 85 ? 'high' : pct > 65 ? 'low' : 'ok';
+}
+
+async function refreshAll() {
+  await Promise.all([fetchSystem(), fetchSensors(), fetchActuators()]);
+}
+
+async function fetchSystem() {
   try {
-    const d = await fetch('/api/system/health').then(r => r.json());
-    document.getElementById('ard-status').innerHTML =
-      `<span style="color:${d.arduino_reachable ? 'var(--green)' : 'var(--red)'}">${d.arduino_reachable ? '✓ Connecté' : '✗ Hors ligne'}</span>`;
-    document.getElementById('ard-mode').textContent = d.simulation_mode ? 'Simulation' : 'Production';
-    if (d.arduino_health) {
-      const h = d.arduino_health;
-      document.getElementById('ard-uptime').textContent   = formatUptime(h.uptime_s);
-      document.getElementById('ard-firmware').textContent = h.firmware_version || '—';
+    const d = await fetch('/api/system/arduino').then(r => r.json());
+    _rawData.system = d;
+    document.getElementById('raw-dump').textContent = JSON.stringify(_rawData, null, 2);
 
-      // MKR WiFi 1010 details
-      const rssi = h.wifi_rssi;
-      document.getElementById('ard-rssi').textContent = rssi != null ? rssi + ' dBm' : '—';
-      document.getElementById('ard-ssid').textContent = h.wifi_ssid || '—';
-      document.getElementById('ard-wifi-module').textContent = h.wifi_module || 'MKR WiFi 1010 (NINA-W102)';
+    const ok = d.reachable !== false && d.status === 'ok';
+    document.getElementById('ard-status-hdr').innerHTML =
+      `<span style="color:${ok ? 'var(--green)' : 'var(--red)'};font-weight:600">${ok ? 'Connecté' : 'Hors ligne'}</span>`;
 
-      const quality = h.wifi_quality_pct ?? (rssi != null ? Math.min(Math.max(2*(rssi+100),0),100) : null);
-      if (quality != null) {
-        const qLabel = quality >= 75 ? 'Excellent' : quality >= 50 ? 'Bon' : quality >= 25 ? 'Faible' : 'Très faible';
-        document.getElementById('ard-wifi-quality').textContent = quality + '% — ' + qLabel;
-        const bar = document.getElementById('wifi-quality-bar');
-        bar.style.width = quality + '%';
-        bar.className = 'diag-bar-fill ' + (quality >= 60 ? 'ok' : quality >= 30 ? 'low' : 'high');
-      }
+    // Système
+    document.getElementById('ard-mcu').textContent       = d.mcu || '—';
+    document.getElementById('ard-arch').textContent      = d.architecture || '—';
+    document.getElementById('ard-cpu-freq').textContent  = d.cpu_freq_mhz ? d.cpu_freq_mhz + ' MHz' : '—';
+    document.getElementById('ard-firmware').textContent  = d.firmware_version || '—';
+    document.getElementById('ard-uptime').textContent    = fmtUptime(d.uptime_s);
+    if (d.mcu_temp_c != null) {
+      const tc = d.mcu_temp_c;
+      document.getElementById('ard-mcu-temp').textContent = tc.toFixed(1) + ' °C';
+      document.getElementById('ard-mcu-temp').style.color =
+        tc > 70 ? 'var(--red)' : tc > 55 ? 'var(--orange)' : 'var(--text-primary)';
     }
-  } catch(e) {}
+    if (d.board) document.getElementById('ard-board-badge').textContent = d.board;
+
+    // SRAM
+    if (d.sram_total_bytes) {
+      const pct = d.sram_pct ?? Math.round(d.sram_used_bytes / d.sram_total_bytes * 100);
+      document.getElementById('ard-sram-used').textContent  = fmtBytes(d.sram_used_bytes);
+      document.getElementById('ard-sram-free').textContent  = fmtBytes(d.sram_free_bytes);
+      document.getElementById('ard-sram-total').textContent = fmtBytes(d.sram_total_bytes);
+      document.getElementById('ard-sram-pct').textContent   = pct + ' %';
+      const sb = document.getElementById('ard-sram-bar');
+      sb.style.width = pct + '%';
+      sb.className = 'diag-bar-fill ' + barColor(pct);
+    }
+
+    // Flash
+    if (d.flash_total_bytes) {
+      const pct = d.flash_pct ?? Math.round(d.flash_used_bytes / d.flash_total_bytes * 100);
+      const free = d.flash_total_bytes - d.flash_used_bytes;
+      document.getElementById('ard-flash-used').textContent  = fmtBytes(d.flash_used_bytes);
+      document.getElementById('ard-flash-free').textContent  = fmtBytes(free);
+      document.getElementById('ard-flash-total').textContent = fmtBytes(d.flash_total_bytes);
+      document.getElementById('ard-flash-pct').textContent   = pct + ' %';
+      const fb = document.getElementById('ard-flash-bar');
+      fb.style.width = pct + '%';
+      fb.className = 'diag-bar-fill ' + barColor(pct);
+    }
+
+    // Réseau
+    document.getElementById('ard-status').innerHTML =
+      `<span style="color:${ok ? 'var(--green)' : 'var(--red)'}">${ok ? '✓ Connecté' : '✗ Hors ligne'}</span>`;
+    document.getElementById('ard-mode').textContent = d.simulated ? 'Simulation' : 'Production';
+    document.getElementById('ard-ip').textContent   = d.ip_address || '—';
+    document.getElementById('ard-mac').textContent  = d.mac_address || '—';
+    document.getElementById('ard-ssid').textContent = d.wifi_ssid || '—';
+    document.getElementById('ard-wifi-module').textContent = d.wifi_module || '—';
+    const rssi = d.wifi_rssi;
+    if (rssi != null) document.getElementById('ard-rssi').textContent = rssi + ' dBm';
+    const quality = d.wifi_quality_pct ?? (rssi != null ? Math.min(Math.max(2*(rssi+100),0),100) : null);
+    if (quality != null) {
+      const qLabel = quality >= 75 ? 'Excellent' : quality >= 50 ? 'Bon' : quality >= 25 ? 'Faible' : 'Très faible';
+      document.getElementById('ard-wifi-quality').textContent = quality + '% — ' + qLabel;
+      const bar = document.getElementById('wifi-quality-bar');
+      bar.style.width = quality + '%';
+      bar.className = 'diag-bar-fill ' + (quality >= 60 ? 'ok' : quality >= 30 ? 'low' : 'high');
+    }
+  } catch(e) {
+    document.getElementById('ard-status-hdr').innerHTML =
+      '<span style="color:var(--red);font-weight:600">Hors ligne</span>';
+  }
 }
 
 async function fetchSensors() {
@@ -375,40 +511,30 @@ async function fetchSensors() {
     const d = await fetch('/api/data/current').then(r => r.json());
     _rawData.sensors = d;
     document.getElementById('raw-dump').textContent = JSON.stringify(_rawData, null, 2);
-
-    const tempExt = d.temperature_c;
-    const tempSerre = d.temp_serre_c;
-    document.getElementById('temp-ext').textContent = tempExt != null ? tempExt.toFixed(1) : '—';
-    document.getElementById('temp-serre').textContent = tempSerre != null ? tempSerre.toFixed(1) : '—';
-
-    // Anémomètre
+    document.getElementById('temp-ext').textContent   = d.temperature_c != null ? d.temperature_c.toFixed(1) : '—';
+    document.getElementById('temp-serre').textContent = d.temp_serre_c != null ? d.temp_serre_c.toFixed(1) : '—';
     const wind = d.wind_speed_kmh;
     if (wind != null) {
       document.getElementById('wind-kmh').textContent = wind.toFixed(1);
       const beaufort = wind < 1 ? 'Calme' : wind < 6 ? 'Très légère brise' : wind < 12 ? 'Légère brise'
         : wind < 20 ? 'Petite brise' : wind < 29 ? 'Jolie brise' : wind < 39 ? 'Brise fraîche'
-        : wind < 50 ? 'Vent frais' : wind < 62 ? 'Grand frais' : wind < 75 ? 'Coup de vent'
-        : wind < 89 ? 'Fort coup de vent' : 'Tempête';
+        : wind < 50 ? 'Vent frais' : 'Vent fort+';
       document.getElementById('wind-beaufort').textContent = beaufort;
       const windBar = document.getElementById('wind-bar');
-      const windPct = Math.min(wind / 90 * 100, 100);
-      windBar.style.width = windPct + '%';
+      windBar.style.width = Math.min(wind / 90 * 100, 100) + '%';
       windBar.className = 'diag-bar-fill ' + (wind > 40 ? 'high' : wind > 20 ? 'low' : 'ok');
     }
-
-    const latEl = document.getElementById('ard-latency');
-    if (latEl) latEl.textContent = d.latency_ms != null ? d.latency_ms + ' ms' : '—';
-
+    if (document.getElementById('ard-latency'))
+      document.getElementById('ard-latency').textContent = d.latency_ms != null ? d.latency_ms + ' ms' : '—';
     for (const z of d.zones || []) {
       const pct = z.soil_moisture_pct;
       const raw = z.raw_adc ?? Math.round(pct / 100 * 4095);
       const voltage = (raw / 4095 * 3.3).toFixed(2);
       const mc = pct < (z.moisture_threshold_low || 30) ? 'low' : pct > (z.moisture_threshold_high || 65) ? 'high' : 'ok';
-
       const el = id => document.getElementById(id);
       if (el(`adc-pct-${z.zone_id}`)) el(`adc-pct-${z.zone_id}`).textContent = pct.toFixed(1) + ' %';
       if (el(`adc-raw-${z.zone_id}`)) el(`adc-raw-${z.zone_id}`).textContent = raw;
-      if (el(`adc-v-${z.zone_id}`)) el(`adc-v-${z.zone_id}`).textContent = voltage + ' V';
+      if (el(`adc-v-${z.zone_id}`))   el(`adc-v-${z.zone_id}`).textContent   = voltage + ' V';
       const bar = el(`adc-bar-${z.zone_id}`);
       if (bar) { bar.style.width = Math.min(pct, 100) + '%'; bar.className = `diag-bar-fill ${mc}`; }
     }
@@ -420,13 +546,11 @@ async function fetchActuators() {
     const d = await fetch('/api/data/current').then(r => r.json());
     for (let z = 1; z <= 4; z++) {
       const valve = (d.valves || []).find(v => v.zone_id === z);
-      const state = valve ? valve.state : 'close';
-      const open = state === 'open';
-      const led = document.getElementById(`relay-led-${z}`);
-      const st = document.getElementById(`relay-state-${z}`);
-      const card = document.getElementById(`relay-card-${z}`);
-      if (led) { led.className = `diag-relay-led${open ? ' active' : ''}`; }
-      if (st) { st.textContent = open ? 'Ouvert — arrosage actif' : 'Fermé'; st.style.color = open ? 'var(--green)' : 'var(--text-tertiary)'; }
+      const open = valve ? valve.state === 'open' : false;
+      const led  = document.getElementById(`relay-led-${z}`);
+      const st   = document.getElementById(`relay-state-${z}`);
+      if (led) led.className = `diag-relay-led${open ? ' active' : ''}`;
+      if (st)  { st.textContent = open ? 'Ouvert — arrosage actif' : 'Fermé'; st.style.color = open ? 'var(--green)' : 'var(--text-tertiary)'; }
     }
     const roofPos = document.getElementById('roof-pos');
     if (roofPos) {
@@ -434,8 +558,10 @@ async function fetchActuators() {
       roofPos.textContent = rs === 'open' ? 'Ouvert' : 'Fermé';
       roofPos.style.color = rs === 'open' ? 'var(--orange)' : 'var(--text-secondary)';
     }
-    document.getElementById('roof-endstop-open').textContent  = d.roof_state === 'open'  ? '✓ Activé' : '— Repos';
-    document.getElementById('roof-endstop-close').textContent = d.roof_state === 'close' ? '✓ Activé' : '— Repos';
+    if (document.getElementById('roof-endstop-open'))
+      document.getElementById('roof-endstop-open').textContent  = d.roof_state === 'open'  ? '✓ Activé' : '— Repos';
+    if (document.getElementById('roof-endstop-close'))
+      document.getElementById('roof-endstop-close').textContent = d.roof_state === 'close' ? '✓ Activé' : '— Repos';
   } catch(e) {}
 }
 
@@ -448,18 +574,8 @@ async function manualRoof(state) {
   setTimeout(fetchActuators, 800);
 }
 
-function formatUptime(s) {
-  if (!s) return '—';
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-  return `${h}h ${m}m`;
-}
-
-function toggleRaw() {
-  const el = document.getElementById('raw-dump');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-
 refreshAll();
-setInterval(refreshAll, 15000);
+const _ardTimer = setInterval(refreshAll, 15000);
+window.addEventListener('beforeunload', () => clearInterval(_ardTimer));
 </script>
 {% endblock %}

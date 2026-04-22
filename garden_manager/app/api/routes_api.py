@@ -253,6 +253,29 @@ def system_health():
     })
 
 
+@api_bp.get("/system/arduino")
+def arduino_system():
+    """Diagnostic Arduino — MCU, mémoire, flash, WiFi, uptime."""
+    arduino = current_app.extensions["arduino_client"]
+    health = arduino.get_health()
+    if health is None:
+        return jsonify({"reachable": False}), 503
+    health["reachable"] = True
+
+    # Calculs dérivés pour l'affichage
+    sram_total = health.get("sram_total_bytes", 0)
+    sram_used  = health.get("sram_used_bytes",  0)
+    if sram_total > 0:
+        health["sram_pct"] = round(sram_used / sram_total * 100, 1)
+
+    flash_total = health.get("flash_total_bytes", 0)
+    flash_used  = health.get("flash_used_bytes",  0)
+    if flash_total > 0:
+        health["flash_pct"] = round(flash_used / flash_total * 100, 1)
+
+    return jsonify(health)
+
+
 @api_bp.get("/system/rpi")
 def rpi_status():
     """Diagnostic Raspberry Pi — CPU, mémoire, disques, réseau."""

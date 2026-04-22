@@ -617,7 +617,50 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zc-plants-empty-sm { font-size: 11px; color: var(--text-disabled); padding: 2px 0; }
 
 /* Footer */
-.zc-footer { padding: 10px 16px 14px; }
+.zc-footer {
+  padding: 10px 16px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.zc-valve-btns { display: flex; gap: 6px; flex: 1; }
+.zc-valve-btns .btn { flex: 1; justify-content: center; }
+.zc-detail-btn { flex-shrink: 0; font-size: 18px; color: var(--text-tertiary); }
+.zc-detail-btn:hover { color: var(--brand); }
+
+/* Last irrigation label */
+.zc-last-irr {
+  font-size: 10px; color: var(--text-tertiary);
+  display: flex; align-items: center; gap: 4px; margin-top: 3px;
+}
+.zc-last-irr .bi { font-size: 10px; }
+
+/* ── Dashboard top two-card grid ─────────────────────────── */
+.dash-top-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+@media (max-width: 480px) {
+  .dash-top-grid { grid-template-columns: 1fr; }
+}
+.dtc {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+}
+.dtc-icon-wrap { flex-shrink: 0; }
+.dtc-icon { font-size: 28px; }
+.dtc-icon-ok       { color: var(--green); }
+.dtc-icon-attention { color: var(--orange); }
+.dtc-icon-alerte   { color: var(--red); }
+.dtc-body  { flex: 1; min-width: 0; }
+.dtc-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+             text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+.dtc-title { font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.dtc-sub   { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+.dtc-more  { font-size: 11px; color: var(--blue); margin-top: 4px; cursor: pointer; }
+.dtc-more:hover { text-decoration: underline; }
+/* Status tints */
+.dtc-status.dtc-ok        { border-color: rgba(48,209,88,.25); background: rgba(48,209,88,.05); }
+.dtc-status.dtc-attention { border-color: rgba(255,159,10,.3); background: rgba(255,159,10,.06); }
+.dtc-status.dtc-alerte    { border-color: rgba(255,69,58,.3);  background: rgba(255,69,58,.06); }
+.dtc-harvest              { border-color: rgba(255,159,10,.2); }
 
 /* ── Zone actions ─────────────────────────────────────── */
 .zone-actions {
@@ -842,61 +885,112 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 
 /* ── Charts ───────────────────────────────────────────── */
 .chart-wrap { width: 100%; min-height: 300px; }
+
+/* ── Tabs — pill buttons ─────────────────────────────────── */
 .time-tabs {
-  display: flex; gap: 4px;
-  background: var(--bg-secondary); padding: 4px; border-radius: var(--r-md);
+  display: flex; gap: 6px; flex-wrap: wrap;
   width: fit-content;
 }
 .time-tab {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 7px 13px; border-radius: var(--r-sm);
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--r-pill);
   font-size: 12px; font-weight: 600;
-  color: var(--text-secondary); background: transparent;
-  border: none; font-family: var(--font); cursor: pointer;
+  color: var(--text-secondary); background: var(--bg-secondary);
+  border: 1.5px solid var(--border); font-family: var(--font); cursor: pointer;
   transition: all var(--t); white-space: nowrap;
 }
 .time-tab .bi { font-size: 14px; transition: color var(--t); }
-/* Icon identity colors — always visible */
+/* Icon identity colors */
 .time-tab[data-tab="temps-reel"] .bi  { color: var(--green); }
 .time-tab[data-tab="graphiques"]  .bi { color: var(--blue); }
-.time-tab[data-tab="plants"]      .bi { color: #28a24e; }
+.time-tab[data-tab="plants"]      .bi { color: var(--brand); }
 .time-tab[data-tab="evenements"]  .bi { color: var(--orange); }
 .time-tab[data-tab="config"]      .bi { color: var(--text-tertiary); }
-/* Active pill — tinted per tab */
-.time-tab.active[data-tab="temps-reel"]  { background:rgba(48,209,88,.13);  color:var(--green); }
-.time-tab.active[data-tab="graphiques"]  { background:rgba(10,132,255,.13); color:var(--blue); }
-.time-tab.active[data-tab="plants"]      { background:rgba(40,162,78,.13);  color:#28a24e; }
-.time-tab.active[data-tab="evenements"]  { background:rgba(255,159,10,.13); color:var(--orange); }
-.time-tab.active[data-tab="config"]      { background:var(--bg-tertiary);   color:var(--text-primary); }
-/* Active icon = full opacity */
+/* Active pill — filled tint + colored border */
+.time-tab.active[data-tab="temps-reel"]  { background:rgba(48,209,88,.14);  border-color:rgba(48,209,88,.4);  color:var(--green); }
+.time-tab.active[data-tab="graphiques"]  { background:rgba(10,132,255,.14); border-color:rgba(10,132,255,.4); color:var(--blue); }
+.time-tab.active[data-tab="plants"]      { background:rgba(40,162,78,.14);  border-color:rgba(40,162,78,.4);  color:var(--brand); }
+.time-tab.active[data-tab="evenements"]  { background:rgba(255,159,10,.14); border-color:rgba(255,159,10,.4); color:var(--orange); }
+.time-tab.active[data-tab="config"]      { background:var(--bg-tertiary);   border-color:var(--border-strong); color:var(--text-primary); }
+/* Generic active (dashboard tabs without data-tab) */
+.time-tab.active:not([data-tab]) { background:rgba(40,162,78,.14); border-color:rgba(40,162,78,.4); color:var(--brand); }
 .time-tab.active .bi { opacity: 1; }
-.time-tab:hover:not(.active) { background: var(--bg-hover); color: var(--text-primary); }
+.time-tab:hover:not(.active) { background: var(--bg-hover); border-color: var(--border-strong); color: var(--text-primary); }
 @media (max-width: 600px) {
-  .time-tabs { width: 100%; justify-content: space-between; gap: 2px; }
+  .time-tabs { width: 100%; justify-content: space-between; gap: 4px; }
   .time-tab { flex: 1; flex-direction: column; justify-content: center; gap: 3px;
-              padding: 8px 4px; text-align: center; }
+              padding: 8px 4px; border-radius: var(--r-lg); text-align: center; }
   .time-tab .bi { font-size: 20px; }
   .time-tab .tab-label { display: none; }
 }
 
 /* ── Planting form responsive ─────────────────────────── */
 .planting-form {
-  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 80px 1fr 1fr auto;
   gap: 10px; align-items: end; margin-bottom: 16px;
 }
-@media (max-width: 600px) {
-  .planting-form { grid-template-columns: 1fr 1fr; }
-  .planting-form > div:first-child { grid-column: 1 / -1; }
+/* iPad (600–900px) : 2 colonnes, légume pleine largeur */
+@media (max-width: 900px) {
+  .planting-form {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .planting-form > div:first-child   { grid-column: 1 / -1; }
+  .planting-form > div:last-child    { grid-column: 1 / -1; }
+  .planting-form > div:last-child button { width: 100%; justify-content: center; }
+}
+/* Mobile (<480px) : colonne unique */
+@media (max-width: 480px) {
+  .planting-form { grid-template-columns: 1fr; }
+  .planting-form > div { grid-column: 1; }
 }
 
-/* ── Planting cards ───────────────────────────────────── */
+/* ── Planting list wrapper ────────────────────────────── */
+.planting-list { display: flex; flex-direction: column; gap: 7px; }
+
+/* ── Seed row card (semis en lignes) ─────────────────── */
+.seed-row-card {
+  border: 1.5px solid rgba(40,162,78,.3);
+  border-left: 4px solid var(--brand);
+  border-radius: var(--r-md);
+  background: rgba(40,162,78,.05);
+  overflow: hidden;
+}
+.src-stripe {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+}
+.src-emoji { font-size: 24px; flex-shrink: 0; line-height: 1;
+             font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
+.src-info  { flex: 1; min-width: 0; }
+.src-name  { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+.src-variety { font-size: 11px; color: var(--text-tertiary); margin-left: 5px; }
+.src-count { display: inline-block; font-size: 10px; font-weight: 700;
+             background: rgba(40,162,78,.15); color: var(--brand);
+             border-radius: var(--r-pill); padding: 1px 7px; margin-left: 6px; }
+.src-meta  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.src-days  { font-size: 12px; font-weight: 700; color: var(--text-tertiary); }
+.src-days-late { color: var(--red); }
+.src-days-soon { color: var(--orange); }
+.src-actions { display: flex; gap: 4px; }
+.src-progress {
+  height: 5px; background: var(--bg-tertiary);
+  margin: 0 12px 0 12px; border-radius: 3px; overflow: hidden;
+}
+.src-progress-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+.src-progress-label {
+  font-size: 10px; color: var(--text-tertiary);
+  padding: 3px 12px 8px; text-align: right;
+}
+
+/* ── Plant cards (repiquage individuel) ──────────────── */
 .planting-card {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px;
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: var(--r-md);
 }
-.planting-card + .planting-card { margin-top: 6px; }
 .pc-emoji { font-size: 28px; flex-shrink: 0; line-height: 1; font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
 .pc-main { flex: 1; min-width: 0; }
 .pc-name { font-weight: 700; font-size: 13px; }
@@ -918,7 +1012,9 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   border: 1px solid var(--border-md); border-radius: var(--r-md);
   color: var(--text-primary); padding: 10px 13px;
   font-size: 14px; font-family: var(--font);
-  transition: border-color var(--t), box-shadow var(--t); appearance: none;
+  transition: border-color var(--t), box-shadow var(--t);
+  -webkit-appearance: none; appearance: none;
+  min-height: 44px; /* touch target iOS */
 }
 .form-control:focus, .form-select:focus {
   outline: none; border-color: var(--green);
@@ -927,6 +1023,15 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .form-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.35)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px;
+  cursor: pointer;
+}
+/* iOS Safari : restaure le picker natif sur mobile/tablette */
+@supports (-webkit-touch-callout: none) {
+  .form-select {
+    -webkit-appearance: auto;
+    background-image: none;
+    padding-right: 13px;
+  }
 }
 .form-select option { background: #2c2c2e; }
 .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -1037,6 +1142,11 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   font-size: 11px; color: var(--orange);
   background: rgba(255,159,10,.09); border: 1px solid rgba(255,159,10,.2);
   border-radius: var(--r-pill); padding: 2px 9px;
+}
+.sim-profile-chip {
+  margin-left: 4px; font-size: 10px; color: var(--text-tertiary);
+  background: rgba(255,255,255,.05); border-radius: var(--r-pill);
+  padding: 1px 7px; border: 1px solid var(--border);
 }
 .top-bar-spacer { flex: 1; }
 
@@ -1452,9 +1562,9 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 
 /* ── Diagnostic pages (Arduino / RPi) ────────────────── */
 .diag-stat { display:flex; flex-direction:column; gap:4px; min-width:100px; }
-.diag-label { font-size:11px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
-.diag-val { font-size:14px; font-weight:600; color:var(--text-primary); }
-.diag-val-lg { font-size:28px; font-weight:700; color:var(--text-primary); line-height:1; }
+.diag-label { font-size:10px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+.diag-val { font-size:15px; font-weight:700; color:var(--text-primary); }
+.diag-val-lg { font-size:15px; font-weight:700; color:var(--text-primary); }
 .diag-stat-sm { display:flex; flex-direction:column; gap:2px; }
 
 .diag-grid {

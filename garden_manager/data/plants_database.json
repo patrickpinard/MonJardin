@@ -101,7 +101,8 @@
       "notes_fr": "Planter après les Saints de Glace (15 mai). Tuteurez dès 30 cm. Supprimez les gourmands pour les variétés indéterminées. Arrosez à la base sans mouiller le feuillage.",
       "depth_cm": 20,
       "planting_tip_fr": "Après les Saints de Glace (15 mai). Enterrer la tige jusqu'aux premières feuilles. Tuteurer à 30 cm.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Carotte",
@@ -192,7 +193,8 @@
       "notes_fr": "Choisissez un sol profond, léger et pierreux pour éviter les carottes fourchues. Semez en ligne et éclaircissez à 5 cm. L'association avec le poireau repousse mutuellement leurs parasites.",
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm (variété Longue de Chantenay en juin). Espacement 5 cm après éclaircissage.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Salade",
@@ -294,7 +296,8 @@
       "harvest_tips": "Récoltez les feuilles extérieures au fur et à mesure ou la tête entière à maturité. Récoltez tôt le matin pour plus de fraîcheur.",
       "notes_fr": "Semis successifs toutes les 2–3 semaines pour une récolte continue. Arrosez au pied pour éviter les maladies du feuillage. Les variétés résistantes à la chaleur (ex. Batavia) sont recommandées en été.",
       "depth_cm": 0.5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Courgette",
@@ -371,7 +374,8 @@
       "notes_fr": "2–3 plants suffisent pour une famille. Pollinisez manuellement tôt le matin si peu d'insectes. Laissez une fleur mâle pour chaque fleur femelle.",
       "depth_cm": 3,
       "planting_tip_fr": "Espacement généreux : 80 cm entre plants. 2–3 plants suffisent pour une famille.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Haricot",
@@ -447,7 +451,8 @@
       "notes_fr": "Semez directement en terre après les gelées. Paillez pour conserver l'humidité. Les haricots grimpants nécessitent un support de 1,8 m.",
       "depth_cm": 4,
       "planting_tip_fr": "3 graines par poquet, espacement 10 cm. Semer directement en mai–juillet.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Basilic",
@@ -536,7 +541,8 @@
       "notes_fr": "Très sensible au froid et aux courants d'air. Arrosez au pied uniquement. Cueillez régulièrement pour maintenir une touffe compacte et savoureuse.",
       "depth_cm": 0.5,
       "planting_tip_fr": "Semer en surface (0,5 cm). Hors gel uniquement — ne supporte pas < 10°C.",
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "plant"
     },
     {
       "name": "Concombre",
@@ -622,7 +628,8 @@
       "notes_fr": "Arrosage constant et régulier essentiel — les alternances sèche/humide provoquent des concombres amers. Tendez un support vertical pour économiser l'espace.",
       "depth_cm": 2,
       "planting_tip_fr": "Graines à plat, 2 cm de profondeur. Espacement 40 cm. Arrosage régulier.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Poivron",
@@ -707,7 +714,8 @@
       "notes_fr": "Semez dès février dans un endroit très chaud (25°C). Repic en serre mi-mars. Tuteurez car les plants chargés de fruits plient facilement.",
       "depth_cm": 15,
       "planting_tip_fr": "Sol chaud indispensable — attendre le 15 mai minimum. Espacement 40 cm.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Radis",
@@ -798,7 +806,8 @@
       "harvest_tips": "Récoltez dès que la racine atteint 2–3 cm. Laissés trop longtemps, les radis deviennent creux et piquants.",
       "notes_fr": "Semez en rangs espacés de 10 cm. Éclaircissez à 5 cm. Arrosez régulièrement et uniformément pour éviter les racines creuses ou ligneuses.",
       "depth_cm": 1.5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Oignon",
@@ -883,7 +892,8 @@
       "harvest_tips": "Récoltez quand les feuilles jaunissent et se couchent. Laissez sécher au soleil 2 semaines avant de stocker en lieu frais et sec.",
       "notes_fr": "Plantez les bulbilles pointe vers le haut à 2 cm de profondeur. Arrosez peu après la formation des bulbes pour favoriser la maturation et la conservation.",
       "depth_cm": 1,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Poireau",
@@ -963,7 +973,8 @@
       "notes_fr": "Semez en godets en mars et repiquez en juin dans des trous de 15 cm. Buttez régulièrement pour blanchir les fûts. Laissez en terre comme légume d'hiver.",
       "depth_cm": 15,
       "planting_tip_fr": "Transplanter au dibble, 15 cm de profondeur. Espacement 15 cm. Semer en juin.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Chou",
@@ -1043,7 +1054,8 @@
       "harvest_tips": "Récoltez quand le pomme est bien ferme. Coupez à la base en laissant quelques feuilles — de petites pousses latérales repousseront parfois.",
       "notes_fr": "Rotation obligatoire : ne pas replanter de Brassicacées dans la même zone pendant 3 ans. Protégez avec un filet anti-insectes contre la piéride du chou.",
       "depth_cm": 0.5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Pomme de terre",
@@ -1117,7 +1129,8 @@
       "harvest_tips": "Récoltez 2 semaines après la fanaison des fanes pour une meilleure conservation. Laissez sécher les tubercules quelques heures avant de les rentrer.",
       "notes_fr": "Faites prégerminer les plants 3 semaines avant. Buttez régulièrement pour éviter le verdissement. Évitez de cultiver à côté de tomates (même famille, mêmes maladies).",
       "depth_cm": 8,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Épinard",
@@ -1197,7 +1210,8 @@
       "harvest_tips": "Récoltez les feuilles extérieures ou toute la plante. Pour les jeunes pousses (baby spinach), récoltez 2–3 semaines après le semis.",
       "notes_fr": "Semez directement, éclaircissez à 10 cm. Montée en graines dès que T° > 18°C prolongée — choisissez des variétés résistantes à la chaleur pour l'été.",
       "depth_cm": 1,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Ail",
@@ -1270,7 +1284,8 @@
       "harvest_tips": "Récoltez quand les deux tiers des feuilles sont sèches. Laissez les bulbes sécher 3 semaines en lieu ventilé avant de les tresser.",
       "notes_fr": "Plantez les caïeux pointe vers le haut à 5 cm de profondeur. La plantation d'automne donne les meilleurs résultats. Supprimez les hampes florales (scapes) pour de gros bulbes.",
       "depth_cm": 5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Fenouil",
@@ -1345,7 +1360,8 @@
       "notes_fr": "Cultivez le fenouil isolément ou en bord de jardin. Ne plantez jamais à côté des tomates, carottes, haricots ou persil. Les graines sont utiles comme condiment.",
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm, espacement 30 cm. Juin recommandé pour éviter la montée en graines.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Brocoli",
@@ -1425,7 +1441,8 @@
       "harvest_tips": "Récoltez la tête principale avant l'ouverture des fleurs. Coupez en biais pour éviter la pourriture. Les pousses latérales se développent ensuite pendant 4–6 semaines.",
       "notes_fr": "Même précautions que le chou : rotation 3 ans, filet anti-insectes. Protégez contre les gelées tardives avec un voile de forçage.",
       "depth_cm": 0.5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Betterave",
@@ -1498,7 +1515,8 @@
       "notes_fr": "Semez directement en avril-mai. Éclaircissez à 10 cm. Les feuilles de jeunes betteraves sont excellentes en salade.",
       "depth_cm": 2,
       "planting_tip_fr": "Semer à 2 cm, espacement 15 cm. Juin pour une conservation automnale.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Chou-fleur",
@@ -1573,7 +1591,8 @@
       "harvest_tips": "Récoltez la tête à 15–20 cm avant qu'elle ne s'ouvre. Rabattez les feuilles sur la tête pour la blanchir naturellement.",
       "notes_fr": "Culture délicate nécessitant un sol riche et une humidité constante. Un seul stress hydrique peut provoquer le buttoning ou la montée en fleurs prématurée.",
       "depth_cm": 0.5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Fraise",
@@ -1657,7 +1676,8 @@
       "harvest_tips": "Récoltez quand le fruit est uniformément rouge jusqu'au calice. Récoltez par temps sec pour une meilleure conservation.",
       "notes_fr": "Renouvelez les plants tous les 3–4 ans. Supprimez les stolons pour concentrer l'énergie sur les fruits. Paillez avec de la paille pour éviter les éclaboussures de terre.",
       "depth_cm": 2,
-      "category": "fruit"
+      "category": "fruit",
+      "sowing_type": "plant"
     },
     {
       "name": "Potiron",
@@ -1732,7 +1752,8 @@
       "notes_fr": "Plantez sur une butte de compost. Les tiges rampen sur 2–3 m — prévoyez la place. Un seul plant peut donner 3–5 potirons de 5–10 kg chacun.",
       "depth_cm": 3,
       "planting_tip_fr": "3 cm de profondeur, espacement 100 cm. Semer en mai après le gel.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Aubergine",
@@ -1814,7 +1835,8 @@
       "harvest_tips": "Récoltez à 15–18 cm, peau brillante. Une fois terne, l'aubergine est trop mûre et amère.",
       "notes_fr": "Semez en février à 25°C. Repic en pot 12 cm à partir de mars. En serre, tuteurez dès 30 cm. Pincez le bourgeon terminal pour favoriser la ramification.",
       "depth_cm": 15,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Piment",
@@ -1895,7 +1917,8 @@
       "harvest_tips": "Récoltez vert pour un goût plus frais, ou attendez la couleur rouge/jaune complète pour plus de saveur et de piquant.",
       "notes_fr": "Variétés recommandées en Suisse : Cayenne, Jalapeño, Hungarian Wax. Récoltez régulièrement pour stimuler la production.",
       "depth_cm": 15,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Chou de Bruxelles",
@@ -1971,7 +1994,8 @@
       "harvest_tips": "Récoltez les pommes par le bas de la tige quand elles atteignent 2–3 cm. La plante produit pendant 2–3 mois.",
       "notes_fr": "Culture longue — semez dès avril pour une récolte d'octobre. Buttez la base pour plus de stabilité. Le gel ameliore la saveur — laissez en place jusqu'à Noël.",
       "depth_cm": 0.5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Pois",
@@ -2046,7 +2070,8 @@
       "harvest_tips": "Récoltez quand les cosses sont bien gonflées mais encore brillantes. Récoltez tous les 2 jours pour maintenir la production.",
       "notes_fr": "Semez directement dès mars. Prévoyez un tuteur ou un grillage de 1,2 m. Après la culture, incorporez les plants en compost vert riche en azote.",
       "depth_cm": 4,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Fève",
@@ -2119,7 +2144,8 @@
       "harvest_tips": "Récoltez jeunes pour des fèves tendres (cosses < 12 cm). Plus tardif, elles deviennent farineuses mais excellentes en purée.",
       "notes_fr": "Pincez les sommités florales dès la nouaison pour limiter les pucerons. Plantation d'automne (octobre) donne les meilleurs rendements.",
       "depth_cm": 5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Mâche",
@@ -2196,7 +2222,8 @@
       "notes_fr": "Semez dense (graines difficiles à germer — mettez 2–3 par trou). Pas de démariage nécessaire. Résiste à -10°C sous feuilles sèches ou voile de protection.",
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm. Résistante au gel — idéale pour l'automne.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Roquette",
@@ -2275,7 +2302,8 @@
       "notes_fr": "Semis successifs toutes les 3 semaines. En pleine chaleur, la saveur devient trop piquante — préférez les variétés sauvages (plus douces). Voile anti-insectes conseillé.",
       "depth_cm": 0.5,
       "planting_tip_fr": "Semer à 0,5 cm, sans couverture. Croissance rapide en 4 semaines.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Navet",
@@ -2348,7 +2376,8 @@
       "notes_fr": "Rotation 3 ans comme tous les Brassicacées. La récolte d'automne (semis juillet) est la plus savoureuse grâce au froid.",
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm, espacement 15 cm. Navet d'automne en juin.",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Panais",
@@ -2419,7 +2448,8 @@
       "harvest_tips": "Laissez en terre tout l'hiver. Récoltez après les premières gelées pour un goût optimal. Se conserve en terre protégée jusqu'en mars.",
       "notes_fr": "Semence à germination lente (3 semaines). Utilisez toujours des graines de l'année — la viabilité baisse rapidement. Sol profond et pierreux comme pour la carotte.",
       "depth_cm": 1,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Persil",
@@ -2505,7 +2535,8 @@
       "harvest_tips": "Coupez les tiges extérieures à 2 cm du sol. Ne récoltez jamais plus d'un tiers à la fois.",
       "notes_fr": "Germination lente (3 semaines) — faites tremper 24h avant semis. Bisannuel : replantez chaque année pour éviter la montée en graines.",
       "depth_cm": 0.5,
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "plant"
     },
     {
       "name": "Ciboulette",
@@ -2590,7 +2621,8 @@
       "notes_fr": "Touffeuse et vivace — divise tous les 3 ans. Ne jamais tout couper à la fois. Les fleurs attirent les pollinisateurs.",
       "depth_cm": 1,
       "planting_tip_fr": "Semis en touffes à 1 cm. Séparer les touffes au rempotage.",
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "plant"
     },
     {
       "name": "Thym",
@@ -2667,7 +2699,8 @@
       "harvest_tips": "Coupez les jeunes pousses avant floraison pour l'arôme maximum. Récoltez matin, quand les huiles essentielles sont les plus concentrées.",
       "notes_fr": "Vivace résistante jusqu'à -15°C. Taille légère chaque printemps. Évitez l'excès d'eau — préfère le sec. Association idéale avec le romarin.",
       "depth_cm": 0.3,
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "plant"
     },
     {
       "name": "Romarin",
@@ -2747,7 +2780,8 @@
       "harvest_tips": "Coupez les jeunes pousses de l'année en évitant le vieux bois. Récolte continue toute l'année.",
       "notes_fr": "Rustique jusqu'à -10°C selon les variétés. Plantez en exposition sud ou sud-ouest, contre un mur si possible. Taille légère après floraison.",
       "depth_cm": 0.5,
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "plant"
     },
     {
       "name": "Menthe",
@@ -2828,7 +2862,8 @@
       "harvest_tips": "Coupez les tiges à mi-hauteur. Récoltez avant floraison pour les feuilles les plus aromatiques.",
       "notes_fr": "TOUJOURS planter en pot enterré ou en contenant — les stolons peuvent envahir 2–3 m² en une saison. Diviser tous les 2 ans.",
       "depth_cm": 2,
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "plant"
     },
     {
       "name": "Coriandre",
@@ -2906,7 +2941,8 @@
       "harvest_tips": "Récoltez jeunes pousses à 10 cm. Pour les graines, laissez les ombelles sécher sur la plante avant de les récolter.",
       "notes_fr": "Préférez la mi-ombre en été pour ralentir la montée en graines. Semis en pleine terre directement — n'aime pas le repiquage. Sensible au froid.",
       "depth_cm": 0.5,
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "seed"
     },
     {
       "name": "Céleri-branche",
@@ -2983,7 +3019,8 @@
       "harvest_tips": "Blanchissez en liant les tiges 2 semaines avant récolte (goût plus doux). Récoltez les tiges extérieures progressivement.",
       "notes_fr": "Culture difficile — besoin d'humidité constant. Le stress hydrique cause des tiges amères et creuses. Paillez abondamment.",
       "depth_cm": 0.5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Bette à carde",
@@ -3063,7 +3100,8 @@
       "harvest_tips": "Récoltez les feuilles extérieures en laissant le cœur pour une production continue pendant des mois.",
       "notes_fr": "Bisannuelle très productive — un seul semis dure toute la saison. Les côtes colorées sont très décoratives dans les massifs.",
       "depth_cm": 2,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Asperge",
@@ -3125,7 +3163,8 @@
       "harvest_tips": "Récoltez les turions à 15–20 cm à la cassure. Arrêtez la récolte mi-juin pour laisser les plants se reconstituer.",
       "notes_fr": "Préparez une tranchée profonde (40 cm) avec beaucoup de compost. Patience : 2 ans sans récolte puis 20 ans de production. Désherbage régulier essentiel.",
       "depth_cm": 15,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Rhubarbe",
@@ -3192,7 +3231,8 @@
       "harvest_tips": "Récoltez les tiges de mai à fin juin en les cassant à la base. Ne récoltez jamais les feuilles (toxiques). Arrêtez la récolte en juillet.",
       "notes_fr": "Plantez les griffes de racines en mars. Pas de récolte la première année. Supprimez les tiges florales pour prolonger la production foliaire.",
       "depth_cm": 5,
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "plant"
     },
     {
       "name": "Melon",
@@ -3270,7 +3310,8 @@
       "harvest_tips": "Mûr quand le fruit se détache facilement, exhale un parfum intense et sonne creux. Réduisez l'eau 10 jours avant récolte.",
       "notes_fr": "Pollinisez manuellement le matin avec un pinceau. Limitez à 3–4 fruits par plant pour des melons de taille optimale. Palissez avec des filets.",
       "depth_cm": 2,
-      "category": "fruit"
+      "category": "fruit",
+      "sowing_type": "plant"
     },
     {
       "name": "Maïs",
@@ -3343,7 +3384,8 @@
       "notes_fr": "Semez en bloc (4 rangs minimum) pour la pollinisation croisée par le vent. Buttez en cours de culture. Variétés sucrées recommandées : 'Earlivee', 'Damaun'.",
       "depth_cm": 4,
       "planting_tip_fr": "4 graines par poquet, espacement 40 cm. Semer en bloc (pollinisation croisée).",
-      "category": "légume"
+      "category": "légume",
+      "sowing_type": "seed"
     },
     {
       "name": "Souci",
@@ -3432,7 +3474,8 @@
       "harvest_tips": "Cueillez les fleurs fanées pour prolonger la floraison jusqu'aux gelées.",
       "notes_fr": "Fleur compagne par excellence du potager. Plantez généreusement en bordure et entre les légumes. Laissez quelques graines en place pour un semis naturel l'année suivante.",
       "depth_cm": 0.5,
-      "category": "fleur"
+      "category": "fleur",
+      "sowing_type": "plant"
     },
     {
       "name": "Capucine",
@@ -3517,7 +3560,8 @@
       "harvest_tips": "Récoltez les fleurs au fil de la floraison pour la salade. Les graines peuvent être conservées dans du vinaigre (câpres de capucines).",
       "notes_fr": "Semez directement en place — n'aime pas le repiquage. Sol pauvre et soleil = fleurs abondantes. En sol riche, produit des feuilles au détriment des fleurs.",
       "depth_cm": 2,
-      "category": "fleur"
+      "category": "fleur",
+      "sowing_type": "seed"
     },
     {
       "name": "Bourrache",
@@ -3601,7 +3645,8 @@
       "harvest_tips": "Récoltez les fleurs bleues fraîches pour décorer les salades et les drinks. Goût de concombre léger.",
       "notes_fr": "Se ressème spontanément d'une année à l'autre. Laissez quelques plants monter en graines pour une présence continue. Attention : plante haute et buissonnante.",
       "depth_cm": 1,
-      "category": "fleur"
+      "category": "fleur",
+      "sowing_type": "seed"
     },
     {
       "name": "Phacélie",
@@ -3677,7 +3722,8 @@
       "harvest_tips": "Pour l'engrais vert : fauchez et enfouissez à la floraison. Pour les pollinisateurs : laissez fleurir jusqu'en graines.",
       "notes_fr": "Semez dense en bandes entre les cultures ou en jachère. L'une des meilleures plantes mellifères de Suisse. En automne, protège le sol de l'érosion.",
       "depth_cm": 0.5,
-      "category": "fleur"
+      "category": "fleur",
+      "sowing_type": "seed"
     },
     {
       "name": "Lavande",
@@ -3748,7 +3794,8 @@
       "harvest_tips": "Coupez les épis juste avant pleine floraison pour l'arôme maximum. Séchez en bouquet à l'ombre.",
       "notes_fr": "Rustique jusqu'à -15°C (variétés vraie lavande). Taille courte après floraison chaque été. Évitez tout excès d'eau — tolère la sécheresse mais pas les pieds dans l'eau.",
       "depth_cm": 0.5,
-      "category": "herbe"
+      "category": "herbe",
+      "sowing_type": "plant"
     },
     {
       "name": "Tournesol",
@@ -3819,7 +3866,8 @@
       "harvest_tips": "Récoltez les capitules quand les fleurs ligulées tombent et que les akènes durcissent. Séchez 2 semaines avant de décortiquer.",
       "notes_fr": "Plantez en fond de potager pour profiter de leur hauteur comme brise-vent. Les variétés naines (60 cm) conviennent aux petits espaces. Les graines nourrissent les mésanges en hiver.",
       "depth_cm": 2,
-      "category": "fleur"
+      "category": "fleur",
+      "sowing_type": "plant"
     },
     {
       "name": "Cosmos",
@@ -3891,7 +3939,8 @@
       "harvest_tips": "Cueillez les fleurs pour prolonger la floraison. Laissez quelques capitules sécher pour récolter des graines.",
       "notes_fr": "Sol pauvre garantit une floraison abondante. Se ressème facilement l'année suivante. Idéal pour combler les espaces vides entre les légumes.",
       "depth_cm": 0.3,
-      "category": "fleur"
+      "category": "fleur",
+      "sowing_type": "seed"
     },
     {
       "name": "Sauge",
@@ -3978,7 +4027,8 @@
           "label": "Aromates",
           "notes": "Parfaite pour la zone aromates"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Origan",
@@ -4047,7 +4097,8 @@
           "label": "Aromates",
           "notes": "Parfait en zone aromates"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Estragon",
@@ -4112,7 +4163,8 @@
           "label": "Aromates",
           "notes": "Parfait en zone aromates"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Aneth",
@@ -4181,7 +4233,8 @@
           "label": "Mi-ombre",
           "notes": "Acceptable"
         }
-      ]
+      ],
+      "sowing_type": "seed"
     },
     {
       "name": "Mélisse",
@@ -4247,7 +4300,8 @@
           "label": "Aromates",
           "notes": "Convient bien"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Sarriette",
@@ -4310,7 +4364,8 @@
           "label": "Aromates",
           "notes": "Parfait"
         }
-      ]
+      ],
+      "sowing_type": "seed"
     },
     {
       "name": "Cerfeuil",
@@ -4386,7 +4441,8 @@
           "label": "Mi-ombre",
           "notes": "Zone idéale en plein air"
         }
-      ]
+      ],
+      "sowing_type": "seed"
     },
     {
       "name": "Hysope",
@@ -4449,7 +4505,8 @@
           "label": "Aromates",
           "notes": "Convient bien"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Framboise",
@@ -4517,7 +4574,8 @@
           "label": "Mi-ombre",
           "notes": "Très bien en mi-ombre"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Cassis",
@@ -4579,7 +4637,8 @@
           "label": "Soleil",
           "notes": "Bien en plein soleil avec arrosage suffisant"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Groseille",
@@ -4639,7 +4698,8 @@
           "label": "Soleil",
           "notes": "Bien mais arrosage plus fréquent"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Groseille à maquereau",
@@ -4700,7 +4760,8 @@
           "label": "Mi-ombre",
           "notes": "Zone idéale"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Myrtille",
@@ -4762,7 +4823,8 @@
           "label": "Soleil",
           "notes": "Possible mais arrosage plus important"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Raisin",
@@ -4823,7 +4885,8 @@
           "label": "Serre",
           "notes": "Possible en serre chaude"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Cerise",
@@ -4884,7 +4947,8 @@
           "label": "Mi-ombre",
           "notes": "Acceptable"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Pomme",
@@ -4949,7 +5013,8 @@
           "label": "Mi-ombre",
           "notes": "Convient bien"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     },
     {
       "name": "Poire",
@@ -5011,7 +5076,8 @@
           "label": "Mi-ombre",
           "notes": "Convient en espalier"
         }
-      ]
+      ],
+      "sowing_type": "plant"
     }
   ],
   "companion_rules": {

@@ -1,4 +1,4 @@
-# 🌱 MonJardin — Version 1.0
+# 🌱 MonJardin — Version 2.0
 
 Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite
 
@@ -22,25 +22,31 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 ![Plantation](docs/screenshot_planting.png)
 
-*Gestion des plantations par zone, conseils du mois (39 légumes en avril), progression et dates de récolte.*
+*Gestion des plantations par zone, conseils du mois (65 espèces), progression et dates de récolte.*
 
 ### Vue détail d'une zone
 
 ![Zone détail](docs/screenshot_zone_detail.png)
 
-*Plantations actives, barre d'humidité avec seuils, historique Plotly, configuration des seuils et journal des événements.*
+*5 onglets : Plantations actives, barre d'humidité avec seuils, historique Plotly, configuration des seuils et journal des événements.*
 
 ### Diagnostic Arduino Edge Control
 
 ![Arduino Edge Control](docs/screenshot_arduino.png)
 
-*Entrées analogiques SoilWatch 10, températures DS18B20, anémomètre, statut des vannes, vérin linéaire et I/O.*
+*6 onglets : Système (CPU, température MCU, SRAM, Flash), Réseau (WiFi, IP, MAC), Capteurs, Actionneurs, I/O & Bus, API brute.*
+
+### Diagnostic Raspberry Pi
+
+![Raspberry Pi](docs/screenshot_rpi.png)
+
+*3 onglets : Système (CPU, RAM, température), Stockage, Réseau (IP, débit).*
 
 ### À propos
 
 ![À propos](docs/screenshot_about.png)
 
-*Présentation du projet, fonctionnalités, matériel et stack technique.*
+*Présentation du projet, fonctionnalités v2.0, matériel et stack technique.*
 
 ### Interface mobile iPhone (PWA) — 4 écrans
 
@@ -54,7 +60,7 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
   <img src="docs/screenshot_iphone_plantation.png" alt="Plantation iPhone" width="220">
 </p>
 
-*Interface PWA installable sur iPhone — Tableau de bord, vue des zones, encyclopédie de 50 légumes et gestion des plantations.*
+*Interface PWA installable sur iPhone — Tableau de bord, vue des zones, encyclopédie de 65 espèces et gestion des plantations.*
 
 
 ## Architecture matérielle
@@ -73,6 +79,44 @@ MonJardin gère automatiquement l'arrosage et l'ouverture du toit de serre de 4 
 | 2 | Potager | Exposition plein sud |
 | 3 | Potager | Exposition partielle |
 | 4 | Fleurs | Seuils d'arrosage réduits |
+
+---
+
+## Nouveautés version 2.0
+
+### Interface redessinée
+- **Dashboard** entièrement redessiné — navigation par onglets (Zones · Météo · Récoltes · Journal)
+- **Zone détail** restructurée en 5 onglets (Plantations · Graphique · Historique · Seuils · Journal)
+- **Onglets pill** sur toutes les pages secondaires pour navigation fluide
+- Logo MonJardin harmonisé (couleur unique cohérente)
+
+### Encyclopédie étendue
+- **65 espèces** au total : légumes, herbes aromatiques, fruits, fleurs (vs 50 en v1)
+- Ajout de 9 nouveaux fruits : Fraise, Framboise, Myrtille, Groseille, Cassis, Rhubarbe, Melon, Pastèque, Figue
+- Ajout de 6 herbes aromatiques : Coriandre, Aneth, Estragon, Mélisse, Sarriette, Marjolaine
+- Filtres par **catégorie** (légumes, herbes, fruits, fleurs) et par **saison**
+
+### Gestion des plantations
+- Formulaire plantation compatible iPad/PC/iPhone (grille 6 colonnes responsive)
+- Sélecteur de légumes natif iOS (UIPickerView) restauré via `@supports (-webkit-touch-callout)`
+- Affichage corrigé des légumes plantés dans la vue Plantation
+
+### Profil météo dynamique
+- **Profil météo actif** visible dans le header en mode simulation (chip coloré)
+- Changement de profil météo avec **effet immédiat** sur l'humidité des zones (`PROFILE_MOISTURE_DELTA`)
+- Températures simulées par profil (`PROFILE_TEMP`) — plus de température fixe à 18°C
+
+### Diagnostics système étendus
+- **Page Arduino** : 6 onglets avec CPU, température MCU, SRAM/Flash, IP, MAC, WiFi RSSI
+- **Page Raspberry Pi** : 3 onglets Système · Stockage · Réseau
+- Tailles d'affichage uniformisées sur toutes les pages de diagnostic
+
+### Alertes email
+- Notifications email paramétrables pour les événements d'arrosage et alertes
+- Gestion des destinataires dans l'interface admin
+
+### Mise à jour simplifiée
+- Script `update_pi.sh` amélioré : détection automatique du repo, backup DB, compatible PEP 668 (Raspberry Pi OS Bookworm)
 
 ---
 
@@ -104,13 +148,13 @@ MonJardin/
 
 ### Interface web (PWA)
 - Tableau de bord · Graphiques 30 jours · Journal des événements
-- Encyclopédie de 50 légumes et fleurs (région suisse)
+- Encyclopédie de **65 espèces** (légumes, herbes, fruits, fleurs — région suisse)
 - Gestion des plantations par zone avec progression et récolte
 - Page Conseils — carrousel, compagnonnage, calendrier saisonnier
-- Diagnostic Arduino et Raspberry Pi en temps réel
+- Diagnostic Arduino (6 onglets) et Raspberry Pi (3 onglets) en temps réel
 - Paramètres du jardin configurables (nom, lieu, propriétaire)
 - **Mode sombre/clair** · **Installable sur iPhone/iPad** (PWA)
-- Sidebar rétractable · Menu hamburger mobile
+- Sidebar rétractable · Menu hamburger mobile · Navigation onglets pill
 
 ### Météo
 - Open-Meteo (`GARDEN_LATITUDE / GARDEN_LONGITUDE`)
@@ -119,6 +163,7 @@ MonJardin/
 ### Simulation
 - Émulateur Arduino (`localhost:8081`) — physique réaliste par zone
 - 6 profils météo (printemps, été chaud, orageux, automne, gel, canicule)
+- **Profil météo affiché dans le header** avec effet immédiat sur humidité et température
 - Historique démo 30 jours généré automatiquement
 - Accélération temps (`SIMULATION_SPEED`)
 
@@ -134,7 +179,8 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Ouvrir **http://localhost:5000**
+Ouvrir **http://localhost:5001**  
+Login par défaut : `admin` / `admin123`
 
 > En mode simulation (défaut), un émulateur Arduino démarre automatiquement sur `:8081`.
 
@@ -146,10 +192,26 @@ Ouvrir **http://localhost:5000**
 | `ARDUINO_API_URL` | `http://192.168.1.100:80/api` | IP de l'Arduino réel |
 | `SIMULATION_SPEED` | `1` | Accélérateur de temps (ex: `60`) |
 | `WEATHER_PROFILE` | `printemps_normal` | Profil météo simulé |
-| `FLASK_PORT` | `5000` | Port de l'application |
+| `FLASK_PORT` | `5001` | Port de l'application |
 | `GARDEN_NAME` | `MonJardin` | Nom affiché dans l'interface |
 | `GARDEN_LOCATION` | `Vullierens · Vaud` | Lieu du jardin |
 | `GARDEN_OWNER` | `Patrick Pinard` | Nom du propriétaire |
+
+---
+
+## Mise à jour sur Raspberry Pi
+
+```bash
+# Depuis n'importe quel répertoire sur le Pi
+bash ~/MonJardin/update_pi.sh --restart
+```
+
+Le script :
+1. Détecte automatiquement le repo MonJardin
+2. Sauvegarde la base de données (5 derniers backups conservés)
+3. `git pull origin v2.0`
+4. Met à jour les dépendances Python (compatible Bookworm / PEP 668)
+5. Redémarre l'application (systemd ou manuel)
 
 ---
 
@@ -217,7 +279,7 @@ Micro-ordinateur exécutant le serveur Flask, le moteur de décision et l'interf
 | RAM | 4 GB LPDDR4X |
 | Stockage | microSD (SQLite) |
 | Connectivité | WiFi 802.11ac · Gigabit Ethernet |
-| OS | Raspberry Pi OS Lite (64-bit) |
+| OS | Raspberry Pi OS Lite 64-bit (Bookworm) |
 | Alimentation | 5V/5A USB-C |
 
 🔗 [Documentation officielle Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/)
@@ -228,10 +290,10 @@ Micro-ordinateur exécutant le serveur Flask, le moteur de décision et l'interf
 
 - **Backend** : Python 3.10 · Flask · SQLAlchemy · APScheduler
 - **Frontend** : Jinja2 · CSS custom (Apple design system) · Plotly.js · Bootstrap Icons
-- **Base de données** : SQLite
+- **Base de données** : SQLite (WAL)
 - **Firmware** : C++ · PlatformIO · ArduinoJson
 - **PWA** : Service Worker · Web App Manifest · iOS safe-area
 
 ---
 
-*Version 1.0 · Avril 2026 · Patrick Pinard*
+*Version 2.0 · Avril 2026 · Patrick Pinard*
