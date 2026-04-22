@@ -484,6 +484,45 @@ def settings_garden():
     return redirect("/settings")
 
 
+@dashboard_bp.post("/settings/sim_profile")
+def settings_sim_profile():
+    """Sauvegarde le profil météo dans .env ET l'applique à l'émulateur en live."""
+    import requests as _req
+    from flask import jsonify as _json
+
+    VALID_PROFILES = {
+        "printemps_normal", "ete_chaud", "ete_orageux",
+        "automne_humide", "gel_tardif", "canicule",
+    }
+    if request.is_json:
+        profile = (request.get_json(silent=True) or {}).get("profile", "")
+    else:
+        profile = request.form.get("profile", "")
+    if not isinstance(profile, str) or profile not in VALID_PROFILES:
+        return _json({"ok": False, "error": "Profil inconnu"}), 400
+
+    # 1. Persistance dans .env
+    _update_env_var("WEATHER_PROFILE", profile)
+    current_app.config["WEATHER_PROFILE"] = profile
+
+    # 2. Application immédiate à l'émulateur (in-memory)
+    emulator_url = f"http://127.0.0.1:{current_app.config.get('EMULATOR_PORT', 8081)}/admin/inject_failure"
+    try:
+        _req.post(emulator_url, json={"weather_profile": profile}, timeout=2)
+    except Exception as e:
+        log.warning("Impossible de notifier l'émulateur pour le profil : %s", e)
+
+    # 3. Mettre à jour le WeatherService si possible
+    ws = current_app.extensions.get("weather_service")
+    if ws and hasattr(ws, "_sim") and ws._sim is not None:
+        try:
+            ws._sim.set_profile(profile)
+        except Exception:
+            pass
+
+    return _json({"ok": True, "profile": profile})
+
+
 @dashboard_bp.post("/settings/sim_speed")
 def settings_sim_speed():
     allowed = {1, 5, 10, 20, 50, 100}
@@ -602,6 +641,7 @@ def admin_page():
         weather=weather,
         sim_speed=sim_speed,
         sim_profiles=sim_profiles,
+        current_weather_profile=current_app.config.get("WEATHER_PROFILE", "printemps_normal"),
     )
 
 

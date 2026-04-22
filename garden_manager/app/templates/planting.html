@@ -2,8 +2,9 @@
 {% block title %}Plantation{% endblock %}
 
 {% block content %}
-{% set sowing_type_map = sowing_type_map if sowing_type_map is defined else {} %}
-{% set zone_capacity   = zone_capacity   if zone_capacity   is defined else {} %}
+{% set sowing_type_map  = sowing_type_map  if sowing_type_map  is defined else {} %}
+{% set zone_capacity    = zone_capacity    if zone_capacity    is defined else {} %}
+{% set display_by_zone  = display_by_zone  if display_by_zone  is defined else {} %}
 <div class="page-header">
   <div class="page-header-row">
     <div>

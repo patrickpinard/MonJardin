@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <h1 class="page-title">À propos</h1>
-      <div class="page-subtitle">MonJardin · Version 1.0 · Avril 2026</div>
+      <div class="page-subtitle">MonJardin · Version 2.0 · Avril 2026</div>
     </div>
   </div>
 </div>
@@ -30,7 +30,7 @@
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
       <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:4px;">Version</div>
-        <div style="font-size:13px;font-weight:600;">1.0</div>
+        <div style="font-size:13px;font-weight:600;">2.0</div>
       </div>
       <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:4px;">Créateur</div>
@@ -43,9 +43,77 @@
     </div>
   </div>
 
+  <!-- Nouveautés v2.0 -->
+  <div class="card">
+    <div class="card-title"><i class="bi bi-stars"></i> Nouveautés version 2.0</div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-grid-1x2-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Tableau de bord redessiné</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Deux cartes distinctes en haut : statut global du jardin et prochaines récoltes. Indicateurs visuels améliorés par zone. Boutons d'arrosage direct sur les cartes.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(100,181,246,.1);color:#64B5F6;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-collection-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Encyclopédie des plantes — 65 espèces</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Base de données enrichie avec légumes, fruits, herbes aromatiques et fleurs. Filtres par catégorie et saison. Fiches détaillées avec compagnonnage, besoins en eau et calendrier suisse.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,214,10,.1);color:#FFD60A;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Gestion des plantations améliorée</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Distinction semis en ligne (graines) vs plants (repiquage). Ajout de plusieurs plants en une seule opération avec indication de capacité de surface. Tri alphabétique et regroupement par type.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,159,10,.1);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-layout-tabs"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Navigation par onglets pill</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Tous les écrans multi-sections (zones, Arduino, Raspberry Pi, journal) utilisent des onglets arrondis harmonisés. Chaque domaine est accessible directement sans défilement.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(191,90,242,.1);color:#BF5AF2;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-cloud-lightning-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Profil météo en temps réel</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Le profil de simulation météo actif s'affiche dans l'en-tête. Changement de profil persistant (sauvegardé dans .env) et appliqué immédiatement à l'émulateur sans redémarrage.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-bell-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Alertes et notifications enrichies</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Nouveaux types d'alertes : gel imminent, sécheresse zone, capteur hors ligne. Gestion des destinataires par type d'alerte depuis l'écran d'administration.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Ce que fait l'app -->
   <div class="card">
-    <div class="card-title"><i class="bi bi-stars"></i> Ce que fait l'application</div>
+    <div class="card-title"><i class="bi bi-check2-circle"></i> Fonctionnalités principales</div>
     <div style="display:flex;flex-direction:column;gap:0;">
 
       <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">

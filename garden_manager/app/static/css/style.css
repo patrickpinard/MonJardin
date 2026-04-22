@@ -1120,6 +1120,11 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   background: rgba(255,159,10,.09); border: 1px solid rgba(255,159,10,.2);
   border-radius: var(--r-pill); padding: 2px 9px;
 }
+.sim-profile-chip {
+  margin-left: 4px; font-size: 10px; color: var(--text-tertiary);
+  background: rgba(255,255,255,.05); border-radius: var(--r-pill);
+  padding: 1px 7px; border: 1px solid var(--border);
+}
 .top-bar-spacer { flex: 1; }
 
 /* Notification bell */
