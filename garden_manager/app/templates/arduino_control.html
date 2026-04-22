@@ -62,7 +62,7 @@
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Température MCU</div>
-            <div class="diag-val-lg" id="ard-mcu-temp">—</div>
+            <div class="diag-val" id="ard-mcu-temp">—</div>
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Firmware</div>
@@ -70,7 +70,7 @@
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Uptime</div>
-            <div class="diag-val-lg" id="ard-uptime">—</div>
+            <div class="diag-val" id="ard-uptime">—</div>
           </div>
         </div>
       </div>
@@ -82,11 +82,11 @@
         <div style="display:flex;gap:14px;flex-wrap:wrap;">
           <div class="diag-stat-sm">
             <div class="diag-label">Utilisée</div>
-            <div class="diag-val-lg" id="ard-sram-used">—</div>
+            <div class="diag-val" id="ard-sram-used">—</div>
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Libre</div>
-            <div class="diag-val-lg" id="ard-sram-free">—</div>
+            <div class="diag-val" id="ard-sram-free">—</div>
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Total</div>
@@ -111,11 +111,11 @@
         <div style="display:flex;gap:14px;flex-wrap:wrap;">
           <div class="diag-stat-sm">
             <div class="diag-label">Sketch utilisé</div>
-            <div class="diag-val-lg" id="ard-flash-used">—</div>
+            <div class="diag-val" id="ard-flash-used">—</div>
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Disponible</div>
-            <div class="diag-val-lg" id="ard-flash-free">—</div>
+            <div class="diag-val" id="ard-flash-free">—</div>
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Capacité totale</div>
@@ -145,7 +145,7 @@
         <div style="display:flex;gap:14px;flex-wrap:wrap;">
           <div class="diag-stat-sm">
             <div class="diag-label">Adresse IP</div>
-            <div class="diag-val-lg" id="ard-ip">—</div>
+            <div class="diag-val" id="ard-ip">—</div>
           </div>
           <div class="diag-stat-sm">
             <div class="diag-label">Adresse MAC</div>
@@ -222,7 +222,7 @@
             </div>
           </div>
           <div class="diag-ch-body">
-            <div class="diag-stat-sm"><div class="diag-label">Humidité</div><div class="diag-val-lg" id="adc-pct-{{ z }}">—</div></div>
+            <div class="diag-stat-sm"><div class="diag-label">Humidité</div><div class="diag-val" id="adc-pct-{{ z }}">—</div></div>
             <div class="diag-stat-sm"><div class="diag-label">ADC brut</div><div class="diag-val" id="adc-raw-{{ z }}">—</div></div>
             <div class="diag-stat-sm"><div class="diag-label">Tension</div><div class="diag-val" id="adc-v-{{ z }}">—</div></div>
             <div class="diag-bar-wrap">
@@ -244,8 +244,8 @@
           </div>
           <div class="diag-ch-body">
             <div style="display:flex;align-items:baseline;gap:5px;">
-              <div class="diag-val-lg" id="temp-ext">—</div>
-              <span class="diag-val-lg" style="color:var(--text-secondary);">°C</span>
+              <div class="diag-val" id="temp-ext">—</div>
+              <span class="diag-val" style="color:var(--text-secondary);">°C</span>
             </div>
           </div>
         </div>
@@ -256,8 +256,8 @@
           </div>
           <div class="diag-ch-body">
             <div style="display:flex;align-items:baseline;gap:5px;">
-              <div class="diag-val-lg" id="temp-serre">—</div>
-              <span class="diag-val-lg" style="color:var(--text-secondary);">°C</span>
+              <div class="diag-val" id="temp-serre">—</div>
+              <span class="diag-val" style="color:var(--text-secondary);">°C</span>
             </div>
           </div>
         </div>
@@ -268,8 +268,8 @@
           </div>
           <div class="diag-ch-body">
             <div style="display:flex;align-items:baseline;gap:5px;">
-              <div class="diag-val-lg" id="wind-kmh">—</div>
-              <span class="diag-val-lg" style="color:var(--text-secondary);">km/h</span>
+              <div class="diag-val" id="wind-kmh">—</div>
+              <span class="diag-val" style="color:var(--text-secondary);">km/h</span>
             </div>
             <div class="diag-bar-wrap" style="margin-top:8px;">
               <div class="diag-bar-track"><div class="diag-bar-fill ok" id="wind-bar" style="width:0%"></div></div>
@@ -318,7 +318,7 @@
             <div><div class="diag-ch-name">Vérin H-bridge</div><div class="diag-ch-sub">IN1/IN2 · fins de course D6/D7</div></div>
           </div>
           <div class="diag-ch-body">
-            <div class="diag-stat-sm"><div class="diag-label">Position</div><div class="diag-val-lg" id="roof-pos">—</div></div>
+            <div class="diag-stat-sm"><div class="diag-label">Position</div><div class="diag-val" id="roof-pos">—</div></div>
             <div class="diag-stat-sm"><div class="diag-label">Fin de course ouvert</div><div class="diag-val" id="roof-endstop-open">—</div></div>
             <div class="diag-stat-sm"><div class="diag-label">Fin de course fermé</div><div class="diag-val" id="roof-endstop-close">—</div></div>
             <div style="display:flex;gap:6px;margin-top:10px;">

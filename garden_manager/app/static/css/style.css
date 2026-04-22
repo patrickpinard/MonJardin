@@ -1539,9 +1539,9 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 
 /* ── Diagnostic pages (Arduino / RPi) ────────────────── */
 .diag-stat { display:flex; flex-direction:column; gap:4px; min-width:100px; }
-.diag-label { font-size:11px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
-.diag-val { font-size:14px; font-weight:600; color:var(--text-primary); }
-.diag-val-lg { font-size:28px; font-weight:700; color:var(--text-primary); line-height:1; }
+.diag-label { font-size:10px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+.diag-val { font-size:15px; font-weight:700; color:var(--text-primary); }
+.diag-val-lg { font-size:15px; font-weight:700; color:var(--text-primary); }
 .diag-stat-sm { display:flex; flex-direction:column; gap:2px; }
 
 .diag-grid {
