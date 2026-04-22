@@ -100,13 +100,14 @@ fi
 
 # ── Mise à jour des dépendances Python ──────────────────────
 section "Dépendances Python"
+PIP="$VENV/bin/pip"
 if [[ ! -d "$VENV" ]]; then
   warn "Environnement virtuel absent — création…"
   python3 -m venv "$VENV"
 fi
-source "$VENV/bin/activate"
-pip install --quiet --upgrade pip
-pip install --quiet -r "$APP_DIR/requirements.txt"
+# Appel direct au pip du venv (contourne PEP 668 / Bookworm "externally-managed-environment")
+"$PIP" install --quiet --upgrade pip
+"$PIP" install --quiet -r "$APP_DIR/requirements.txt"
 info "Dépendances à jour"
 
 # ── Création du dossier logs ─────────────────────────────────
@@ -141,7 +142,7 @@ restart_manual() {
   pkill -f "python3 run.py" 2>/dev/null && sleep 1 || true
   info "Démarrage de l'application…"
   cd "$APP_DIR"
-  nohup python run.py > "$LOG_DIR/app.log" 2>&1 &
+  nohup "$VENV/bin/python" run.py > "$LOG_DIR/app.log" 2>&1 &
   NEW_PID=$!
   sleep 3
   if kill -0 "$NEW_PID" 2>/dev/null; then
