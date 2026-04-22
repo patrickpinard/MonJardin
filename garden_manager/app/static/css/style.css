@@ -926,12 +926,24 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 
 /* ── Planting form responsive ─────────────────────────── */
 .planting-form {
-  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 80px 1fr 1fr auto;
   gap: 10px; align-items: end; margin-bottom: 16px;
 }
-@media (max-width: 600px) {
-  .planting-form { grid-template-columns: 1fr 1fr; }
-  .planting-form > div:first-child { grid-column: 1 / -1; }
+/* iPad (600–900px) : 2 colonnes, légume pleine largeur */
+@media (max-width: 900px) {
+  .planting-form {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .planting-form > div:first-child   { grid-column: 1 / -1; }
+  .planting-form > div:last-child    { grid-column: 1 / -1; }
+  .planting-form > div:last-child button { width: 100%; justify-content: center; }
+}
+/* Mobile (<480px) : colonne unique */
+@media (max-width: 480px) {
+  .planting-form { grid-template-columns: 1fr; }
+  .planting-form > div { grid-column: 1; }
 }
 
 /* ── Planting list wrapper ────────────────────────────── */
@@ -1000,7 +1012,9 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   border: 1px solid var(--border-md); border-radius: var(--r-md);
   color: var(--text-primary); padding: 10px 13px;
   font-size: 14px; font-family: var(--font);
-  transition: border-color var(--t), box-shadow var(--t); appearance: none;
+  transition: border-color var(--t), box-shadow var(--t);
+  -webkit-appearance: none; appearance: none;
+  min-height: 44px; /* touch target iOS */
 }
 .form-control:focus, .form-select:focus {
   outline: none; border-color: var(--green);
@@ -1009,6 +1023,15 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .form-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.35)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px;
+  cursor: pointer;
+}
+/* iOS Safari : restaure le picker natif sur mobile/tablette */
+@supports (-webkit-touch-callout: none) {
+  .form-select {
+    -webkit-appearance: auto;
+    background-image: none;
+    padding-right: 13px;
+  }
 }
 .form-select option { background: #2c2c2e; }
 .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
