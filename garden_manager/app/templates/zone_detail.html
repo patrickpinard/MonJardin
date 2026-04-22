@@ -916,18 +916,53 @@ function plotlyTheme() {
 }
 
 async function loadZoneChart(zoneId, hours) {
-  const resp = await fetch(`/api/data/history?zone_id=${zoneId}&hours=${hours}`);
-  const data = await resp.json();
+  const [histResp, irrigResp] = await Promise.all([
+    fetch(`/api/data/history?zone_id=${zoneId}&hours=${hours}`),
+    fetch(`/api/data/irrigation_events?hours=${hours}`),
+  ]);
+  const data     = await histResp.json();
+  const irrigData = await irrigResp.json();
+
   const readings = data.zones[zoneId] || [];
   const C = {1:'#30d158', 2:'#8BC34A', 3:'#0a84ff', 4:'#bf5af2'};
-  Plotly.react('zoneChart', [
-    {x:readings.map(r=>r.timestamp), y:readings.map(r=>r.soil_moisture_pct),
-     type:'scatter', mode:'lines', name:'Humidité (%)', line:{color:C[zoneId]||'#30d158', width:2.5}},
-    {x:readings.map(r=>r.timestamp), y:readings.map(r=>r.temperature_c),
-     type:'scatter', mode:'lines', name:'Temp (°C)', line:{color:'#ff9f0a', width:1.5, dash:'dot'}, yaxis:'y2'},
-  ], {...plotlyTheme(),
-    yaxis:{...plotlyTheme().yaxis, title:'Humidité (%)', range:[0,100]},
-    yaxis2:{title:'Temp (°C)', overlaying:'y', side:'right', showgrid:false},
+
+  // Build 0/1 step signal from open/close events
+  const zEvents = (irrigData.events || [])
+    .filter(e => e.zone_id === zoneId)
+    .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+  const tStart = new Date(Date.now() - hours * 3600000).toISOString();
+  const tEnd   = readings.length ? readings[readings.length - 1].timestamp : new Date().toISOString();
+  const irrigX = [tStart], irrigY = [0];
+  let vState = 0;
+  for (const ev of zEvents) {
+    irrigX.push(ev.timestamp); irrigY.push(vState);
+    vState = ev.action === 'open' ? 1 : 0;
+    irrigX.push(ev.timestamp); irrigY.push(vState);
+  }
+  irrigX.push(tEnd); irrigY.push(vState);
+
+  const traces = [
+    {x: readings.map(r=>r.timestamp), y: readings.map(r=>r.soil_moisture_pct),
+     type:'scatter', mode:'lines', name:'Humidité (%)',
+     line:{color:C[zoneId]||'#30d158', width:2.5}},
+    {x: readings.map(r=>r.timestamp), y: readings.map(r=>r.temperature_c),
+     type:'scatter', mode:'lines', name:'Temp (°C)',
+     line:{color:'#ff9f0a', width:1.5, dash:'dot'}, yaxis:'y2'},
+    {x: irrigX, y: irrigY,
+     type:'scatter', mode:'lines', name:'Arrosage',
+     line:{color:'rgba(10,132,255,.5)', width:1},
+     fill:'tozeroy', fillcolor:'rgba(10,132,255,.15)',
+     yaxis:'y3'},
+  ];
+
+  Plotly.react('zoneChart', traces, {
+    ...plotlyTheme(),
+    yaxis:  {...plotlyTheme().yaxis, title:'Humidité (%)', range:[0,100]},
+    yaxis2: {...plotlyTheme().yaxis, title:'Temp (°C)', overlaying:'y', side:'right', showgrid:false},
+    yaxis3: {overlaying:'y', side:'left', range:[0,5],
+             showticklabels:false, showgrid:false, zeroline:false,
+             showline:false, ticks:''},
   }, {responsive:true, displayModeBar:false});
 }
 
