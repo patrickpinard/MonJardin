@@ -97,6 +97,16 @@ else
   info "Code mis à jour"
 fi
 
+# ── Mise à jour des dépendances Python ──────────────────────
+section "Dépendances Python"
+VENV="$APP_DIR/venv"
+if [[ ! -d "$VENV" ]]; then
+  warn "Environnement virtuel absent — création…"
+  python3 -m venv --system-site-packages "$VENV"
+fi
+"$VENV/bin/pip" install --quiet -r "$APP_DIR/requirements.txt"
+info "Dépendances à jour"
+
 # ── Création du dossier logs ─────────────────────────────────
 mkdir -p "$LOG_DIR"
 
