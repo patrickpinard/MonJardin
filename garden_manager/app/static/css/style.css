@@ -17,9 +17,11 @@
   --text-tertiary:  rgba(255,255,255,.30);
   --text-disabled:  rgba(255,255,255,.18);
 
-  /* iOS accent palette */
-  --green:   #30d158;
-  --green-d: #25a244;
+  /* Brand (logo green) + iOS accent palette */
+  --brand:   #28a24e;   /* logo gradient bottom — couleur identité MonJardin */
+  --brand-d: #1d6b38;   /* logo gradient top — version foncée */
+  --green:   #30d158;   /* iOS system green — états OK, humidité normale */
+  --green-d: #28a24e;   /* aligned with --brand */
   --blue:    #0a84ff;
   --orange:  #ff9f0a;
   --red:     #ff453a;
@@ -645,7 +647,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   opacity: .35; cursor: not-allowed; pointer-events: none;
   transform: none; filter: grayscale(.5);
 }
-.btn-primary   { background: var(--green); color: #000; }
+.btn-primary   { background: var(--brand); color: #fff; }
 .btn-secondary { background: var(--bg-secondary); color: var(--text-primary);
   border: 1px solid var(--border-md); }
 .btn-danger    { background: rgba(255,69,58,.12);  color: var(--red);
@@ -841,22 +843,39 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 /* ── Charts ───────────────────────────────────────────── */
 .chart-wrap { width: 100%; min-height: 300px; }
 .time-tabs {
-  display: flex; gap: 3px;
-  background: var(--bg-secondary); padding: 3px; border-radius: var(--r-md);
+  display: flex; gap: 4px;
+  background: var(--bg-secondary); padding: 4px; border-radius: var(--r-md);
   width: fit-content;
 }
 .time-tab {
-  padding: 6px 14px; border-radius: calc(var(--r-md) - 1px);
-  font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 13px; border-radius: var(--r-sm);
+  font-size: 12px; font-weight: 600;
   color: var(--text-secondary); background: transparent;
   border: none; font-family: var(--font); cursor: pointer;
   transition: all var(--t); white-space: nowrap;
 }
-.time-tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
-.time-tab:hover:not(.active) { color: var(--text-primary); }
+.time-tab .bi { font-size: 14px; transition: color var(--t); }
+/* Icon identity colors — always visible */
+.time-tab[data-tab="temps-reel"] .bi  { color: var(--green); }
+.time-tab[data-tab="graphiques"]  .bi { color: var(--blue); }
+.time-tab[data-tab="plants"]      .bi { color: #28a24e; }
+.time-tab[data-tab="evenements"]  .bi { color: var(--orange); }
+.time-tab[data-tab="config"]      .bi { color: var(--text-tertiary); }
+/* Active pill — tinted per tab */
+.time-tab.active[data-tab="temps-reel"]  { background:rgba(48,209,88,.13);  color:var(--green); }
+.time-tab.active[data-tab="graphiques"]  { background:rgba(10,132,255,.13); color:var(--blue); }
+.time-tab.active[data-tab="plants"]      { background:rgba(40,162,78,.13);  color:#28a24e; }
+.time-tab.active[data-tab="evenements"]  { background:rgba(255,159,10,.13); color:var(--orange); }
+.time-tab.active[data-tab="config"]      { background:var(--bg-tertiary);   color:var(--text-primary); }
+/* Active icon = full opacity */
+.time-tab.active .bi { opacity: 1; }
+.time-tab:hover:not(.active) { background: var(--bg-hover); color: var(--text-primary); }
 @media (max-width: 600px) {
-  .time-tabs { width: 100%; justify-content: space-between; }
-  .time-tab { padding: 7px 0; flex: 1; text-align: center; font-size: 18px; }
+  .time-tabs { width: 100%; justify-content: space-between; gap: 2px; }
+  .time-tab { flex: 1; flex-direction: column; justify-content: center; gap: 3px;
+              padding: 8px 4px; text-align: center; }
+  .time-tab .bi { font-size: 20px; }
   .time-tab .tab-label { display: none; }
 }
 

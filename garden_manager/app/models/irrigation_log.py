@@ -53,7 +53,7 @@ class JournalEntry(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False, index=True)
-    level = db.Column(db.String(8), default="info", index=True)  # info | warning | error
+    level = db.Column(db.String(8), default="info", index=True)  # info | warning | error | danger
     message = db.Column(db.Text, nullable=False)
     details = db.Column(db.Text, nullable=True)  # JSON optionnel
 

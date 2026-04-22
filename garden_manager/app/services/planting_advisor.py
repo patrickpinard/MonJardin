@@ -64,7 +64,9 @@ class PlantingAdvisor:
                 "harvest_months": veg.get("harvest_months_ch", []),
                 "_sort": (month_position, difficulty_score),
             })
-        advice.sort(key=lambda x: x.pop("_sort"))
+        advice.sort(key=lambda x: x["_sort"])
+        for d in advice:
+            d.pop("_sort", None)
         return advice[:limit]
 
     def get_planting_advice(self, zone_id: int, current_month: int) -> list[dict]:

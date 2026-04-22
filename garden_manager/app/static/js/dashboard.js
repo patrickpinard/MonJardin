@@ -108,7 +108,7 @@ function updateZoneCards(data) {
   // Vent mesuré par l'Arduino
   const windEl = document.getElementById('dash-wind-arduino');
   if (windEl && data.wind_speed_kmh != null) {
-    windEl.textContent = data.wind_speed_kmh.toFixed(1) + 'km/h';
+    windEl.textContent = data.wind_speed_kmh.toFixed(1) + ' km/h';
   }
 }
 

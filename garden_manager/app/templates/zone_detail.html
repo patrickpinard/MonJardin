@@ -55,20 +55,20 @@
 
   <!-- ── TABS ── -->
   <div class="time-tabs" style="margin-bottom:16px;" id="zone-tab-bar">
-    <button class="time-tab active" onclick="switchTab(this,'temps-reel')">
+    <button class="time-tab active" data-tab="temps-reel" onclick="switchTab(this,'temps-reel')">
       <i class="bi bi-speedometer2"></i><span class="tab-label"> Temps réel</span>
     </button>
-    <button class="time-tab" onclick="switchTab(this,'graphiques')">
-      <i class="bi bi-graph-up"></i><span class="tab-label"> Graphiques</span>
+    <button class="time-tab" data-tab="graphiques" onclick="switchTab(this,'graphiques')">
+      <i class="bi bi-graph-up-arrow"></i><span class="tab-label"> Graphiques</span>
     </button>
-    <button class="time-tab" onclick="switchTab(this,'plants')">
-      <i class="bi bi-flower1"></i><span class="tab-label"> Plants</span>
+    <button class="time-tab" data-tab="plants" onclick="switchTab(this,'plants')">
+      <i class="bi bi-flower2"></i><span class="tab-label"> Plants</span>
     </button>
-    <button class="time-tab" onclick="switchTab(this,'evenements')">
+    <button class="time-tab" data-tab="evenements" onclick="switchTab(this,'evenements')">
       <i class="bi bi-clock-history"></i><span class="tab-label"> Évènements</span>
     </button>
-    <button class="time-tab" onclick="switchTab(this,'config')">
-      <i class="bi bi-gear-fill"></i><span class="tab-label"> Config</span>
+    <button class="time-tab" data-tab="config" onclick="switchTab(this,'config')">
+      <i class="bi bi-sliders"></i><span class="tab-label"> Config</span>
     </button>
   </div>
 
@@ -872,8 +872,6 @@
 
 {% block scripts %}
 {% set plant_info = plant_info if plant_info is defined else {} %}
-{% set _zone_length = zone.length_m | default(2.0) %}
-{% set _zone_width  = zone.width_m  | default(1.0) %}
 <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
 <script>
 // ── Tab switching ───────────────────────────────────────
