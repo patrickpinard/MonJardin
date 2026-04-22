@@ -633,23 +633,34 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .zc-last-irr .bi { font-size: 10px; }
 
-/* ── Garden status banner (P1) ───────────────────────────── */
-.garden-status-banner {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; border-radius: var(--r-lg);
-  border: 1.5px solid var(--border);
-  background: var(--bg-secondary);
+/* ── Dashboard top two-card grid ─────────────────────────── */
+.dash-top-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
 }
-.gsb-alerte { border-color: rgba(255,69,58,.35); background: rgba(255,69,58,.06); }
-.gsb-attention { border-color: rgba(255,159,10,.35); background: rgba(255,159,10,.06); }
-.gsb-ok { border-color: rgba(48,209,88,.25); background: rgba(48,209,88,.05); }
-.garden-status-banner .gsb-icon { font-size: 22px; flex-shrink: 0; }
-.gsb-body { flex: 1; min-width: 0; }
-.gsb-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.gsb-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
-.gsb-harvest { text-align: right; flex-shrink: 0; }
-.gsb-harvest-label { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .4px; }
-.gsb-harvest-val { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+@media (max-width: 480px) {
+  .dash-top-grid { grid-template-columns: 1fr; }
+}
+.dtc {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+}
+.dtc-icon-wrap { flex-shrink: 0; }
+.dtc-icon { font-size: 28px; }
+.dtc-icon-ok       { color: var(--green); }
+.dtc-icon-attention { color: var(--orange); }
+.dtc-icon-alerte   { color: var(--red); }
+.dtc-body  { flex: 1; min-width: 0; }
+.dtc-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+             text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+.dtc-title { font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.dtc-sub   { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+.dtc-more  { font-size: 11px; color: var(--blue); margin-top: 4px; cursor: pointer; }
+.dtc-more:hover { text-decoration: underline; }
+/* Status tints */
+.dtc-status.dtc-ok        { border-color: rgba(48,209,88,.25); background: rgba(48,209,88,.05); }
+.dtc-status.dtc-attention { border-color: rgba(255,159,10,.3); background: rgba(255,159,10,.06); }
+.dtc-status.dtc-alerte    { border-color: rgba(255,69,58,.3);  background: rgba(255,69,58,.06); }
+.dtc-harvest              { border-color: rgba(255,159,10,.2); }
 
 /* ── Zone actions ─────────────────────────────────────── */
 .zone-actions {
@@ -923,14 +934,51 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   .planting-form > div:first-child { grid-column: 1 / -1; }
 }
 
-/* ── Planting cards ───────────────────────────────────── */
+/* ── Planting list wrapper ────────────────────────────── */
+.planting-list { display: flex; flex-direction: column; gap: 7px; }
+
+/* ── Seed row card (semis en lignes) ─────────────────── */
+.seed-row-card {
+  border: 1.5px solid rgba(40,162,78,.3);
+  border-left: 4px solid var(--brand);
+  border-radius: var(--r-md);
+  background: rgba(40,162,78,.05);
+  overflow: hidden;
+}
+.src-stripe {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+}
+.src-emoji { font-size: 24px; flex-shrink: 0; line-height: 1;
+             font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
+.src-info  { flex: 1; min-width: 0; }
+.src-name  { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+.src-variety { font-size: 11px; color: var(--text-tertiary); margin-left: 5px; }
+.src-count { display: inline-block; font-size: 10px; font-weight: 700;
+             background: rgba(40,162,78,.15); color: var(--brand);
+             border-radius: var(--r-pill); padding: 1px 7px; margin-left: 6px; }
+.src-meta  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.src-days  { font-size: 12px; font-weight: 700; color: var(--text-tertiary); }
+.src-days-late { color: var(--red); }
+.src-days-soon { color: var(--orange); }
+.src-actions { display: flex; gap: 4px; }
+.src-progress {
+  height: 5px; background: var(--bg-tertiary);
+  margin: 0 12px 0 12px; border-radius: 3px; overflow: hidden;
+}
+.src-progress-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+.src-progress-label {
+  font-size: 10px; color: var(--text-tertiary);
+  padding: 3px 12px 8px; text-align: right;
+}
+
+/* ── Plant cards (repiquage individuel) ──────────────── */
 .planting-card {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px;
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: var(--r-md);
 }
-.planting-card + .planting-card { margin-top: 6px; }
 .pc-emoji { font-size: 28px; flex-shrink: 0; line-height: 1; font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
 .pc-main { flex: 1; min-width: 0; }
 .pc-name { font-weight: 700; font-size: 13px; }

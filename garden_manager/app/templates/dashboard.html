@@ -22,41 +22,64 @@
 
 <div class="page-body">
 
-  <!-- ── Bannière statut global jardin (P1) ── -->
-  {% if global_status in ('attention', 'alerte') %}
-  <div class="garden-status-banner gsb-{{ global_status }} mb-3">
-    <div class="gsb-icon">
-      {% if global_status == 'alerte' %}<i class="bi bi-exclamation-octagon-fill" style="color:var(--red);"></i>
-      {% else %}<i class="bi bi-exclamation-triangle-fill" style="color:var(--orange);"></i>{% endif %}
-    </div>
-    <div class="gsb-body">
-      <div class="gsb-title">
-        {% if global_status == 'alerte' %}Alerte — arrosage requis{% else %}Attention — humidité basse{% endif %}
+  <!-- ── Deux cartes en haut du dashboard ── -->
+  <div class="dash-top-grid mb-3">
+
+    <!-- Carte 1 : Statut global jardin -->
+    <div class="card dtc dtc-status dtc-{{ global_status }}">
+      <div class="dtc-icon-wrap">
+        {% if global_status == 'alerte' %}
+          <i class="bi bi-exclamation-octagon-fill dtc-icon dtc-icon-alerte"></i>
+        {% elif global_status == 'attention' %}
+          <i class="bi bi-exclamation-triangle-fill dtc-icon dtc-icon-attention"></i>
+        {% else %}
+          <i class="bi bi-check-circle-fill dtc-icon dtc-icon-ok"></i>
+        {% endif %}
       </div>
-      {% if driest_zd %}
-      <div class="gsb-sub">Zone la plus sèche : <strong>{{ driest_zd.zone.name }}</strong> — {{ driest_zd.moisture }}%</div>
-      {% endif %}
+      <div class="dtc-body">
+        <div class="dtc-label">État du jardin</div>
+        <div class="dtc-title">
+          {% if global_status == 'alerte' %}Alerte sécheresse
+          {% elif global_status == 'attention' %}Humidité basse
+          {% else %}Tout va bien{% endif %}
+        </div>
+        {% if driest_zd and global_status != 'ok' %}
+        <div class="dtc-sub">Zone la plus sèche : <strong>{{ driest_zd.zone.name }}</strong> — {{ driest_zd.moisture }}%</div>
+        {% else %}
+        <div class="dtc-sub">{{ zones_data | length }} zone(s) dans les seuils</div>
+        {% endif %}
+      </div>
     </div>
-    {% if harvest_list %}
-    <div class="gsb-harvest">
-      <div class="gsb-harvest-label">Prochaine récolte</div>
-      <div class="gsb-harvest-val">{{ harvest_list[0].emoji }} {{ harvest_list[0].vegetable_name }} · {{ harvest_list[0].days_left }}j</div>
+
+    <!-- Carte 2 : Prochaines récoltes -->
+    <div class="card dtc dtc-harvest">
+      <div class="dtc-icon-wrap">
+        <i class="bi bi-basket2-fill dtc-icon" style="color:var(--orange);"></i>
+      </div>
+      <div class="dtc-body">
+        <div class="dtc-label">Prochaines récoltes</div>
+        {% if harvest_list %}
+          {% set h = harvest_list[0] %}
+          <div class="dtc-title">{{ h.emoji }} {{ h.vegetable_name }}</div>
+          <div class="dtc-sub">
+            {% if h.days_left < 0 %}⚠️ {{ (-h.days_left) }}j de retard
+            {% elif h.days_left == 0 %}🎉 Aujourd'hui !
+            {% else %}Dans {{ h.days_left }} jour{{ 's' if h.days_left > 1 else '' }}{% endif %}
+            · {{ h.zone_name }}
+          </div>
+          {% if harvest_list | length > 1 %}
+          <div class="dtc-more" onclick="switchDashTab(document.querySelector('#dash-tabs .time-tab:nth-child(3)'),'recoltes')">
+            +{{ harvest_list | length - 1 }} autre(s) <i class="bi bi-arrow-right"></i>
+          </div>
+          {% endif %}
+        {% else %}
+          <div class="dtc-title" style="color:var(--text-tertiary);">Aucune récolte</div>
+          <div class="dtc-sub">Pas de récolte dans les 60 prochains jours</div>
+        {% endif %}
+      </div>
     </div>
-    {% endif %}
+
   </div>
-  {% elif harvest_list %}
-  <div class="garden-status-banner gsb-ok mb-3">
-    <div class="gsb-icon"><i class="bi bi-check-circle-fill" style="color:var(--green);"></i></div>
-    <div class="gsb-body">
-      <div class="gsb-title">Jardin en bonne santé</div>
-      <div class="gsb-sub">Toutes les zones dans les seuils optimaux</div>
-    </div>
-    <div class="gsb-harvest">
-      <div class="gsb-harvest-label">Prochaine récolte</div>
-      <div class="gsb-harvest-val">{{ harvest_list[0].emoji }} {{ harvest_list[0].vegetable_name }} · {{ harvest_list[0].days_left }}j</div>
-    </div>
-  </div>
-  {% endif %}
 
   <!-- Tab bar -->
   <div class="time-tabs mb-3" id="dash-tabs">

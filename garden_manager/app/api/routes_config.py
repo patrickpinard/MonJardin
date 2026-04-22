@@ -70,11 +70,65 @@ MONTH_NAMES_FR = {
     9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Décembre",
 }
 
+
+def _planting_display_items(plantings, sowing_type_map, emoji_map, today):
+    """Convertit une liste de Planting en items d'affichage :
+    - semis actifs → un seul item groupé par espèce (type='seed_group')
+    - plants individuels + semis non-actifs → un item chacun (type='plant')
+    """
+    from collections import OrderedDict
+
+    def _progress(p):
+        if p.planted_date and p.expected_harvest_date and p.status == "active":
+            total = (p.expected_harvest_date - p.planted_date).days
+            elapsed = (today - p.planted_date).days
+            days_left = (p.expected_harvest_date - today).days
+            pct = max(0, min(100, int(elapsed / total * 100))) if total > 0 else 100
+        else:
+            pct = 0
+            days_left = None
+        return pct, days_left
+
+    seed_groups: dict = OrderedDict()
+    items = []
+
+    for p in plantings:
+        is_seed = sowing_type_map.get(p.vegetable_name, "plant") == "seed" and p.status == "active"
+        if is_seed:
+            seed_groups.setdefault(p.vegetable_name, []).append(p)
+        else:
+            pct, days_left = _progress(p)
+            items.append({
+                "kind": "plant",
+                "planting": p,
+                "emoji": emoji_map.get(p.vegetable_name, "🌱"),
+                "pct": pct,
+                "days_left": days_left,
+            })
+
+    seed_items = []
+    for vname, plist in seed_groups.items():
+        rep = plist[0]
+        pct, days_left = _progress(rep)
+        seed_items.append({
+            "kind": "seed_group",
+            "vegetable_name": vname,
+            "emoji": emoji_map.get(vname, "🌱"),
+            "count": len(plist),
+            "rep": rep,
+            "pct": pct,
+            "days_left": days_left,
+        })
+
+    return seed_items + items
+
+
 @config_bp.get("/planting")
 def planting_page():
     advisor = current_app.extensions["planting_advisor"]
     zones = Zone.query.order_by(Zone.zone_id).all()
     current_month = date.today().month
+    today = date.today()
     plantings_by_zone = {}
     warnings_by_zone = {}
     for zone in zones:
@@ -83,34 +137,63 @@ def planting_page():
             .order_by(Planting.planted_date.desc()).all()
         )
         warnings_by_zone[zone.zone_id] = advisor.check_zone_compatibility(zone.zone_id)
-    all_vegetables = advisor.get_all_vegetables()
+    all_vegetables = sorted(advisor.get_all_vegetables(), key=lambda v: v["name"])
     golden = advisor.get_golden_associations()
     seasonal_advice = advisor.get_seasonal_advice(current_month)
-    emoji_map = {v["name"]: v.get("emoji", "🌱") for v in all_vegetables}
+    emoji_map       = {v["name"]: v.get("emoji", "🌱")         for v in all_vegetables}
+    sowing_type_map = {v["name"]: v.get("sowing_type", "plant") for v in all_vegetables}
+
+    # Items d'affichage pré-calculés (groupage semis fait côté Python)
+    display_by_zone = {
+        zone.zone_id: _planting_display_items(
+            plantings_by_zone.get(zone.zone_id, []),
+            sowing_type_map, emoji_map, today
+        )
+        for zone in zones
+    }
+
+    # Capacités restantes par zone/légume pour le hint quantité
+    zone_capacity: dict = {}
+    for zone in zones:
+        zone_capacity[zone.zone_id] = {}
+        for v in all_vegetables:
+            sp   = v.get("space_cm", 30)
+            cols = max(1, int((getattr(zone, "length_m", 2.0) or 2.0) * 100 / sp))
+            rows = max(1, int((getattr(zone, "width_m",  1.0) or 1.0) * 100 / sp))
+            active_count = sum(
+                1 for p in plantings_by_zone.get(zone.zone_id, [])
+                if p.status == "active" and p.vegetable_name == v["name"]
+            )
+            zone_capacity[zone.zone_id][v["name"]] = max(0, cols * rows - active_count)
+
     return render_template(
         "planting.html",
         zones=zones,
         plantings_by_zone=plantings_by_zone,
+        display_by_zone=display_by_zone,
         warnings_by_zone=warnings_by_zone,
         all_vegetables=all_vegetables,
         golden_associations=golden,
         current_month=current_month,
         month_name=MONTH_NAMES_FR.get(current_month, ""),
         seasonal_advice=seasonal_advice,
-        today_date=date.today(),
+        today_date=today,
         emoji_map=emoji_map,
+        sowing_type_map=sowing_type_map,
+        zone_capacity=zone_capacity,
     )
 
 
 @config_bp.post("/planting/add")
 def add_planting():
-    """Ajoute une plantation dans une zone."""
+    """Ajoute une ou plusieurs plantations dans une zone."""
     form = request.form
     try:
         zone_id = int(form.get("zone_id", 0))
         vegetable_name = form.get("vegetable_name", "").strip()
         if not zone_id or not vegetable_name:
-            return jsonify({"ok": False, "error": "zone_id et vegetable_name requis"}), 400
+            flash("Zone et légume requis.", "danger")
+            return redirect(url_for("config.planting_page"))
 
         advisor = current_app.extensions["planting_advisor"]
         veg = advisor.get_vegetable(vegetable_name)
@@ -119,21 +202,29 @@ def add_planting():
         planted = date.fromisoformat(planted_str) if planted_str else date.today()
         harvest_str = form.get("expected_harvest_date", "")
         harvest = date.fromisoformat(harvest_str) if harvest_str else None
+        water_need = veg.get("water_need", "medium") if veg else form.get("water_need", "medium")
 
-        planting = Planting(
-            zone_id=zone_id,
-            vegetable_name=vegetable_name,
-            variety=form.get("variety", ""),
-            planted_date=planted,
-            expected_harvest_date=harvest,
-            water_need=veg.get("water_need", "medium") if veg else form.get("water_need", "medium"),
-            status="active",
-            notes=form.get("notes", ""),
-        )
-        db.session.add(planting)
+        try:
+            quantity = max(1, min(50, int(form.get("quantity", 1))))
+        except (ValueError, TypeError):
+            quantity = 1
+
+        for _ in range(quantity):
+            db.session.add(Planting(
+                zone_id=zone_id,
+                vegetable_name=vegetable_name,
+                variety=form.get("variety", ""),
+                planted_date=planted,
+                expected_harvest_date=harvest,
+                water_need=water_need,
+                status="active",
+                notes=form.get("notes", ""),
+            ))
         db.session.commit()
+        if quantity > 1:
+            flash(f"{quantity} plants de {vegetable_name} ajoutés.", "success")
     except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+        flash(f"Erreur lors de l'ajout : {e}", "danger")
 
     return redirect(url_for("config.planting_page"))
 
