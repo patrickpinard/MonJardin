@@ -617,7 +617,39 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zc-plants-empty-sm { font-size: 11px; color: var(--text-disabled); padding: 2px 0; }
 
 /* Footer */
-.zc-footer { padding: 10px 16px 14px; }
+.zc-footer {
+  padding: 10px 16px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.zc-valve-btns { display: flex; gap: 6px; flex: 1; }
+.zc-valve-btns .btn { flex: 1; justify-content: center; }
+.zc-detail-btn { flex-shrink: 0; font-size: 18px; color: var(--text-tertiary); }
+.zc-detail-btn:hover { color: var(--brand); }
+
+/* Last irrigation label */
+.zc-last-irr {
+  font-size: 10px; color: var(--text-tertiary);
+  display: flex; align-items: center; gap: 4px; margin-top: 3px;
+}
+.zc-last-irr .bi { font-size: 10px; }
+
+/* ── Garden status banner (P1) ───────────────────────────── */
+.garden-status-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: var(--r-lg);
+  border: 1.5px solid var(--border);
+  background: var(--bg-secondary);
+}
+.gsb-alerte { border-color: rgba(255,69,58,.35); background: rgba(255,69,58,.06); }
+.gsb-attention { border-color: rgba(255,159,10,.35); background: rgba(255,159,10,.06); }
+.gsb-ok { border-color: rgba(48,209,88,.25); background: rgba(48,209,88,.05); }
+.garden-status-banner .gsb-icon { font-size: 22px; flex-shrink: 0; }
+.gsb-body { flex: 1; min-width: 0; }
+.gsb-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.gsb-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+.gsb-harvest { text-align: right; flex-shrink: 0; }
+.gsb-harvest-label { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .4px; }
+.gsb-harvest-val { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
 
 /* ── Zone actions ─────────────────────────────────────── */
 .zone-actions {
@@ -842,39 +874,41 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 
 /* ── Charts ───────────────────────────────────────────── */
 .chart-wrap { width: 100%; min-height: 300px; }
+
+/* ── Tabs — pill buttons ─────────────────────────────────── */
 .time-tabs {
-  display: flex; gap: 4px;
-  background: var(--bg-secondary); padding: 4px; border-radius: var(--r-md);
+  display: flex; gap: 6px; flex-wrap: wrap;
   width: fit-content;
 }
 .time-tab {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 7px 13px; border-radius: var(--r-sm);
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--r-pill);
   font-size: 12px; font-weight: 600;
-  color: var(--text-secondary); background: transparent;
-  border: none; font-family: var(--font); cursor: pointer;
+  color: var(--text-secondary); background: var(--bg-secondary);
+  border: 1.5px solid var(--border); font-family: var(--font); cursor: pointer;
   transition: all var(--t); white-space: nowrap;
 }
 .time-tab .bi { font-size: 14px; transition: color var(--t); }
-/* Icon identity colors — always visible */
+/* Icon identity colors */
 .time-tab[data-tab="temps-reel"] .bi  { color: var(--green); }
 .time-tab[data-tab="graphiques"]  .bi { color: var(--blue); }
-.time-tab[data-tab="plants"]      .bi { color: #28a24e; }
+.time-tab[data-tab="plants"]      .bi { color: var(--brand); }
 .time-tab[data-tab="evenements"]  .bi { color: var(--orange); }
 .time-tab[data-tab="config"]      .bi { color: var(--text-tertiary); }
-/* Active pill — tinted per tab */
-.time-tab.active[data-tab="temps-reel"]  { background:rgba(48,209,88,.13);  color:var(--green); }
-.time-tab.active[data-tab="graphiques"]  { background:rgba(10,132,255,.13); color:var(--blue); }
-.time-tab.active[data-tab="plants"]      { background:rgba(40,162,78,.13);  color:#28a24e; }
-.time-tab.active[data-tab="evenements"]  { background:rgba(255,159,10,.13); color:var(--orange); }
-.time-tab.active[data-tab="config"]      { background:var(--bg-tertiary);   color:var(--text-primary); }
-/* Active icon = full opacity */
+/* Active pill — filled tint + colored border */
+.time-tab.active[data-tab="temps-reel"]  { background:rgba(48,209,88,.14);  border-color:rgba(48,209,88,.4);  color:var(--green); }
+.time-tab.active[data-tab="graphiques"]  { background:rgba(10,132,255,.14); border-color:rgba(10,132,255,.4); color:var(--blue); }
+.time-tab.active[data-tab="plants"]      { background:rgba(40,162,78,.14);  border-color:rgba(40,162,78,.4);  color:var(--brand); }
+.time-tab.active[data-tab="evenements"]  { background:rgba(255,159,10,.14); border-color:rgba(255,159,10,.4); color:var(--orange); }
+.time-tab.active[data-tab="config"]      { background:var(--bg-tertiary);   border-color:var(--border-strong); color:var(--text-primary); }
+/* Generic active (dashboard tabs without data-tab) */
+.time-tab.active:not([data-tab]) { background:rgba(40,162,78,.14); border-color:rgba(40,162,78,.4); color:var(--brand); }
 .time-tab.active .bi { opacity: 1; }
-.time-tab:hover:not(.active) { background: var(--bg-hover); color: var(--text-primary); }
+.time-tab:hover:not(.active) { background: var(--bg-hover); border-color: var(--border-strong); color: var(--text-primary); }
 @media (max-width: 600px) {
-  .time-tabs { width: 100%; justify-content: space-between; gap: 2px; }
+  .time-tabs { width: 100%; justify-content: space-between; gap: 4px; }
   .time-tab { flex: 1; flex-direction: column; justify-content: center; gap: 3px;
-              padding: 8px 4px; text-align: center; }
+              padding: 8px 4px; border-radius: var(--r-lg); text-align: center; }
   .time-tab .bi { font-size: 20px; }
   .time-tab .tab-label { display: none; }
 }

@@ -4,6 +4,8 @@
 {% block content %}
 {% set harvest_list = harvest_list if harvest_list is defined else [] %}
 {% set today_date = today_date if today_date is defined else none %}
+{% set global_status = global_status if global_status is defined else 'ok' %}
+{% set driest_zd = driest_zd if driest_zd is defined else none %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
@@ -19,6 +21,42 @@
 </div>
 
 <div class="page-body">
+
+  <!-- ── Bannière statut global jardin (P1) ── -->
+  {% if global_status in ('attention', 'alerte') %}
+  <div class="garden-status-banner gsb-{{ global_status }} mb-3">
+    <div class="gsb-icon">
+      {% if global_status == 'alerte' %}<i class="bi bi-exclamation-octagon-fill" style="color:var(--red);"></i>
+      {% else %}<i class="bi bi-exclamation-triangle-fill" style="color:var(--orange);"></i>{% endif %}
+    </div>
+    <div class="gsb-body">
+      <div class="gsb-title">
+        {% if global_status == 'alerte' %}Alerte — arrosage requis{% else %}Attention — humidité basse{% endif %}
+      </div>
+      {% if driest_zd %}
+      <div class="gsb-sub">Zone la plus sèche : <strong>{{ driest_zd.zone.name }}</strong> — {{ driest_zd.moisture }}%</div>
+      {% endif %}
+    </div>
+    {% if harvest_list %}
+    <div class="gsb-harvest">
+      <div class="gsb-harvest-label">Prochaine récolte</div>
+      <div class="gsb-harvest-val">{{ harvest_list[0].emoji }} {{ harvest_list[0].vegetable_name }} · {{ harvest_list[0].days_left }}j</div>
+    </div>
+    {% endif %}
+  </div>
+  {% elif harvest_list %}
+  <div class="garden-status-banner gsb-ok mb-3">
+    <div class="gsb-icon"><i class="bi bi-check-circle-fill" style="color:var(--green);"></i></div>
+    <div class="gsb-body">
+      <div class="gsb-title">Jardin en bonne santé</div>
+      <div class="gsb-sub">Toutes les zones dans les seuils optimaux</div>
+    </div>
+    <div class="gsb-harvest">
+      <div class="gsb-harvest-label">Prochaine récolte</div>
+      <div class="gsb-harvest-val">{{ harvest_list[0].emoji }} {{ harvest_list[0].vegetable_name }} · {{ harvest_list[0].days_left }}j</div>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- Tab bar -->
   <div class="time-tabs mb-3" id="dash-tabs">
@@ -80,6 +118,10 @@
           <div class="zc-moisture-meta">
             <div class="moisture-value {{ mc }}" data-zone-text="{{ zd.zone.zone_id }}">{{ zd.moisture }}%</div>
             <div class="moisture-sub">Seuil {{ zd.zone.moisture_threshold_low | int }}–{{ zd.zone.moisture_threshold_high | int }}%</div>
+            <div class="zc-last-irr">
+              <i class="bi bi-clock"></i>
+              {% if zd.last_irrigation %}{{ zd.last_irrigation.timestamp.strftime('%d.%m %H:%M') }}{% else %}Jamais arrosé{% endif %}
+            </div>
             <div class="zc-temp-row">
               <span class="zc-temp-item"><i class="bi bi-thermometer-half"></i>{{ temperature_c }}°C</span>
               {% if zd.zone.has_roof and temp_serre_c is not none %}
@@ -140,8 +182,18 @@
 
         <!-- Pied de carte -->
         <div class="zc-footer">
-          <a href="/zones/{{ zd.zone.zone_id }}" class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;">
-            <i class="bi bi-arrow-right-circle"></i> Voir la zone
+          <div class="zc-valve-btns">
+            <button class="btn btn-sm {% if zd.valve_state == 'open' %}btn-blue zc-btn-active{% else %}btn-primary{% endif %}"
+                    onclick="setValve({{ zd.zone.zone_id }}, 'open')" title="Démarrer l'arrosage">
+              <i class="bi bi-droplet-fill"></i> Arroser
+            </button>
+            <button class="btn btn-sm btn-secondary {% if zd.valve_state == 'close' %}zc-btn-active{% endif %}"
+                    onclick="setValve({{ zd.zone.zone_id }}, 'close')" title="Arrêter l'arrosage">
+              <i class="bi bi-stop-circle"></i> Stop
+            </button>
+          </div>
+          <a href="/zones/{{ zd.zone.zone_id }}" class="btn btn-ghost btn-sm zc-detail-btn" title="Voir la zone">
+            <i class="bi bi-arrow-right-circle-fill"></i>
           </a>
         </div>
 

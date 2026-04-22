@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}MonJardin{% endblock %} — MonJardin</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=16">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=17">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
   <!-- PWA -->
@@ -276,19 +276,16 @@
 <nav class="mobile-nav">
   <div class="mobile-nav-inner">
     <a href="/dashboard" class="mobile-nav-item {% if request.path in ('/', '/dashboard') %}active{% endif %}">
-      <i class="bi bi-grid-1x2-fill"></i><span>Bord</span>
+      <i class="bi bi-grid-1x2-fill"></i><span>Accueil</span>
     </a>
-    <a href="/plants" class="mobile-nav-item {% if '/plants' in request.path %}active{% endif %}">
-      <i class="bi bi-flower1"></i><span>Encyclopédie</span>
-    </a>
-    <a href="/planting" class="mobile-nav-item {% if '/planting' in request.path %}active{% endif %}">
-      <i class="bi bi-calendar3"></i><span>Plantation</span>
-    </a>
-    <a href="/zones" class="mobile-nav-item {% if request.path == '/zones' %}active{% endif %}">
+    <a href="/zones" class="mobile-nav-item {% if request.path == '/zones' or (request.path.startswith('/zones/') and not '/plants' in request.path) %}active{% endif %}">
       <i class="bi bi-grid-3x3-gap-fill"></i><span>Zones</span>
     </a>
-    <a href="/history" class="mobile-nav-item {% if '/history' in request.path or '/journal' in request.path %}active{% endif %}">
-      <i class="bi bi-graph-up"></i><span>Graphiques</span>
+    <a href="/planting" class="mobile-nav-item {% if '/planting' in request.path %}active{% endif %}">
+      <i class="bi bi-calendar3"></i><span>Plants</span>
+    </a>
+    <a href="/journal" class="mobile-nav-item {% if '/journal' in request.path or '/history' in request.path %}active{% endif %}">
+      <i class="bi bi-journal-text"></i><span>Journal</span>
     </a>
     <a href="/settings" class="mobile-nav-item {% if '/settings' in request.path or '/admin' in request.path %}active{% endif %}">
       <i class="bi bi-gear-fill"></i><span>Réglages</span>

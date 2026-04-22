@@ -78,16 +78,6 @@
        ══════════════════════════════════════════════════════ -->
   <div id="tab-temps-reel">
 
-    {% if compatibility_warnings %}
-    <div class="greenhouse-note mb-3" style="background:rgba(255,69,58,.06);border-color:rgba(255,69,58,.2);">
-      <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);"></i>
-      <div>
-        <div class="gn-title" style="color:var(--red);">Incompatibilités de compagnonnage</div>
-        {% for w in compatibility_warnings %}<div class="gn-body">{{ w }}</div>{% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
     <!-- Stats live -->
     <div class="card mb-3">
       <div class="card-title"><i class="bi bi-speedometer2"></i> État en temps réel</div>
@@ -253,6 +243,16 @@
        TAB 3 : PLANTS
        ══════════════════════════════════════════════════════ -->
   <div id="tab-plants" style="display:none;">
+
+    {% if compatibility_warnings %}
+    <div class="greenhouse-note mb-3" style="background:rgba(255,69,58,.06);border-color:rgba(255,69,58,.2);">
+      <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);"></i>
+      <div>
+        <div class="gn-title" style="color:var(--red);">Incompatibilités de compagnonnage</div>
+        {% for w in compatibility_warnings %}<div class="gn-body">{{ w }}</div>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
 
     <!-- En-tête dimensions -->
     <div class="card mb-3" style="padding:12px 16px;">
