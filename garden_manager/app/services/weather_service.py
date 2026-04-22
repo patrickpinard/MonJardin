@@ -1,7 +1,7 @@
 """Service météo avec fallback : MétéoSuisse → Open-Meteo → simulateur."""
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import requests
@@ -30,7 +30,7 @@ class WeatherService:
 
     def get_current(self) -> dict:
         """Retourne les conditions actuelles (avec cache 30 min)."""
-        if self._cache and self._cache_until and datetime.utcnow() < self._cache_until:
+        if self._cache and self._cache_until and datetime.now(timezone.utc).replace(tzinfo=None) < self._cache_until:
             cached = dict(self._cache)
             cached["source"] = cached.get("source", "cache") + " (cache)"
             return cached
@@ -97,7 +97,7 @@ class WeatherService:
             "wind_kmh": float(wind) * 3.6 if wind is not None else 10.0,
             "frost_risk": float(temp) < 3.0 if temp is not None else False,
             "source": "meteosuisse",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
         }
 
     def _fetch_openmeteo(self) -> dict:
@@ -125,7 +125,7 @@ class WeatherService:
             "wind_kmh": float(wind[0]) if wind else 10.0,
             "frost_risk": temp < 3.0,
             "source": "openmeteo",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
         }
 
     def _fetch_openmeteo_forecast(self) -> list[dict]:
@@ -160,7 +160,7 @@ class WeatherService:
 
     def _set_cache(self, data: dict) -> None:
         self._cache = data
-        self._cache_until = datetime.utcnow() + timedelta(minutes=CACHE_DURATION_MIN)
+        self._cache_until = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=CACHE_DURATION_MIN)
 
     @staticmethod
     def _default_conditions() -> dict:
@@ -171,5 +171,5 @@ class WeatherService:
             "wind_kmh": 10.0,
             "frost_risk": False,
             "source": "default",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
         }

@@ -1,5 +1,5 @@
 """Modèles pour les journaux d'irrigation et du toit."""
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import db
 
 
@@ -7,7 +7,7 @@ class IrrigationLog(db.Model):
     __tablename__ = "irrigation_log"
 
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False, index=True)
     zone_id = db.Column(db.Integer, nullable=False, index=True)
     action = db.Column(db.String(8), nullable=False)  # open | close
     trigger_type = db.Column(db.String(16), nullable=True)  # auto | manual | schedule | weather | frost | heatwave
@@ -32,7 +32,7 @@ class RoofLog(db.Model):
     __tablename__ = "roof_log"
 
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False, index=True)
     action = db.Column(db.String(8), nullable=False)  # open | close
     trigger_type = db.Column(db.String(16), nullable=True)  # auto | manual | weather | temperature
     reason = db.Column(db.Text, nullable=True)
@@ -52,7 +52,7 @@ class JournalEntry(db.Model):
     __tablename__ = "journal_entries"
 
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False, index=True)
     level = db.Column(db.String(8), default="info", index=True)  # info | warning | error
     message = db.Column(db.Text, nullable=False)
     details = db.Column(db.Text, nullable=True)  # JSON optionnel

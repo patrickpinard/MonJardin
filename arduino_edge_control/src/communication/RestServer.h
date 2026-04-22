@@ -35,7 +35,7 @@ private:
     unsigned long    _lastRequestMs;
 
     void _handleRequest(WiFiClient& client);
-    void _send200(WiFiClient& client, const String& body);
+    void _send200(WiFiClient& client, const char* body);
     void _send400(WiFiClient& client, const char* msg);
     void _send404(WiFiClient& client);
     void _parseBody(WiFiClient& client, int contentLength, char* buf, int bufSize);

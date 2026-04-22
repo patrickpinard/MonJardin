@@ -2,11 +2,16 @@
 {% block title %}Administration{% endblock %}
 
 {% block content %}
+{% set weather = weather if weather is defined else {'source':'—','timestamp':none,'temperature':0,'precip_mm_6h':0,'precip_prob_pct':0,'wind_kmh':0,'frost_risk':false} %}
+{% set sim_speed = sim_speed if sim_speed is defined else 1 %}
+{% set sim_profiles = sim_profiles if sim_profiles is defined else [] %}
+{% set alert_recipients = alert_recipients if alert_recipients is defined else [] %}
+{% set alert_types_config = alert_types_config if alert_types_config is defined else [] %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
       <div class="page-title">Administration</div>
-      <div class="page-subtitle">Accès · Système · Simulation</div>
+      <div class="page-subtitle">Accès · Système · Alertes · Simulation</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       {% if simulation_mode %}
@@ -41,6 +46,18 @@
     <div><div class="gn-title" style="color:var(--orange);">Utilisateur existant</div>
     <div class="gn-body">Ce nom d'utilisateur existe déjà.</div></div>
   </div>
+  {% elif err == 'invalid_email' %}
+  <div class="greenhouse-note mb-3" style="background:rgba(255,69,58,.06);border-color:rgba(255,69,58,.2);">
+    <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);"></i>
+    <div><div class="gn-title" style="color:var(--red);">Email invalide</div>
+    <div class="gn-body">Adresse email invalide.</div></div>
+  </div>
+  {% elif err == 'email_exists' %}
+  <div class="greenhouse-note mb-3" style="background:rgba(255,159,10,.06);border-color:rgba(255,159,10,.2);">
+    <i class="bi bi-exclamation-circle-fill" style="color:var(--orange);"></i>
+    <div><div class="gn-title" style="color:var(--orange);">Email existant</div>
+    <div class="gn-body">Cette adresse email est déjà enregistrée.</div></div>
+  </div>
   {% endif %}
 
   <!-- ── TABS ── -->
@@ -50,6 +67,12 @@
     </button>
     <button class="time-tab" onclick="switchTab(this,'systeme')">
       <i class="bi bi-cpu"></i> Système
+    </button>
+    <button class="time-tab" onclick="switchTab(this,'alertes')">
+      <i class="bi bi-bell-fill"></i> Alertes
+      {% if alert_recipients %}
+      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.15);color:var(--green);">{{ alert_recipients | length }}</span>
+      {% endif %}
     </button>
     {% if simulation_mode %}
     <button class="time-tab" onclick="switchTab(this,'simulation')">
@@ -165,7 +188,6 @@
        ══════════════════════════════════════════════════════ -->
   <div id="tab-systeme" style="display:none;">
 
-    <!-- État du système -->
     <div class="card mb-3">
       <div class="card-title"><i class="bi bi-cpu"></i> État du système</div>
       <div class="grid-3" style="gap:12px;margin-bottom:16px;">
@@ -195,97 +217,6 @@
       <div id="healthResult" class="mt-2"></div>
     </div>
 
-    <!-- Alertes email -->
-    <div class="card mb-3">
-      <div class="card-title"><i class="bi bi-envelope-fill"></i> Alertes email</div>
-      <div class="grid-3" style="gap:10px;margin-bottom:16px;">
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Serveur SMTP</div>
-          <div style="font-weight:700;font-size:12px;">{{ smtp_host }}:{{ smtp_port }}</div>
-          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">TLS : {{ 'Oui' if mail_tls else 'Non' }}</div>
-        </div>
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Expéditeur</div>
-          <div style="font-weight:700;font-size:12px;">{{ mail_sender if mail_sender else '—' }}</div>
-        </div>
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
-          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Destinataire alertes</div>
-          <div style="font-weight:700;font-size:12px;">{{ mail_dest if mail_dest else '—' }}</div>
-          <div style="font-size:11px;margin-top:2px;">
-            {% if smtp_configured %}
-            <span style="color:var(--green);"><i class="bi bi-check-circle-fill"></i> Configuré</span>
-            {% else %}
-            <span style="color:var(--red);"><i class="bi bi-x-circle-fill"></i> Non configuré</span>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      {% if not smtp_configured %}
-      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">
-        <i class="bi bi-info-circle"></i> Définissez <code>SMTP_USER</code>, <code>SMTP_PASSWORD</code>,
-        <code>MAIL_DEFAULT_SENDER</code> et <code>ADMIN_NOTIFICATION_EMAIL</code> dans <code>.env</code>.
-      </div>
-      {% endif %}
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <button class="btn btn-primary btn-sm" onclick="testEmail()" {% if not smtp_configured %}disabled{% endif %}>
-          <i class="bi bi-send-fill"></i> Envoyer email de test
-        </button>
-        <div id="emailResult"></div>
-      </div>
-    </div>
-
-    <!-- Tests d'alertes -->
-    <div class="card mb-3">
-      <div class="card-title"><i class="bi bi-send-exclamation-fill" style="color:var(--orange);"></i> Tests d'alertes email</div>
-      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">
-        Envoie un email HTML formaté et ajoute une entrée dans le journal. Destinataire : <strong>{{ mail_dest }}</strong>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:20px;">🌡️</span>
-            <div><div style="font-size:13px;font-weight:700;">Gel nocturne</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">T°=-2.3°C · fermeture vannes</div></div>
-          </div>
-          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('frost', this)"><i class="bi bi-send"></i> Envoyer</button>
-        </div>
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:20px;">💧</span>
-            <div><div style="font-size:13px;font-weight:700;">Sécheresse critique</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">Zone 2 · 12% · 2 arrosages</div></div>
-          </div>
-          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('drought', this)"><i class="bi bi-send"></i> Envoyer</button>
-        </div>
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:20px;">🔌</span>
-            <div><div style="font-size:13px;font-weight:700;">Capteur hors service</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">Zone 3 · aucune donnée 2h15</div></div>
-          </div>
-          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('sensor_failure', this)"><i class="bi bi-send"></i> Envoyer</button>
-        </div>
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:20px;">🌊</span>
-            <div><div style="font-size:13px;font-weight:700;">Risque inondation</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">Zone 1 serre · 94%</div></div>
-          </div>
-          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('flood', this)"><i class="bi bi-send"></i> Envoyer</button>
-        </div>
-        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:20px;">📡</span>
-            <div><div style="font-size:13px;font-weight:700;">Arduino injoignable</div>
-            <div style="font-size:11px;color:var(--text-tertiary);">15 échecs · failsafe activé</div></div>
-          </div>
-          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('arduino_offline', this)"><i class="bi bi-send"></i> Envoyer</button>
-        </div>
-      </div>
-      <div id="alert-test-result" style="margin-top:12px;"></div>
-    </div>
-
-    <!-- Informations système -->
     <div class="card">
       <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
       <div class="grid-3" style="gap:10px;">
@@ -310,7 +241,176 @@
 
 
   <!-- ══════════════════════════════════════════════════════
-       TAB 3 : SIMULATION (uniquement si simulation_mode)
+       TAB 3 : ALERTES EMAIL
+       ══════════════════════════════════════════════════════ -->
+  <div id="tab-alertes" style="display:none;">
+
+    <!-- SMTP config (lecture seule) -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-server"></i> Serveur d'envoi SMTP</div>
+      <div class="grid-3" style="gap:10px;margin-bottom:14px;">
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Serveur</div>
+          <div style="font-weight:700;font-size:12px;">{{ smtp_host }}:{{ smtp_port }}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">TLS : {{ 'Oui' if mail_tls else 'Non' }}</div>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Expéditeur</div>
+          <div style="font-weight:700;font-size:12px;">{{ mail_sender if mail_sender else '—' }}</div>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Statut</div>
+          {% if smtp_configured %}
+          <div style="color:var(--green);font-weight:700;font-size:12px;"><i class="bi bi-check-circle-fill"></i> Configuré</div>
+          {% else %}
+          <div style="color:var(--red);font-weight:700;font-size:12px;"><i class="bi bi-x-circle-fill"></i> Non configuré</div>
+          <div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;">Définissez SMTP_USER et SMTP_PASSWORD dans .env</div>
+          {% endif %}
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="testEmail()" {% if not smtp_configured %}disabled{% endif %}>
+        <i class="bi bi-send-fill"></i> Envoyer un email de test
+      </button>
+      <span id="emailResult" style="margin-left:10px;"></span>
+    </div>
+
+    <!-- Destinataires -->
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-people-fill"></i> Destinataires des alertes
+        <span class="badge" style="margin-left:6px;font-size:11px;">{{ alert_recipients | length }}</span>
+      </div>
+
+      {% if alert_recipients %}
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+        {% for r in alert_recipients %}
+        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;
+          {% if not r.enabled %}opacity:.55;{% endif %}">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+
+            <!-- Identité -->
+            <div style="flex:1;min-width:160px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <i class="bi bi-envelope-fill" style="color:{% if r.enabled %}var(--green){% else %}var(--text-tertiary){% endif %};font-size:14px;"></i>
+                <div>
+                  <div style="font-weight:700;font-size:13px;">{{ r.email }}</div>
+                  {% if r.name %}<div style="font-size:11px;color:var(--text-tertiary);">{{ r.name }}</div>{% endif %}
+                </div>
+                <span class="badge {% if r.enabled %}badge-valve-open{% else %}badge-valve-close{% endif %}" style="font-size:10px;">
+                  {{ 'Actif' if r.enabled else 'Inactif' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Types d'alertes -->
+            <div style="flex:2;min-width:200px;">
+              <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                {% for at in alert_types_config %}
+                <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;
+                  {% if r.has_alert(at.id) %}
+                    background:rgba(48,209,88,.12);color:var(--green);border:1px solid rgba(48,209,88,.25);
+                  {% else %}
+                    background:var(--bg-tertiary);color:var(--text-tertiary);border:1px solid transparent;text-decoration:line-through;
+                  {% endif %}">
+                  {{ at.icon }} {{ at.label }}
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+              <form method="post" action="/admin/alerts/{{ r.id }}/toggle" style="display:inline;">
+                <button type="submit" class="btn btn-xs btn-secondary" title="{{ 'Désactiver' if r.enabled else 'Activer' }}">
+                  <i class="bi bi-toggle-{% if r.enabled %}on{% else %}off{% endif %}"></i>
+                </button>
+              </form>
+              <button class="btn btn-xs btn-secondary" title="Modifier"
+                onclick="openEditAlertModal({{ r.id }}, '{{ r.email }}', '{{ (r.name or '') | e }}', {{ r.alert_types | tojson }})">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <form method="post" action="/admin/alerts/{{ r.id }}/delete" style="display:inline;"
+                    onsubmit="return confirm('Supprimer {{ r.email }} des destinataires ?')">
+                <button type="submit" class="btn btn-xs" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:24px;margin-bottom:18px;">
+        <i class="bi bi-bell-slash" style="font-size:28px;display:block;margin-bottom:8px;"></i>
+        <p>Aucun destinataire — les alertes ne seront pas envoyées par email.</p>
+      </div>
+      {% endif %}
+
+      <!-- Ajouter un destinataire -->
+      <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
+        Ajouter un destinataire
+      </div>
+      <form method="post" action="/admin/alerts/add">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <div class="form-group mb-0" style="flex:2;min-width:180px;">
+            <label class="form-label">Adresse email <span style="color:var(--red);">*</span></label>
+            <input type="email" name="email" class="form-control" placeholder="prenom@exemple.com" required>
+          </div>
+          <div class="form-group mb-0" style="flex:1;min-width:140px;">
+            <label class="form-label">Nom (optionnel)</label>
+            <input type="text" name="name" class="form-control" placeholder="ex : Patrick" maxlength="80">
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="form-label">Types d'alertes à recevoir</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">
+            {% for at in alert_types_config %}
+            <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+              background:var(--bg-secondary);border:1.5px solid var(--border);border-radius:20px;
+              cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;user-select:none;"
+              onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor=''">
+              <input type="checkbox" name="alert_types" value="{{ at.id }}" checked
+                style="width:14px;height:14px;accent-color:var(--green);">
+              {{ at.icon }} {{ at.label }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-person-plus-fill"></i> Ajouter le destinataire
+        </button>
+      </form>
+    </div>
+
+    <!-- Tests d'alertes -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-send-exclamation-fill" style="color:var(--orange);"></i> Tests d'envoi</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">
+        Envoie un email HTML formaté à tous les destinataires actifs ayant souscrit à ce type d'alerte.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;">
+        {% for at in alert_types_config %}
+        <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:20px;">{{ at.icon }}</span>
+            <div style="font-size:13px;font-weight:700;">{{ at.label }}</div>
+          </div>
+          <button class="btn btn-secondary btn-sm w-100" onclick="sendTestAlert('{{ at.id }}', this)">
+            <i class="bi bi-send"></i> Tester
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="alert-test-result" style="margin-top:12px;"></div>
+    </div>
+
+  </div><!-- /#tab-alertes -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 4 : SIMULATION (uniquement si simulation_mode)
        ══════════════════════════════════════════════════════ -->
   {% if simulation_mode %}
   <div id="tab-simulation" style="display:none;">
@@ -378,7 +478,7 @@
 <div class="modal-overlay" id="pin-overlay">
   <div class="modal-box">
     <div class="modal-header">
-      <div class="modal-icon"><i class="bi bi-key-fill"></i></div>
+      <div class="modal-icon warning"><i class="bi bi-key-fill"></i></div>
       <div class="modal-title">Changer le PIN</div>
       <div class="modal-body" id="pin-modal-username" style="color:var(--text-tertiary);font-size:13px;"></div>
     </div>
@@ -390,7 +490,48 @@
       </div>
       <div class="modal-actions">
         <button type="button" class="modal-btn cancel" onclick="closePinModal()">Annuler</button>
-        <button type="submit" class="modal-btn confirm-ok" style="background:var(--green);color:#fff;">Enregistrer</button>
+        <button type="submit" class="modal-btn" style="color:var(--green);">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal édition destinataire alerte -->
+<div class="modal-overlay" id="alert-edit-overlay">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-icon warning"><i class="bi bi-pencil-fill"></i></div>
+      <div class="modal-title">Modifier le destinataire</div>
+    </div>
+    <form id="alert-edit-form" method="post" style="padding:0 20px 0;">
+      <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:4px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Adresse email</label>
+          <input type="email" name="email" id="ae-email" class="form-control" required>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Nom (optionnel)</label>
+          <input type="text" name="name" id="ae-name" class="form-control" placeholder="ex : Patrick" maxlength="80">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:8px;">Types d'alertes</label>
+          <div id="ae-types" style="display:flex;flex-wrap:wrap;gap:7px;">
+            {% for at in alert_types_config %}
+            <label class="ae-type-pill" data-id="{{ at.id }}"
+              style="display:inline-flex;align-items:center;gap:6px;padding:6px 11px;
+              background:var(--bg-secondary);border:1.5px solid var(--border);border-radius:20px;
+              cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;user-select:none;">
+              <input type="checkbox" name="alert_types" value="{{ at.id }}"
+                style="width:13px;height:13px;accent-color:var(--green);">
+              {{ at.icon }} {{ at.label }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin:16px -20px -0px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <button type="button" class="modal-btn cancel" onclick="closeEditAlertModal()">Annuler</button>
+        <button type="submit" class="modal-btn" style="color:var(--green);">Enregistrer</button>
       </div>
     </form>
   </div>
@@ -401,7 +542,7 @@
 <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
 <script>
 // ── Tab switching ───────────────────────────────────────
-const ADMIN_TABS = ['acces','systeme','simulation'];
+const ADMIN_TABS = ['acces','systeme','alertes','simulation'];
 function switchTab(btn, tab) {
   document.querySelectorAll('#admin-tab-bar .time-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -411,6 +552,15 @@ function switchTab(btn, tab) {
   });
   if (tab === 'systeme') checkHealthSilent();
 }
+
+// Auto-open tab from URL ?tab=
+(function() {
+  const p = new URLSearchParams(location.search).get('tab');
+  if (p) {
+    const btn = document.querySelector(`#admin-tab-bar .time-tab[onclick*="'${p}'"]`);
+    if (btn) btn.click();
+  }
+})();
 
 async function checkHealthSilent() {
   try {
@@ -443,7 +593,7 @@ async function sendTestAlert(type, btn) {
     const resp = await fetch(`/api/system/test_alert/${type}`, {method: 'POST'});
     const data = await resp.json();
     res.innerHTML = data.ok
-      ? `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle-fill"></i> Email "${type}" envoyé</span>`
+      ? `<span class="badge" style="background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2);"><i class="bi bi-check-circle-fill"></i> Alerte "${type}" envoyée</span>`
       : `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);"><i class="bi bi-x-circle-fill"></i> ${data.error}</span>`;
   } catch {
     res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);">Erreur réseau</span>`;
@@ -467,7 +617,7 @@ async function testEmail() {
     res.innerHTML = `<span class="badge" style="background:rgba(255,69,58,.1);color:var(--red);">Erreur réseau</span>`;
   }
   btn.disabled = false;
-  btn.innerHTML = '<i class="bi bi-send-fill"></i> Envoyer email de test';
+  btn.innerHTML = '<i class="bi bi-send-fill"></i> Envoyer un email de test';
 }
 
 async function applyWeatherProfile() {
@@ -490,6 +640,7 @@ async function dryZone(zoneId) {
   showToast(`Zone ${zoneId} asséchée — arrosage devrait se déclencher`, 'info');
 }
 
+// ── Modal PIN ───────────────────────────────────────────
 function showPinModal(uid, username) {
   document.getElementById('pin-modal-username').textContent = 'Utilisateur : ' + username;
   document.getElementById('pin-form').action = '/admin/users/' + uid + '/pin';
@@ -502,6 +653,38 @@ function closePinModal() {
 }
 document.getElementById('pin-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closePinModal();
+});
+
+// ── Modal édition destinataire alerte ───────────────────
+function openEditAlertModal(id, email, name, activeTypes) {
+  document.getElementById('ae-email').value = email;
+  document.getElementById('ae-name').value  = name;
+  document.getElementById('alert-edit-form').action = '/admin/alerts/' + id + '/edit';
+  // Set checkboxes
+  document.querySelectorAll('#ae-types input[type=checkbox]').forEach(cb => {
+    cb.checked = activeTypes.includes(cb.value);
+    const pill = cb.closest('label');
+    if (pill) pill.style.borderColor = cb.checked ? 'var(--green)' : '';
+    if (pill) pill.style.background  = cb.checked ? 'rgba(48,209,88,.1)' : '';
+    if (pill) pill.style.color       = cb.checked ? 'var(--green)' : '';
+  });
+  document.getElementById('alert-edit-overlay').classList.add('visible');
+}
+function closeEditAlertModal() {
+  document.getElementById('alert-edit-overlay').classList.remove('visible');
+}
+document.getElementById('alert-edit-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeEditAlertModal();
+});
+// Toggle pill style on checkbox change in modal
+document.querySelectorAll('#ae-types input[type=checkbox]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const pill = cb.closest('label');
+    if (!pill) return;
+    pill.style.borderColor = cb.checked ? 'var(--green)' : '';
+    pill.style.background  = cb.checked ? 'rgba(48,209,88,.1)' : '';
+    pill.style.color       = cb.checked ? 'var(--green)' : '';
+  });
 });
 </script>
 {% endblock %}

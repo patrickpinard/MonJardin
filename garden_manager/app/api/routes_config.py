@@ -1,7 +1,7 @@
 """Routes de configuration : zones, plantations, conseils."""
 from datetime import date
 
-from flask import Blueprint, current_app, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 
 from ..models import db, Zone, Planting
 
@@ -22,8 +22,8 @@ def update_zone(zone_id: int):
     if mode in ("auto", "manual", "disabled"):
         zone.irrigation_mode = mode
 
-    # Serre vitrée (checkbox — absent si non coché)
-    zone.has_roof = 'has_roof' in form
+    # Serre vitrée (checkbox HTML — absent du form quand non coché)
+    zone.has_roof = "has_roof" in form
 
     try:
         low = float(form.get("moisture_threshold_low", zone.moisture_threshold_low))
@@ -32,15 +32,29 @@ def update_zone(zone_id: int):
         if 0 < low < high <= 100:
             zone.moisture_threshold_low = low
             zone.moisture_threshold_high = high
+        else:
+            flash(
+                f"Seuils invalides ({low:.0f}% / {high:.0f}%) — "
+                "le seuil bas doit être inférieur au seuil haut (0–100%).",
+                "warning",
+            )
         if duration > 0:
             zone.irrigation_duration_min = duration
-        length = float(form.get("length_m", zone.length_m or 2.0))
-        width  = float(form.get("width_m",  zone.width_m  or 1.0))
+        else:
+            flash("Durée d'irrigation invalide — valeur ignorée.", "warning")
+    except Exception:
+        flash("Valeurs de seuils ou durée non valides — modifications ignorées.", "danger")
+
+    try:
+        cur_length = getattr(zone, "length_m", None) or 2.0
+        cur_width  = getattr(zone, "width_m",  None) or 1.0
+        length = float(form.get("length_m", cur_length))
+        width  = float(form.get("width_m",  cur_width))
         if 0.1 <= length <= 50:
             zone.length_m = round(length, 2)
         if 0.1 <= width <= 50:
             zone.width_m = round(width, 2)
-    except (ValueError, TypeError):
+    except Exception:
         pass
 
     db.session.commit()
@@ -170,8 +184,12 @@ def harvest_planting(planting_id: int):
 def delete_planting(planting_id: int):
     """Supprime une plantation."""
     p = Planting.query.get_or_404(planting_id)
+    zone_id = p.zone_id
     db.session.delete(p)
     db.session.commit()
+    redirect_to = request.form.get("redirect_to", "planting")
+    if redirect_to == "zone":
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
     return redirect(url_for("config.planting_page"))
 
 

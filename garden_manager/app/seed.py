@@ -2,7 +2,7 @@
 import logging
 import math
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def seed_demo_history(app, hours: int = 720) -> None:
         if SensorReading.query.count() >= 9600:
             return
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         start = now - timedelta(hours=hours)
         interval_min = 15
         readings = []

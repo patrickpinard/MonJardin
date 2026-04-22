@@ -1,5 +1,5 @@
 """Modèle de configuration des zones de jardinage."""
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import db
 
 
@@ -16,7 +16,7 @@ class Zone(db.Model):
     irrigation_duration_min = db.Column(db.Integer, default=15)
     length_m = db.Column(db.Float, default=2.0)
     width_m  = db.Column(db.Float, default=1.0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     @property
     def area_m2(self) -> float:

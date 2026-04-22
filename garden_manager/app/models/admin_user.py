@@ -1,6 +1,6 @@
 """Modèle utilisateur pour l'authentification admin (username + PIN)."""
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import db
 
 
@@ -11,7 +11,7 @@ class AdminUser(db.Model):
     username   = db.Column(db.String(64), unique=True, nullable=False)
     pin_hash   = db.Column(db.String(64), nullable=False)
     enabled    = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     last_login = db.Column(db.DateTime, nullable=True)
 
     @staticmethod

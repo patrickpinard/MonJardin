@@ -1,5 +1,5 @@
 """Modèle pour les relevés capteurs."""
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import db
 
 
@@ -7,7 +7,7 @@ class SensorReading(db.Model):
     __tablename__ = "sensor_readings"
 
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False, index=True)
     zone_id = db.Column(db.Integer, nullable=False, index=True)
     soil_moisture_pct = db.Column(db.Float, nullable=True)
     raw_adc = db.Column(db.Float, nullable=True)

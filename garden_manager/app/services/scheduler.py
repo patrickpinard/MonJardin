@@ -1,6 +1,6 @@
 """Tâches planifiées APScheduler : cycle d'automatisation et météo."""
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def _run_cycle(app) -> None:
         return
 
     # 2. Persistance en base
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     temp = sensor_data.get("temperature_c", 15.0)
     temp_serre = sensor_data.get("temp_serre_c")
     zones_data = {z["zone_id"]: z for z in sensor_data.get("zones", [])}

@@ -19,23 +19,49 @@ function plotlyTheme(extra) {
 }
 
 let _chartHours = 24;
+// M11 : référence à l'intervalle pour clearInterval au déchargement
+let _refreshInterval = null;
 
 function initDashboard() {
   loadCurrentData();
   loadMainChart(_chartHours);
-  setInterval(() => {
+  // M11 : clearInterval au beforeunload pour éviter les intervalles fantômes
+  _refreshInterval = setInterval(() => {
     loadCurrentData();
     loadMainChart(_chartHours);
     loadJournal();
   }, 30000);
+  window.addEventListener('beforeunload', () => {
+    if (_refreshInterval) clearInterval(_refreshInterval);
+  });
+}
+
+// M12 : affichage visuel si les données ne se chargent plus
+function _setConnectionBanner(ok) {
+  let banner = document.getElementById('_conn-banner');
+  if (ok) {
+    if (banner) banner.remove();
+    return;
+  }
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = '_conn-banner';
+    banner.style.cssText = `position:fixed;top:0;left:0;right:0;z-index:9999;
+      background:#ef4444;color:#fff;font-size:13px;font-weight:600;
+      text-align:center;padding:6px 12px;letter-spacing:.02em;`;
+    banner.textContent = '⚠️ Connexion perdue — données figées';
+    document.body.prepend(banner);
+  }
 }
 
 async function loadCurrentData() {
   try {
     const resp = await fetch('/api/data/current');
-    if (!resp.ok) return;
+    if (!resp.ok) { _setConnectionBanner(false); return; }
+    _setConnectionBanner(true);
     updateZoneCards(await resp.json());
   } catch (e) {
+    _setConnectionBanner(false);
     console.warn('loadCurrentData erreur:', e);
   }
 }
@@ -54,19 +80,25 @@ function updateZoneCards(data) {
       fill.className.baseVal = `g-fill ${mc}`;
     }
 
-    // Gauge center text
-    const txt = document.querySelector(`[data-zone-text="${z.zone_id}"]`);
-    if (txt) {
-      txt.textContent = Math.round(pct) + '%';
-      txt.className = `gauge-center ${mc}`;
-    }
+    // Gauge center text + moisture value
+    document.querySelectorAll(`[data-zone-text="${z.zone_id}"]`).forEach(el => {
+      el.textContent = Math.round(pct) + '%';
+      if (el.classList.contains('gauge-center')) {
+        el.className = `gauge-center ${mc}`;
+      } else if (el.classList.contains('moisture-value')) {
+        el.className = `moisture-value ${mc}`;
+      }
+    });
 
-    // Valve badge
-    const badge = document.querySelector(`[data-valve-badge="${z.zone_id}"]`);
-    if (badge) {
+    // Actuateur vanne — valeurs entièrement contrôlées (booléen), pas de XSS
+    const valveEl = document.querySelector(`[data-valve-badge="${z.zone_id}"]`);
+    if (valveEl) {
       const open = z.valve_state === 'open';
-      badge.className = `badge ${open ? 'badge-valve-open' : 'badge-valve-close'}`;
-      badge.innerHTML = `<i class="bi bi-droplet${open ? '-fill' : ''}"></i> ${open ? 'Arrosage' : 'Fermé'}`;
+      valveEl.className = `zc-actuator ${open ? 'zc-actuator-on' : 'zc-actuator-off'}`;
+      const ico = valveEl.querySelector('.zc-actuator-icon');
+      const state = valveEl.querySelector('.zc-actuator-state');
+      if (ico)   ico.className   = `bi bi-droplet${open ? '-fill' : ''} zc-actuator-icon`;
+      if (state) state.textContent = open ? 'Arrosage actif' : 'Fermée';
     }
     // Alerte sécheresse
     const alertEl = document.getElementById(`alert-${z.zone_id}`);
@@ -145,6 +177,7 @@ function renderMainChart(hist, events) {
   }), {responsive: true, displayModeBar: false});
 }
 
+// C5 : journal reconstruit via DOM — e.message jamais injecté via innerHTML
 async function loadJournal() {
   try {
     const resp = await fetch('/api/journal?limit=10');
@@ -159,22 +192,47 @@ async function loadJournal() {
       success: 'check-circle-fill',
       info:    'info-circle-fill',
     };
-    list.innerHTML = data.entries.map(e => {
+    if (!data.entries || !data.entries.length) {
+      list.innerHTML = '<div class="empty-state" style="padding:20px;"><i class="bi bi-journal" style="font-size:28px;display:block;margin-bottom:6px;"></i><p>Aucune entrée.</p></div>';
+      return;
+    }
+    // C5 : DOM API — textContent pour les champs issus de l'Arduino/BD
+    const frag = document.createDocumentFragment();
+    data.entries.forEach(e => {
       const lvl = e.level in iconMap ? e.level : 'info';
       const ts  = e.timestamp ? e.timestamp.substring(5, 16).replace('T', ' ') : '';
-      return `<div class="journal-item">
-        <div class="j-icon ${lvl}"><i class="bi bi-${iconMap[lvl]}"></i></div>
-        <div class="j-body">
-          <div class="j-msg">${e.message}</div>
-          <div class="j-time">${ts}</div>
-        </div>
-      </div>`;
-    }).join('') || '<div class="empty-state" style="padding:20px;"><i class="bi bi-journal" style="font-size:28px;display:block;margin-bottom:6px;"></i><p>Aucune entrée.</p></div>';
+
+      const item = document.createElement('div');
+      item.className = 'journal-item';
+
+      const icon = document.createElement('div');
+      icon.className = `j-icon ${lvl}`;
+      icon.innerHTML = `<i class="bi bi-${iconMap[lvl]}"></i>`;
+
+      const body = document.createElement('div');
+      body.className = 'j-body';
+
+      const msg = document.createElement('div');
+      msg.className = 'j-msg';
+      msg.textContent = e.message;   // C5 : textContent — jamais innerHTML
+
+      const time = document.createElement('div');
+      time.className = 'j-time';
+      time.textContent = ts;         // C5 : textContent
+
+      body.appendChild(msg);
+      body.appendChild(time);
+      item.appendChild(icon);
+      item.appendChild(body);
+      frag.appendChild(item);
+    });
+    list.replaceChildren(frag);
   } catch (e) {
     console.warn('loadJournal erreur:', e);
   }
 }
 
+// C5 : forecast reconstruit via DOM — h.temperature jamais injecté via innerHTML
 async function loadForecast() {
   try {
     const resp = await fetch('/api/weather/forecast');
@@ -182,18 +240,24 @@ async function loadForecast() {
     const data  = await resp.json();
     const strip = document.getElementById('forecastStrip');
     if (!strip) return;
-    strip.innerHTML = (data.forecast || []).slice(0, 24).map(h => {
+    const frag = document.createDocumentFragment();
+    (data.forecast || []).slice(0, 24).forEach(h => {
       const dt   = new Date(h.hour);
       const hh   = dt.getHours().toString().padStart(2, '0');
       const rain = h.precip_mm > 0 ? '🌧️' : (h.precip_prob_pct > 40 ? '🌦️' : '☀️');
       const frost= h.frost_risk ? '❄️' : '';
-      return `<div class="forecast-item">
-        <div class="fc-hour">${hh}h</div>
+      const temp = parseFloat(h.temperature);   // C5 : forcer number, pas de HTML
+
+      const item = document.createElement('div');
+      item.className = 'forecast-item';
+      // Valeurs contrôlées (hh = padded number, emojis littéraux, temp = parseFloat)
+      item.innerHTML = `<div class="fc-hour">${hh}h</div>
         <div class="fc-icon">${rain}${frost}</div>
-        <div class="fc-temp">${h.temperature}°</div>
-        <div class="fc-rain">${Math.round(h.precip_prob_pct || 0)}%</div>
-      </div>`;
-    }).join('');
+        <div class="fc-temp">${isNaN(temp) ? '--' : temp}°</div>
+        <div class="fc-rain">${Math.round(h.precip_prob_pct || 0)}%</div>`;
+      frag.appendChild(item);
+    });
+    strip.replaceChildren(frag);
   } catch (e) {
     console.warn('loadForecast erreur:', e);
   }

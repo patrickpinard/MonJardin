@@ -56,6 +56,7 @@
   /* Typography */
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
           system-ui, Helvetica, Arial, sans-serif;
+  --font-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 
   /* Motion */
   --ease: cubic-bezier(.4,0,.2,1);
@@ -458,6 +459,163 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zo-plants-empty a:hover { text-decoration: underline; }
 
 .zo-card { display: flex; flex-direction: column; }
+
+/* ── Dashboard zone cards (zc-*) ─────────────────────── */
+.zc-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--t), box-shadow var(--t), border-color var(--t);
+}
+.zc-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--border-md); }
+
+/* Header */
+.zc-header {
+  padding: 14px 16px 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  border-bottom: 1px solid var(--border);
+}
+.zc-header-meta { flex: 1; min-width: 0; }
+.zc-name  { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.zc-desc  { font-size: 11px; color: var(--text-tertiary); margin-top: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zc-header-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+/* Moisture section */
+.zc-moisture {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px 13px;
+  border-bottom: 1px solid var(--border);
+}
+.zc-moisture-meta { flex: 1; }
+.zc-temp-row { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.zc-temp-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+.zc-temp-item i { font-size: 11px; }
+.zc-temp-serre { color: var(--orange); }
+
+/* Actuators section */
+.zc-section-actuators {
+  padding: 11px 16px 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Plants section — flex: 1 fills remaining height for equal-height cards */
+.zc-section-plants {
+  padding: 11px 16px 13px;
+  flex: 1;
+}
+
+/* Shared section label */
+.zc-section-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 9px;
+}
+.zc-section-label i { font-size: 11px; }
+
+/* Actuator tiles */
+.zc-actuators-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.zc-actuator {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex: 1;
+  min-width: 105px;
+  max-width: calc(50% - 4px);
+  transition: border-color var(--t), background var(--t);
+}
+.zc-actuator-icon { font-size: 17px; flex-shrink: 0; }
+.zc-actuator-body { min-width: 0; }
+.zc-actuator-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  line-height: 1;
+}
+.zc-actuator-state {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 2px;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+.zc-actuator-on {
+  background: rgba(10,132,255,.09);
+  border-color: rgba(10,132,255,.3);
+}
+.zc-actuator-on .zc-actuator-icon { color: var(--blue); }
+.zc-actuator-on .zc-actuator-state { color: var(--blue); }
+.zc-actuator-roof-on {
+  background: rgba(255,159,10,.09);
+  border-color: rgba(255,159,10,.3);
+}
+.zc-actuator-roof-on .zc-actuator-icon { color: var(--orange); }
+.zc-actuator-roof-on .zc-actuator-state { color: var(--orange); }
+.zc-actuator-off .zc-actuator-icon { color: var(--text-tertiary); }
+.zc-actuator-off .zc-actuator-state { color: var(--text-tertiary); }
+
+/* Plant chips */
+.zc-plant-count {
+  margin-left: 5px;
+  background: rgba(48,209,88,.15);
+  color: var(--green);
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  font-size: 10px;
+  font-weight: 700;
+}
+.zc-plants-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.zc-plant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(48,209,88,.07);
+  border: 1px solid rgba(48,209,88,.15);
+}
+.zc-plant-chip-emoji {
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+  font-size: 14px;
+  line-height: 1;
+}
+.zc-plant-chip-name { font-size: 11px; color: var(--text-primary); font-weight: 600; }
+.zc-plant-more { background: var(--bg-secondary); border-color: var(--border); color: var(--text-tertiary); }
+.zc-plants-empty-sm { font-size: 11px; color: var(--text-disabled); padding: 2px 0; }
+
+/* Footer */
+.zc-footer { padding: 10px 16px 14px; }
 
 /* ── Zone actions ─────────────────────────────────────── */
 .zone-actions {
@@ -1310,7 +1468,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 /* ── Custom confirm modal ─────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 9000;
-  background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
+  background: rgba(0,0,0,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
   opacity: 0; pointer-events: none;

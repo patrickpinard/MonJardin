@@ -6,7 +6,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Config:
-    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "monjardin-dev-secret")
+    # C4 : clé aléatoire si FLASK_SECRET_KEY absent — sessions invalidées au redémarrage
+    _raw_key = os.environ.get("FLASK_SECRET_KEY")
+    if not _raw_key:
+        import secrets as _s, logging as _lg
+        _raw_key = _s.token_hex(32)
+        _lg.getLogger(__name__).warning(
+            "FLASK_SECRET_KEY non définie — clé éphémère générée. "
+            "Les sessions seront invalidées à chaque redémarrage. "
+            "Définissez FLASK_SECRET_KEY dans votre .env pour la production."
+        )
+    SECRET_KEY = _raw_key
 
     # Mode simulation
     SIMULATION_MODE: bool = os.environ.get("SIMULATION_MODE", "true").lower() == "true"
@@ -56,6 +66,11 @@ class Config:
     FLASK_HOST: str = os.environ.get("FLASK_HOST", "0.0.0.0")
     FLASK_PORT: int = int(os.environ.get("FLASK_PORT", "5000"))
     DEBUG: bool = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
+
+    # Session cookies — SameSite=Lax requis pour Safari (HTTP localhost)
+    SESSION_COOKIE_SAMESITE: str = "Lax"
+    SESSION_COOKIE_HTTPONLY: bool = True
+    SESSION_COOKIE_SECURE: bool = False  # True en production HTTPS
 
     # Identité du jardin
     GARDEN_NAME: str     = os.environ.get("GARDEN_NAME", "MonJardin")

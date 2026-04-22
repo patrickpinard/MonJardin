@@ -1,5 +1,5 @@
 """Modèles pour les plantations et le cache météo."""
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import db
 
 
@@ -34,7 +34,7 @@ class WeatherCache(db.Model):
     __tablename__ = "weather_cache"
 
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)
     forecast_json = db.Column(db.Text, nullable=True)
     source = db.Column(db.String(32), default="meteosuisse")
     valid_until = db.Column(db.DateTime, nullable=True)

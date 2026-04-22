@@ -1,7 +1,8 @@
 """Routes API JSON — consommées par le JavaScript du dashboard."""
 import json
 import logging
-from datetime import datetime, timedelta
+import threading
+from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, current_app, jsonify, request
 
@@ -9,6 +10,13 @@ from ..models import db, SensorReading, Zone, IrrigationLog, RoofLog, JournalEnt
 
 api_bp = Blueprint("api", __name__)
 log = logging.getLogger(__name__)
+
+# M8 : lock global — une seule exécution de force_cycle() à la fois
+_cycle_lock = threading.Lock()
+
+def _utcnow() -> datetime:
+    """M9 : remplacement de _utcnow() (deprecated Python 3.12+)."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 @api_bp.get("/data/current")
@@ -25,7 +33,7 @@ def current_data():
             zones_map[z["zone_id"]] = z
 
     zones = Zone.query.order_by(Zone.zone_id).all()
-    alert_since = datetime.utcnow() - timedelta(hours=2)
+    alert_since = _utcnow() - timedelta(hours=2)
     result = []
     for zone in zones:
         z_sensor = zones_map.get(zone.zone_id, {})
@@ -72,7 +80,7 @@ def current_data():
         "wind_speed_kmh": wind,
         "roof_state": actuator_status.get("roof_state", "close"),
         "arduino_reachable": sensor_data is not None,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": _utcnow().isoformat(),
     })
 
 
@@ -80,11 +88,15 @@ def current_data():
 def history():
     """Série temporelle pour Plotly (zone_id optionnel, hours=24 par défaut)."""
     zone_id = request.args.get("zone_id", type=int)
+    # M6 : valider zone_id dans la plage [1..4]
+    if zone_id is not None and zone_id not in (1, 2, 3, 4):
+        return jsonify({"error": "zone_id doit être compris entre 1 et 4"}), 400
     try:
-        hours = min(int(request.args.get("hours", 24)), 720)
+        # M5 : hours doit être > 0 (valeur négative produirait une date future)
+        hours = min(max(int(request.args.get("hours", 24)), 1), 720)
     except (ValueError, TypeError):
-        return jsonify({"error": "Le paramètre 'hours' doit être un entier"}), 400
-    since = datetime.utcnow() - timedelta(hours=hours)
+        return jsonify({"error": "Le paramètre 'hours' doit être un entier positif"}), 400
+    since = _utcnow() - timedelta(hours=hours)
 
     query = SensorReading.query.filter(SensorReading.timestamp >= since)
     if zone_id:
@@ -104,10 +116,10 @@ def history():
 def irrigation_events():
     """Événements d'arrosage pour les marqueurs Plotly."""
     try:
-        hours = min(int(request.args.get("hours", 24)), 720)
+        hours = min(max(int(request.args.get("hours", 24)), 1), 720)
     except (ValueError, TypeError):
-        return jsonify({"error": "Le paramètre 'hours' doit être un entier"}), 400
-    since = datetime.utcnow() - timedelta(hours=hours)
+        return jsonify({"error": "Le paramètre 'hours' doit être un entier positif"}), 400
+    since = _utcnow() - timedelta(hours=hours)
     events = (IrrigationLog.query
               .filter(IrrigationLog.timestamp >= since)
               .order_by(IrrigationLog.timestamp.asc())
@@ -129,29 +141,33 @@ def control_valve(zone_id: int):
     arduino = current_app.extensions["arduino_client"]
     success = arduino.set_valve(zone_id, state)
 
+    persist_warning = None
     if success:
         try:
-            entry = IrrigationLog(
+            db.session.add(IrrigationLog(
                 zone_id=zone_id, action=state,
                 trigger_type="manual",
                 reason="Commande manuelle utilisateur",
-            )
-            journal = JournalEntry(
+            ))
+            db.session.add(JournalEntry(
                 level="info",
                 message=f"Zone {zone_id} — vanne {state} (commande manuelle)",
-            )
-            db.session.add(entry)
-            db.session.add(journal)
+            ))
             db.session.commit()
         except Exception as e:
             db.session.rollback()
             log.error("Erreur persistance commande vanne zone %d : %s", zone_id, e)
+            # M7 : informer le client que la commande a réussi mais le log a échoué
+            persist_warning = "Commande exécutée, persistance en base échouée"
 
     action_fr = "ouverte" if state == "open" else "fermée"
-    return jsonify({
+    resp = {
         "ok": success,
         "message": f"Vanne zone {zone_id} {action_fr}" if success else "Échec commande Arduino",
-    })
+    }
+    if persist_warning:
+        resp["warning"] = persist_warning
+    return jsonify(resp)
 
 
 @api_bp.post("/control/roof")
@@ -336,10 +352,17 @@ def rpi_status():
 @api_bp.post("/system/force_cycle")
 def force_cycle():
     """Déclenche immédiatement un cycle d'automatisation."""
+    # M8 : lock non-bloquant — rejette les appels concurrents (429)
+    if not _cycle_lock.acquire(blocking=False):
+        return jsonify({"ok": False, "message": "Un cycle est déjà en cours"}), 429
     from ..services.scheduler import automation_cycle
-    import threading
-    t = threading.Thread(target=automation_cycle, args=[current_app._get_current_object()])
-    t.daemon = True
+    app_ref = current_app._get_current_object()
+    def _run():
+        try:
+            automation_cycle(app_ref)
+        finally:
+            _cycle_lock.release()
+    t = threading.Thread(target=_run, daemon=True)
     t.start()
     return jsonify({"ok": True, "message": "Cycle déclenché"})
 
@@ -490,7 +513,7 @@ def test_email():
 @api_bp.get("/notifications")
 def notifications():
     """Notifications pertinentes pour l'utilisateur, triées par importance."""
-    now = datetime.utcnow()
+    now = _utcnow()
     results = []
     seen_ids = set()
 

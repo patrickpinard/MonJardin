@@ -32,6 +32,10 @@ def create_app(config: type = Config) -> Flask:
             dbapi_conn.execute("PRAGMA busy_timeout=5000")
 
     with app.app_context():
+        # Importer tous les modèles pour que create_all les voie
+        from .models import (SensorReading, Zone, IrrigationLog, RoofLog,
+                             JournalEntry, Planting, WeatherCache, AdminUser,
+                             AlertRecipient)
         # Création des tables (y compris admin_users)
         db.create_all()
         # Migrations colonnes manquantes (ALTER TABLE si nécessaire)
@@ -113,12 +117,23 @@ def _migrate_db(app: Flask) -> None:
     from sqlalchemy import text, inspect
     with app.app_context():
         inspector = inspect(db.engine)
-        columns = {c["name"] for c in inspector.get_columns("sensor_readings")}
         with db.engine.connect() as conn:
-            if "temp_serre_c" not in columns:
+            # sensor_readings
+            sr_cols = {c["name"] for c in inspector.get_columns("sensor_readings")}
+            if "temp_serre_c" not in sr_cols:
                 conn.execute(text("ALTER TABLE sensor_readings ADD COLUMN temp_serre_c REAL"))
                 conn.commit()
                 log.info("Migration DB : colonne temp_serre_c ajoutée à sensor_readings")
+            # zones
+            z_cols = {c["name"] for c in inspector.get_columns("zones")}
+            if "length_m" not in z_cols:
+                conn.execute(text("ALTER TABLE zones ADD COLUMN length_m REAL DEFAULT 2.0"))
+                conn.commit()
+                log.info("Migration DB : colonne length_m ajoutée à zones")
+            if "width_m" not in z_cols:
+                conn.execute(text("ALTER TABLE zones ADD COLUMN width_m REAL DEFAULT 1.0"))
+                conn.commit()
+                log.info("Migration DB : colonne width_m ajoutée à zones")
 
 
 def _init_services(app: Flask) -> None:

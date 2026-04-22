@@ -8,7 +8,7 @@ from pathlib import Path
 from flask import Blueprint, current_app, render_template, send_from_directory, \
     request, session, redirect
 
-from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog, AdminUser
+from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog, AdminUser, AlertRecipient, ALERT_TYPES
 
 dashboard_bp = Blueprint("dashboard", __name__)
 log = logging.getLogger(__name__)
@@ -53,6 +53,9 @@ def dashboard():
         zones = []
 
     # Construire les données de zones pour le template
+    plants_db = _load_plants_db()
+    emoji_map = {p["name"]: p.get("emoji", "🌱") for p in plants_db}
+
     zones_map = {}
     if sensor_data:
         for z in sensor_data.get("zones", []):
@@ -74,7 +77,9 @@ def dashboard():
               else "high" if moisture > zone.moisture_threshold_high else "ok")
 
         plantings = Planting.query.filter_by(zone_id=zone.zone_id, status="active").all()
-        alert_since = datetime.utcnow() - timedelta(hours=2)
+        for p in plantings:
+            p.emoji = emoji_map.get(p.vegetable_name, "🌱")
+        alert_since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2)
         recent = (SensorReading.query
                   .filter(SensorReading.zone_id == zone.zone_id,
                           SensorReading.timestamp >= alert_since)
@@ -92,6 +97,28 @@ def dashboard():
 
     temp = sensor_data.get("temperature_c", 15.0) if sensor_data else 15.0
     temp_serre = sensor_data.get("temp_serre_c") if sensor_data else None
+
+    # Prochaines récoltes globales (60 jours)
+    from datetime import date
+    today = date.today()
+    all_plantings = Planting.query.filter_by(status="active").all()
+    zone_name_map = {z.zone_id: z.name for z in zones}
+    harvest_list = []
+    for p in all_plantings:
+        if p.expected_harvest_date:
+            days_left = (p.expected_harvest_date - today).days
+            if days_left <= 60:
+                harvest_list.append({
+                    "vegetable_name": p.vegetable_name,
+                    "variety": p.variety or "",
+                    "zone_id": p.zone_id,
+                    "zone_name": zone_name_map.get(p.zone_id, f"Zone {p.zone_id}"),
+                    "expected_harvest_date": p.expected_harvest_date,
+                    "days_left": days_left,
+                    "emoji": emoji_map.get(p.vegetable_name, "🌱"),
+                })
+    harvest_list.sort(key=lambda x: x["days_left"])
+
     return render_template(
         "dashboard.html",
         zones_data=zones_data,
@@ -101,6 +128,8 @@ def dashboard():
         weather=weather,
         recent_entries=recent_entries,
         arduino_reachable=sensor_data is not None,
+        harvest_list=harvest_list,
+        today_date=today,
     )
 
 
@@ -165,7 +194,7 @@ def zone_detail(zone_id: int):
                      .limit(8).all())
 
     # Tendance humidité (2 dernières heures)
-    two_hours_ago = datetime.utcnow() - timedelta(hours=2)
+    two_hours_ago = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2)
     recent_readings = (SensorReading.query
                        .filter(SensorReading.zone_id == zone_id,
                                SensorReading.timestamp >= two_hours_ago)
@@ -190,6 +219,39 @@ def zone_detail(zone_id: int):
     ]
     seasonal_plants.sort(key=lambda v: v.get("difficulty", "medium"))
 
+    # Group active plantings by species for the visual layout
+    from collections import defaultdict
+    zone_length = getattr(zone, "length_m", None) or 2.0
+    zone_width  = getattr(zone, "width_m",  None) or 1.0
+    species_map: dict = defaultdict(list)
+    for p in plantings:
+        if p.status == "active":
+            species_map[p.vegetable_name].append(p)
+
+    plant_species_summary = []
+    used_area_cm2 = 0.0
+    for vname, plist in species_map.items():
+        info  = plant_info.get(vname, {})
+        space = info.get("space_cm", 30)
+        count = len(plist)
+        cols_fit = max(1, int(zone_length * 100 / space))
+        rows_fit = max(1, int(zone_width  * 100 / space))
+        capacity = cols_fit * rows_fit
+        used_area_cm2 += space * space * count
+        plant_species_summary.append({
+            "name":      vname,
+            "count":     count,
+            "emoji":     info.get("emoji", "🌱"),
+            "space_cm":  space,
+            "color":     info.get("color_primary", "#4CAF50"),
+            "water_need": info.get("water_need", "medium"),
+            "capacity":  capacity,
+        })
+
+    total_area_cm2 = zone_length * 100 * zone_width * 100
+    remaining_area_m2 = round(max(0.0, total_area_cm2 - used_area_cm2) / 10_000, 2)
+    zone_occupancy_pct = min(100, round(used_area_cm2 / total_area_cm2 * 100)) if total_area_cm2 else 0
+
     return render_template(
         "zone_detail.html",
         zone=zone,
@@ -209,6 +271,9 @@ def zone_detail(zone_id: int):
         plant_info=plant_info,
         seasonal_plants=seasonal_plants[:8],
         current_month=current_month,
+        plant_species_summary=plant_species_summary,
+        remaining_area_m2=remaining_area_m2,
+        zone_occupancy_pct=zone_occupancy_pct,
     )
 
 
@@ -282,7 +347,7 @@ def journal_page():
         since = datetime.combine(_date.today(), _time.min)
     else:
         period_hours = {"week": 168, "month": 720, "year": 8760}.get(period, 168)
-        since = datetime.utcnow() - timedelta(hours=period_hours)
+        since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=period_hours)
 
     MAX_EVENTS = 500
     irrigation_logs = (IrrigationLog.query
@@ -461,7 +526,7 @@ def login_post():
     user = AdminUser.query.filter_by(username=username, enabled=True).first()
     if user and user.check_pin(pin):
         from datetime import datetime
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
         from ..models import db
         db.session.commit()
         session["auth_user"] = username
@@ -480,19 +545,20 @@ def logout():
 
 @dashboard_bp.get("/admin")
 def admin_page():
-    users = AdminUser.query.order_by(AdminUser.created_at).all()
-    smtp_user       = current_app.config.get("SMTP_USER", "")
-    smtp_configured = bool(smtp_user and current_app.config.get("SMTP_PASSWORD", ""))
-    from ..models import db, SensorReading
+    from ..models import db as _db, SensorReading
     import os
-    db_path = current_app.config.get("SQLALCHEMY_DATABASE_URI", "").replace("sqlite:///", "")
+    users             = AdminUser.query.order_by(AdminUser.created_at).all()
+    alert_recipients  = AlertRecipient.query.order_by(AlertRecipient.created_at).all()
+    smtp_user         = current_app.config.get("SMTP_USER", "")
+    smtp_configured   = bool(smtp_user and current_app.config.get("SMTP_PASSWORD", ""))
+    db_path           = current_app.config.get("SQLALCHEMY_DATABASE_URI", "").replace("sqlite:///", "")
     try:
         db_size_kb = round(os.path.getsize(db_path) / 1024)
     except Exception:
         db_size_kb = None
     total_readings = SensorReading.query.count()
-    weather = current_app.extensions["weather_service"].get_current()
-    sim_speed = int(current_app.config.get("SIMULATION_SPEED", 1))
+    weather    = current_app.extensions["weather_service"].get_current()
+    sim_speed  = int(current_app.config.get("SIMULATION_SPEED", 1))
     sim_profiles = [
         {"id": "printemps_normal", "label": "🌸 Printemps normal"},
         {"id": "ete_chaud",        "label": "☀️ Été chaud"},
@@ -504,6 +570,8 @@ def admin_page():
     return render_template(
         "admin.html",
         users=users,
+        alert_recipients=alert_recipients,
+        alert_types_config=ALERT_TYPES,
         smtp_host=current_app.config.get("SMTP_HOST", ""),
         smtp_port=current_app.config.get("SMTP_PORT", 587),
         smtp_user=smtp_user,
@@ -519,6 +587,62 @@ def admin_page():
         sim_speed=sim_speed,
         sim_profiles=sim_profiles,
     )
+
+
+import re as _re
+_EMAIL_RE = _re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+
+@dashboard_bp.post("/admin/alerts/add")
+def admin_add_alert():
+    from ..models import db as _db
+    email = request.form.get("email", "").strip().lower()
+    name  = request.form.get("name", "").strip()
+    types = request.form.getlist("alert_types")
+    # M14 : validation email par regex (pas seulement présence de "@")
+    if not email or not _EMAIL_RE.match(email):
+        return redirect("/admin?tab=alertes&error=invalid_email")
+    if AlertRecipient.query.filter_by(email=email).first():
+        return redirect("/admin?tab=alertes&error=email_exists")
+    r = AlertRecipient(email=email, name=name or None)
+    r.alert_types = types if types else [a["id"] for a in ALERT_TYPES]
+    _db.session.add(r)
+    _db.session.commit()
+    return redirect("/admin?tab=alertes")
+
+
+@dashboard_bp.post("/admin/alerts/<int:rid>/toggle")
+def admin_toggle_alert(rid: int):
+    from ..models import db as _db
+    r = AlertRecipient.query.get_or_404(rid)
+    r.enabled = not r.enabled
+    _db.session.commit()
+    return redirect("/admin?tab=alertes")
+
+
+@dashboard_bp.post("/admin/alerts/<int:rid>/edit")
+def admin_edit_alert(rid: int):
+    from ..models import db as _db
+    r     = AlertRecipient.query.get_or_404(rid)
+    email = request.form.get("email", "").strip().lower()
+    name  = request.form.get("name", "").strip()
+    types = request.form.getlist("alert_types")
+    if email and _EMAIL_RE.match(email):
+        existing = AlertRecipient.query.filter_by(email=email).first()
+        if not existing or existing.id == rid:
+            r.email = email
+    r.name        = name or None
+    r.alert_types = types
+    _db.session.commit()
+    return redirect("/admin?tab=alertes")
+
+
+@dashboard_bp.post("/admin/alerts/<int:rid>/delete")
+def admin_delete_alert(rid: int):
+    from ..models import db as _db
+    r = AlertRecipient.query.get_or_404(rid)
+    _db.session.delete(r)
+    _db.session.commit()
+    return redirect("/admin?tab=alertes")
 
 
 @dashboard_bp.post("/admin/users/add")

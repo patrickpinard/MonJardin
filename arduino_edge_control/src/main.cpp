@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <Arduino_EdgeControl.h>
+#include <Adafruit_SleepyDog.h>   // C3 : watchdog matériel SAMD
 
 #include "config.h"
 #include "utils/Logger.h"
@@ -193,6 +194,10 @@ void setup() {
     server.begin(HTTP_PORT);
 
     Logger::log(LOG_INFO, "MAIN", "Initialisation terminée — attente des requêtes");
+
+    // C3 : activation watchdog matériel (reset si loop bloquée > 8s)
+    int wdtMs = Watchdog.enable(WATCHDOG_TIMEOUT_MS);
+    Logger::logf(LOG_INFO, "MAIN", "Watchdog activé : timeout effectif %d ms", wdtMs);
 }
 
 // ── Loop ──────────────────────────────────────────────────────────────────
@@ -250,4 +255,7 @@ void loop() {
     }
 
     delay(10);
+
+    // C3 : feed watchdog — doit être atteint dans les 8s sous peine de reset
+    Watchdog.reset();
 }
