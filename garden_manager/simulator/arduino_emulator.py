@@ -98,18 +98,51 @@ def set_roof():
 
 @_emulator_app.get("/api/health")
 def health():
-    """Heartbeat de l'émulateur."""
+    """Heartbeat de l'émulateur — données système complètes."""
+    import math, random
+    uptime = int(time.time() - _start_time)
     rssi = -65
+
+    # Température MCU : 38°C ± légère variation sinusoïdale
+    mcu_temp = round(38.0 + 4.0 * math.sin(uptime / 60.0) + random.uniform(-0.5, 0.5), 1)
+
+    # SRAM : 256 KB, usage simulé ~55-65%
+    sram_total = 262144
+    sram_used  = int(sram_total * (0.55 + 0.05 * math.sin(uptime / 120.0)))
+    sram_free  = sram_total - sram_used
+
+    # Flash 1 MB, taille sketch fixe (firmware compilé)
+    flash_total = 1048576
+    flash_used  = 327680   # ~320 KB — taille réaliste d'un firmware Edge Control
+
     return jsonify({
-        "status":           "ok",
-        "uptime_s":         int(time.time() - _start_time),
-        "simulated":        True,
-        "wifi_module":      "MKR WiFi 1010 (NINA-W102) [simulé]",
-        "wifi_ssid":        "MonReseau",
-        "wifi_rssi":        rssi,
-        "wifi_quality_pct": min(max(2 * (rssi + 100), 0), 100),
-        "firmware_version": "simulator-1.0.0",
-        "timestamp":        datetime.now(timezone.utc).isoformat(),
+        "status":             "ok",
+        "simulated":          True,
+        "timestamp":          datetime.now(timezone.utc).isoformat(),
+        # Identification
+        "mcu":                "ATSAMD51P20",
+        "architecture":       "ARM Cortex-M4F",
+        "cpu_freq_mhz":       120,
+        "firmware_version":   "simulator-1.0.0",
+        "board":              "Arduino Edge Control",
+        # Temps système
+        "uptime_s":           uptime,
+        # Température MCU
+        "mcu_temp_c":         mcu_temp,
+        # Mémoire SRAM
+        "sram_total_bytes":   sram_total,
+        "sram_used_bytes":    sram_used,
+        "sram_free_bytes":    sram_free,
+        # Flash programme
+        "flash_total_bytes":  flash_total,
+        "flash_used_bytes":   flash_used,
+        # Réseau WiFi (module NINA-W102)
+        "wifi_module":        "NINA-W102 (ESP32) [simulé]",
+        "wifi_ssid":          "MonReseau",
+        "wifi_rssi":          rssi,
+        "wifi_quality_pct":   min(max(2 * (rssi + 100), 0), 100),
+        "ip_address":         "127.0.0.1",
+        "mac_address":        "A8:61:0A:22:33:44",
     })
 
 
