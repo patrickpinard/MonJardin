@@ -86,6 +86,7 @@ def planting_page():
     all_vegetables = advisor.get_all_vegetables()
     golden = advisor.get_golden_associations()
     seasonal_advice = advisor.get_seasonal_advice(current_month)
+    emoji_map = {v["name"]: v.get("emoji", "🌱") for v in all_vegetables}
     return render_template(
         "planting.html",
         zones=zones,
@@ -97,6 +98,7 @@ def planting_page():
         month_name=MONTH_NAMES_FR.get(current_month, ""),
         seasonal_advice=seasonal_advice,
         today_date=date.today(),
+        emoji_map=emoji_map,
     )
 
 

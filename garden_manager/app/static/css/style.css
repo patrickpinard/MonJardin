@@ -149,9 +149,9 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .theme-toggle:hover, .sidebar-collapse-btn:hover { background: var(--bg-secondary); color: var(--text-primary); }
 .brand-icon {
-  width: 34px; height: 34px;
-  border-radius: var(--r-sm); display: flex; align-items: center;
-  justify-content: center; font-size: 17px; flex-shrink: 0;
+  width: 44px; height: 44px;
+  border-radius: 12px; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0;
   overflow: hidden;
 }
 .brand-name { font-size: 15px; font-weight: 700; letter-spacing: -.3px; }
@@ -850,10 +850,43 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   font-size: 12px; font-weight: 700;
   color: var(--text-secondary); background: transparent;
   border: none; font-family: var(--font); cursor: pointer;
-  transition: all var(--t);
+  transition: all var(--t); white-space: nowrap;
 }
 .time-tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
 .time-tab:hover:not(.active) { color: var(--text-primary); }
+@media (max-width: 600px) {
+  .time-tabs { width: 100%; justify-content: space-between; }
+  .time-tab { padding: 7px 0; flex: 1; text-align: center; font-size: 18px; }
+  .time-tab .tab-label { display: none; }
+}
+
+/* ── Planting form responsive ─────────────────────────── */
+.planting-form {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 10px; align-items: end; margin-bottom: 16px;
+}
+@media (max-width: 600px) {
+  .planting-form { grid-template-columns: 1fr 1fr; }
+  .planting-form > div:first-child { grid-column: 1 / -1; }
+}
+
+/* ── Planting cards ───────────────────────────────────── */
+.planting-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.planting-card + .planting-card { margin-top: 6px; }
+.pc-emoji { font-size: 28px; flex-shrink: 0; line-height: 1; font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
+.pc-main { flex: 1; min-width: 0; }
+.pc-name { font-weight: 700; font-size: 13px; }
+.pc-variety { font-weight: 400; color: var(--text-tertiary); font-size: 12px; }
+.pc-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
+.pc-progress-bar { height: 4px; border-radius: 2px; background: var(--bg-tertiary); overflow: hidden; margin-top: 5px; }
+.pc-days { font-size: 10px; margin-top: 2px; }
+.pc-date { font-size: 11px; color: var(--text-tertiary); text-align: right; flex-shrink: 0; min-width: 48px; }
+.pc-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
 /* ── Forms ────────────────────────────────────────────── */
 .form-label {
