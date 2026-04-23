@@ -219,13 +219,26 @@
         </div>
 
         <!-- Section plants — grille cliquable avec variété + besoin en eau -->
+        {% set _is_collapsible = zd.plantings | length > 2 %}
         <div class="zc-section-plants">
+          {% if _is_collapsible %}
+          <button class="zc-section-label zc-plants-toggle" type="button"
+                  onclick="toggleZonePlants(event, {{ zd.zone.zone_id }})">
+            <i class="bi bi-flower1"></i>
+            <span>Plantations actives</span>
+            <span class="zc-plant-count">{{ zd.plantings | length }}</span>
+            <i class="bi bi-chevron-down nav-chevron zc-plants-chevron"
+               id="zpchev-{{ zd.zone.zone_id }}"></i>
+          </button>
+          {% else %}
           <div class="zc-section-label">
             <i class="bi bi-flower1"></i> Plantations actives
             {% if zd.plantings %}<span class="zc-plant-count">{{ zd.plantings | length }}</span>{% endif %}
           </div>
+          {% endif %}
           {% if zd.plantings %}
-          <div class="zo-plants-grid">
+          <div class="zo-plants-grid {% if _is_collapsible %}zc-plants-collapsible{% endif %}"
+               id="zplants-{{ zd.zone.zone_id }}">
             {% for p in zd.plantings %}
             <a href="/plants/{{ p.vegetable_name }}" class="zo-plant-item">
               <div class="zo-plant-emoji">{{ p.emoji }}</div>
@@ -415,5 +428,28 @@
       if (el) el.style.display = (t === tab) ? '' : 'none';
     });
   }
+
+  // ── Section "Plantations actives" repliable par carte (zone) ──
+  function _setZonePlantsOpen(zoneId, open) {
+    const grid = document.getElementById('zplants-' + zoneId);
+    const chev = document.getElementById('zpchev-' + zoneId);
+    if (!grid) return;
+    grid.classList.toggle('open', open);
+    if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+  }
+  function toggleZonePlants(e, zoneId) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const grid = document.getElementById('zplants-' + zoneId);
+    if (!grid) return;
+    const open = !grid.classList.contains('open');
+    _setZonePlantsOpen(zoneId, open);
+    try { localStorage.setItem('zPlantsOpen-' + zoneId, open ? '1' : '0'); } catch (_) {}
+  }
+  // Restauration de l'état au chargement (replié par défaut)
+  document.querySelectorAll('.zc-plants-collapsible').forEach(grid => {
+    const zoneId = grid.id.replace('zplants-', '');
+    const stored = localStorage.getItem('zPlantsOpen-' + zoneId);
+    if (stored === '1') _setZonePlantsOpen(zoneId, true);
+  });
 </script>
 {% endblock %}

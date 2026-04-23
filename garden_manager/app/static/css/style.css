@@ -675,6 +675,50 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zc-plant-more { background: var(--bg-secondary); border-color: var(--border); color: var(--text-tertiary); }
 .zc-plants-empty-sm { font-size: 11px; color: var(--text-disabled); padding: 2px 0; }
 
+/* Section "Plantations actives" repliable (option A) */
+.zc-plants-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding: 4px 6px;
+  margin: -4px -6px 6px;
+  border-radius: var(--r-sm);
+  transition: background var(--t), color var(--t);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.zc-plants-toggle:hover { background: var(--bg-secondary); color: var(--text-secondary); }
+.zc-plants-toggle .zc-plant-count { margin-left: 0; }
+.zc-plants-chevron {
+  margin-left: auto;
+  font-size: 12px !important;
+  color: var(--text-tertiary);
+  transition: transform .2s var(--ease);
+}
+/* Grille collapsible : repliée par défaut (max-height 0) ; .open déploie */
+.zo-plants-grid.zc-plants-collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .3s var(--ease), opacity .2s var(--ease);
+  opacity: 0;
+  margin-top: 0;
+}
+.zo-plants-grid.zc-plants-collapsible.open {
+  max-height: 600px;
+  opacity: 1;
+  margin-top: 2px;
+}
+
 /* Footer */
 .zc-footer {
   padding: 10px 16px 14px;
