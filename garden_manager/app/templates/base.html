@@ -66,22 +66,19 @@
       <a href="/journal" class="nav-item {% if '/journal' in request.path %}active{% endif %}">
         <i class="bi bi-journal-text"></i> Journal
       </a>
-      <div class="nav-sub nav-sub-flat nav-sub-zones-block">
+      <div class="nav-zones-block">
         {% for z in zones_nav %}
-        <a href="/zones/{{ z.zone_id }}" class="nav-sub-item {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}">
+        <a href="/zones/{{ z.zone_id }}" class="nav-zone-link {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}">
           <div class="zone-dot" id="sdot-{{ z.zone_id }}" aria-hidden="true"></div>
-          <span>{{ z.name }}</span>
+          <span class="nav-zone-name">{{ z.name }}</span>
           <span class="zone-mini-m" id="smoist-{{ z.zone_id }}">—</span>
         </a>
         {% endfor %}
       </div>
-      {% set sys_active = '/system/' in request.path or '/settings' in request.path or '/admin' in request.path %}
-      <div class="nav-item-expandable">
-        <button class="nav-item nav-item-toggle {% if sys_active %}active{% endif %}" onclick="toggleSysMenu(event)" type="button">
-          <i class="bi bi-sliders"></i> Système &amp; Admin
-          <i class="bi bi-chevron-down nav-chevron" id="sys-chevron"></i>
-        </button>
-      </div>
+      <button class="nav-item nav-item-toggle" onclick="toggleSysMenu(event)" type="button">
+        <i class="bi bi-sliders"></i> Système &amp; Admin
+        <i class="bi bi-chevron-down nav-chevron" id="sys-chevron"></i>
+      </button>
       <div class="nav-sub" id="nav-sub-sys">
         <a href="/system/arduino" class="nav-sub-item {% if '/system/arduino' in request.path %}active{% endif %}">
           <i class="bi bi-cpu-fill"></i><span>Arduino</span>
@@ -262,8 +259,7 @@
     </a>
     {% endfor %}
   </div>
-  {% set msys_active = '/system/' in request.path or '/settings' in request.path or '/admin' in request.path %}
-  <button class="mobile-menu-item mobile-menu-toggle {% if msys_active %}active{% endif %}" onclick="toggleMobileSysMenu(event)" type="button">
+  <button class="mobile-menu-item mobile-menu-toggle" onclick="toggleMobileSysMenu(event)" type="button">
     <i class="bi bi-sliders"></i> Système &amp; Admin
     <i class="bi bi-chevron-down nav-chevron" id="msys-chevron" style="margin-left:auto;"></i>
   </button>
@@ -651,7 +647,7 @@ function toggleSidebar() {
 
 // ── Sous-menu Système & Admin (desktop) ──────────────────
 function toggleSysMenu(e) {
-  if (e) e.preventDefault();
+  if (e) { e.preventDefault(); e.stopPropagation(); }
   const sub  = document.getElementById('nav-sub-sys');
   const chev = document.getElementById('sys-chevron');
   if (!sub) return;
@@ -676,7 +672,7 @@ function toggleSysMenu(e) {
 
 // ── Sous-menu Système & Admin (mobile) ───────────────────
 function toggleMobileSysMenu(e) {
-  if (e) e.preventDefault();
+  if (e) { e.preventDefault(); e.stopPropagation(); }
   const sub  = document.getElementById('mobile-menu-sys');
   const chev = document.getElementById('msys-chevron');
   if (!sub) return;

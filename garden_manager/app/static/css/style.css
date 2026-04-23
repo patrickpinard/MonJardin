@@ -199,20 +199,45 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .nav-sub-item i { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; color: var(--text-tertiary); }
 .nav-sub-item.active i { color: var(--green); }
 
-/* Bouton-toggle (sous-menu Système & Admin) */
+/* Bouton-toggle (sous-menu Système & Admin) — identique à .nav-item */
 .nav-item-toggle {
-  width: 100%; background: none; border: none;
-  cursor: pointer; user-select: none; text-align: left;
-  font-family: inherit;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
-.nav-item-toggle .nav-chevron { margin-left: auto; }
-.nav-item-toggle.active { background: rgba(48,209,88,.06); color: var(--text-primary); }
+.nav-item-toggle .nav-chevron { margin-left: auto; color: var(--text-tertiary); }
+.nav-item-toggle:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.nav-item-toggle:hover .nav-chevron { color: var(--text-secondary); }
+/* Pas de fond pour l'état "actif" — l'élément du sous-menu actif est déjà mis en évidence */
 
-/* Bloc zones (sans label, avec petite séparation) */
-.nav-sub-zones-block {
-  margin-top: 8px;
-  padding-top: 6px;
+/* Bloc zones de la sidebar — toujours visible, sans collapse */
+.nav-zones-block {
+  display: flex; flex-direction: column; gap: 2px;
+  margin-top: 8px; padding-top: 8px;
   border-top: 1px solid var(--border);
+}
+.nav-zone-link {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: var(--r-md);
+  color: var(--text-secondary); font-size: 13px; font-weight: 500;
+  text-decoration: none;
+  transition: background var(--t), color var(--t);
+}
+.nav-zone-link:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.nav-zone-link.active {
+  background: rgba(48,209,88,.12); color: var(--green); font-weight: 600;
+}
+.nav-zone-link .zone-dot { width: 8px; height: 8px; }
+.nav-zone-link .nav-zone-name { flex: 1; min-width: 0; }
+.nav-zone-link .zone-mini-m {
+  font-size: 12px; font-weight: 600; color: var(--text-tertiary);
 }
 .nav-badge {
   margin-left: auto; background: var(--red); color: #fff;
@@ -240,17 +265,17 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .sidebar-footer { padding: 8px; border-top: 1px solid var(--border); }
 .sidebar-about {
   display: flex; align-items: center; gap: 9px;
-  padding: 8px 10px; border-radius: var(--r-md);
-  color: var(--text-tertiary); text-decoration: none;
-  font-size: 12px; transition: background var(--t), color var(--t);
+  padding: 9px 10px; border-radius: var(--r-md);
+  color: var(--text-secondary); text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  transition: background var(--t), color var(--t);
 }
-.sidebar-about i { font-size: 14px; }
+.sidebar-about i { font-size: 17px; width: 20px; text-align: center; flex-shrink: 0; }
 .sidebar-about:hover { background: var(--bg-secondary); color: var(--text-primary); }
-.sidebar-about.active { color: var(--green); }
+.sidebar-about.active { background: rgba(48,209,88,.12); color: var(--green); font-weight: 600; }
 .sidebar-version {
-  margin-left: auto; font-size: 10px; font-weight: 600;
-  color: var(--text-tertiary); letter-spacing: .3px;
-  padding: 1px 6px; background: var(--bg-secondary); border-radius: var(--r-pill);
+  margin-left: auto; font-size: 11px; font-weight: 600;
+  color: var(--text-tertiary); letter-spacing: .2px;
 }
 .connection-widget {
   display: flex; align-items: center; gap: 8px;
@@ -1556,30 +1581,52 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .mobile-menu-subitem i { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; color: var(--text-tertiary); }
 .mobile-menu-subitem.active i { color: var(--green); }
 
-/* Bouton-toggle du sous-menu Système (mobile) */
+/* Bouton-toggle du sous-menu Système (mobile) — identique aux nav items */
 .mobile-menu-toggle {
-  width: 100%; background: none; border: none;
-  cursor: pointer; user-select: none; text-align: left;
-  font-family: inherit;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.mobile-menu-toggle .nav-chevron {
+  font-size: 14px !important; transition: transform .2s; color: var(--text-tertiary);
 }
 
 /* Sous-menu Système (mobile) — collapsible */
 .mobile-menu-sys {
   max-height: 0; overflow: hidden;
-  transition: max-height .25s var(--ease);
-  padding-left: 8px;
+  transition: max-height .3s var(--ease);
+  display: flex; flex-direction: column; gap: 2px;
+  margin-left: 18px;
+  border-left: 2px solid var(--border);
+  padding-left: 10px;
 }
-.mobile-menu-sys.open { max-height: 240px; padding: 4px 0 8px 8px; }
-.mobile-menu-sys .mobile-menu-subitem { font-size: 13px; padding: 8px 12px; }
+.mobile-menu-sys.open { max-height: 360px; margin-top: 4px; margin-bottom: 6px; }
+.mobile-menu-sys .mobile-menu-subitem {
+  font-size: 14px; padding: 10px 12px;
+  color: var(--text-secondary);
+}
+.mobile-menu-sys .mobile-menu-subitem.active { color: var(--green); }
 
 /* Lien À propos en bas du menu mobile */
 .mobile-menu-about {
-  margin-top: 12px;
+  margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
   color: var(--text-tertiary);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
 }
+.mobile-menu-about i { color: var(--text-tertiary); }
 
 /* ── Mobile nav ───────────────────────────────────────── */
 .mobile-nav {
