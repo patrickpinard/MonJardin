@@ -548,41 +548,58 @@
         <i class="bi bi-droplet-fill" style="color:var(--blue);"></i> Événements d'arrosage
         <a href="/journal" class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:11px;">Voir journal global</a>
       </div>
-      <div style="overflow-x:auto;">
-        <table class="table-modern">
-          <thead><tr><th>Date/Heure</th><th>Action</th><th>Déclencheur</th><th>Humidité</th><th>Raison</th></tr></thead>
-          <tbody>
-            {% for ev in recent_events %}
-            <tr>
-              <td class="jcol-date">
-                <span class="jdate">{{ ev.timestamp.strftime('%d.%m.%y') }}</span>
-                <span class="jtime">{{ ev.timestamp.strftime('%H:%M') }}</span>
-              </td>
-              <td>
-                <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
-                  <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
-                  {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
-                </span>
-              </td>
-              <td><span class="attr easy">
-                {%- if ev.trigger_type == 'auto' %}⚙️ Auto
-                {%- elif ev.trigger_type == 'manual' %}👤 Manuel
-                {%- elif ev.trigger_type == 'weather' %}🌦️ Météo
-                {%- elif ev.trigger_type == 'frost' %}❄️ Gel
-                {%- else %}{{ ev.trigger_type or '—' }}{%- endif %}
-              </span></td>
-              <td>
-                {% if ev.moisture_at_trigger is not none %}
-                <span style="font-weight:600;font-size:12px;color:{% if ev.moisture_at_trigger < 30 %}var(--red){% elif ev.moisture_at_trigger > 65 %}var(--blue){% else %}var(--green){% endif %};">
-                  {{ ev.moisture_at_trigger | round(1) }}%
-                </span>
-                {% else %}<span style="color:var(--text-tertiary)">—</span>{% endif %}
-              </td>
-              <td class="jcol-reason">{{ ev.reason or '—' }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+
+      <!-- Filtres Type (cohérence avec le journal global) -->
+      <div class="filter-bar" style="margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="filter-label">Type</span>
+          <button class="filter-chip active" data-zev-type="all"     onclick="setZevType(this,'all')">Tous</button>
+          <button class="filter-chip"        data-zev-type="auto"    onclick="setZevType(this,'auto')">⚙️ Auto</button>
+          <button class="filter-chip"        data-zev-type="manual"  onclick="setZevType(this,'manual')">👤 Manuel</button>
+          <button class="filter-chip"        data-zev-type="weather" onclick="setZevType(this,'weather')">🌦️ Météo</button>
+          <button class="filter-chip"        data-zev-type="frost"   onclick="setZevType(this,'frost')">❄️ Gel</button>
+        </div>
+      </div>
+
+      <!-- Liste cards (style identique au journal global) -->
+      <div id="zone-events-list">
+        {% for ev in recent_events %}
+        {% set kcolor = '#2196F3' if ev.action == 'open' else '#6b7280' %}
+        {% set kicon  = 'bi-droplet-fill' if ev.action == 'open' else 'bi-droplet' %}
+        <div class="ev-card" data-type="{{ ev.trigger_type or 'system' }}"
+             style="border-left-color:{{ kcolor }};">
+          <div class="ev-row1">
+            <i class="bi {{ kicon }}" style="color:{{ kcolor }};font-size:13px;flex-shrink:0;"></i>
+            <span class="ev-time">
+              <span class="ev-date">{{ ev.timestamp.strftime('%d.%m.%y') }}</span>
+              <span class="ev-hour">{{ ev.timestamp.strftime('%H:%M') }}</span>
+            </span>
+            <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
+              <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
+              {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
+            </span>
+            {% if ev.moisture_at_trigger is not none %}
+            <span class="ev-moisture {% if ev.moisture_at_trigger < 30 %}ev-m-low{% elif ev.moisture_at_trigger > 65 %}ev-m-high{% else %}ev-m-ok{% endif %}">
+              {{ ev.moisture_at_trigger | round(1) }}%
+            </span>
+            {% endif %}
+          </div>
+          <div class="ev-row2">
+            <span class="ev-trigger">
+              {%- if ev.trigger_type == 'auto' %}⚙️ Auto
+              {%- elif ev.trigger_type == 'manual' %}👤 Manuel
+              {%- elif ev.trigger_type == 'weather' %}🌦️ Météo
+              {%- elif ev.trigger_type == 'frost' %}❄️ Gel
+              {%- elif ev.trigger_type == 'heatwave' %}🌡️ Canicule
+              {%- else %}ℹ️ {{ ev.trigger_type or 'Système' }}{%- endif %}
+            </span>
+            <span class="ev-reason">{{ ev.reason or '—' }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="zev-empty" style="display:none;padding:14px;color:var(--text-tertiary);font-size:13px;text-align:center;">
+        Aucun événement pour ce filtre.
       </div>
     </div>
     {% else %}
@@ -1336,5 +1353,20 @@ function closeEditModal() {
 document.getElementById('edit-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeEditModal();
 });
+
+// ── Filtre type — événements de la zone ─────────────────
+function setZevType(btn, val) {
+  document.querySelectorAll('[data-zev-type]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('#zone-events-list .ev-card');
+  let visible = 0;
+  cards.forEach(c => {
+    const show = (val === 'all') || (c.dataset.type === val);
+    c.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  const empty = document.getElementById('zev-empty');
+  if (empty) empty.style.display = visible === 0 ? '' : 'none';
+}
 </script>
 {% endblock %}
