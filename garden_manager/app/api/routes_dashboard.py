@@ -106,11 +106,7 @@ def dashboard():
                                  .order_by(IrrigationLog.timestamp.desc())
                                  .first())
 
-    # P1 : statut global jardin
-    any_alerting = any(zd["is_alerting"] for zd in zones_data)
-    any_low      = any(zd["mc"] == "low" for zd in zones_data)
-    global_status = "alerte" if any_alerting else ("attention" if any_low else "ok")
-    driest_zd = min(zones_data, key=lambda z: z["moisture"]) if zones_data else None
+    # Bandeau d'alerte : zones dont l'humidité est sous le seuil bas
     alerting_zones = [zd for zd in zones_data if zd["mc"] == "low"]
 
     # Tri : zones sèches d'abord (mc=low), puis ok, puis high — par humidité croissante
@@ -152,8 +148,6 @@ def dashboard():
         arduino_reachable=sensor_data is not None,
         harvest_list=harvest_list,
         today_date=today,
-        global_status=global_status,
-        driest_zd=driest_zd,
         alerting_zones=alerting_zones,
     )
 
