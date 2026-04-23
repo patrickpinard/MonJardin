@@ -63,13 +63,16 @@ class ActuatorSimulator:
     def get_all_status(self) -> dict:
         """Retourne l'état de tous les actionneurs."""
         self.update_roof()
-        roof_display = "moving" if self._roof_moving_since is not None else self._roof_state
+        moving = self._roof_moving_since is not None
+        roof_display = "moving" if moving else self._roof_state
         return {
             "valves": [
                 {"zone_id": z, "state": self._valve_states[z]}
                 for z in range(1, 5)
             ],
             "roof_state": roof_display,
+            # Cible du mouvement (None si pas en mouvement)
+            "roof_target": self._roof_target if moving else None,
         }
 
     def inject_stuck_valve(self, zone_id: Optional[int]) -> None:

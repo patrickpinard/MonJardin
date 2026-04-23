@@ -79,6 +79,7 @@ def current_data():
         "temp_serre_c": sensor_data.get("temp_serre_c") if sensor_data else None,
         "wind_speed_kmh": wind,
         "roof_state": actuator_status.get("roof_state", "close"),
+        "roof_target": actuator_status.get("roof_target"),
         "arduino_reachable": sensor_data is not None,
         "timestamp": _utcnow().isoformat(),
     })
@@ -160,10 +161,10 @@ def control_valve(zone_id: int):
             # M7 : informer le client que la commande a réussi mais le log a échoué
             persist_warning = "Commande exécutée, persistance en base échouée"
 
-    action_fr = "ouverte" if state == "open" else "fermée"
+    action_label = "Ouverture" if state == "open" else "Fermeture"
     resp = {
         "ok": success,
-        "message": f"Vanne zone {zone_id} {action_fr}" if success else "Échec commande Arduino",
+        "message": f"{action_label} de la vanne d'arrosage {zone_id}" if success else "Échec commande Arduino",
     }
     if persist_warning:
         resp["warning"] = persist_warning
@@ -191,10 +192,10 @@ def control_roof():
             db.session.rollback()
             log.error("Erreur persistance commande lucarne : %s", e)
 
-    action_fr = "ouvert" if state == "open" else "fermé"
+    action_label = "Ouverture" if state == "open" else "Fermeture"
     return jsonify({
         "ok": success,
-        "message": f"Lucarne {action_fr}" if success else "Échec commande Arduino",
+        "message": f"{action_label} de la lucarne en cours…" if success else "Échec commande Arduino",
     })
 
 

@@ -116,18 +116,18 @@
             {% else %}—{% endif %}
           </div>
         </div>
-        <div class="char-item">
-          <span class="char-icon">{% if valve_state == 'open' %}🚿{% else %}🔒{% endif %}</span>
+        <div class="char-item" id="zd-valve-card">
+          <span class="char-icon" id="zd-valve-icon">{% if valve_state == 'open' %}🚿{% else %}🔒{% endif %}</span>
           <div class="char-label">Vanne</div>
-          <div class="char-value" style="color:{% if valve_state == 'open' %}var(--blue){% else %}var(--text-secondary){% endif %};">
+          <div class="char-value" id="zd-valve-text" style="color:{% if valve_state == 'open' %}var(--blue){% else %}var(--text-secondary){% endif %};">
             {{ 'Ouverte' if valve_state == 'open' else 'Fermée' }}
           </div>
         </div>
         {% if zone.has_roof %}
-        <div class="char-item">
-          <span class="char-icon">{{ '🪟' if roof_state == 'open' else '🏠' }}</span>
+        <div class="char-item" id="zd-roof-card">
+          <span class="char-icon" id="zd-roof-icon">{{ '🪟' if roof_state == 'open' else '🏠' }}</span>
           <div class="char-label">Lucarne</div>
-          <div class="char-value" style="color:{% if roof_state == 'open' %}var(--orange){% else %}var(--text-secondary){% endif %};">
+          <div class="char-value" id="zd-roof-text" style="color:{% if roof_state == 'open' %}var(--orange){% else %}var(--text-secondary){% endif %};">
             {{ 'Ouverte' if roof_state == 'open' else 'Fermée' }}
           </div>
         </div>
@@ -1109,5 +1109,55 @@ function setZevType(btn, val) {
   const empty = document.getElementById('zev-empty');
   if (empty) empty.style.display = visible === 0 ? '' : 'none';
 }
+
+// ── Polling temps réel : MAJ statut vanne + lucarne ────
+const _ZONE_ID = {{ zone.zone_id }};
+async function refreshZoneStatus() {
+  try {
+    const resp = await fetch('/api/data/current');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const zone = (data.zones || []).find(z => z.zone_id === _ZONE_ID);
+    if (!zone) return;
+
+    // Vanne
+    const vIcon = document.getElementById('zd-valve-icon');
+    const vText = document.getElementById('zd-valve-text');
+    if (vText) {
+      const open = zone.valve_state === 'open';
+      vText.textContent = open ? 'Ouverte' : 'Fermée';
+      vText.style.color = open ? 'var(--blue)' : 'var(--text-secondary)';
+      if (vIcon) vIcon.textContent = open ? '🚿' : '🔒';
+    }
+
+    // Lucarne (si présente)
+    const rIcon = document.getElementById('zd-roof-icon');
+    const rText = document.getElementById('zd-roof-text');
+    if (rText) {
+      const state  = data.roof_state;     // 'open' | 'close' | 'moving'
+      const target = data.roof_target;
+      if (state === 'moving') {
+        rText.textContent = target === 'open' ? "En cours d'ouverture…" : 'En cours de fermeture…';
+        rText.style.color = 'var(--orange)';
+        if (rIcon) rIcon.textContent = '⏳';
+      } else if (state === 'open') {
+        rText.textContent = 'Ouverte';
+        rText.style.color = 'var(--orange)';
+        if (rIcon) rIcon.textContent = '🪟';
+      } else {
+        rText.textContent = 'Fermée';
+        rText.style.color = 'var(--text-secondary)';
+        if (rIcon) rIcon.textContent = '🏠';
+      }
+    }
+  } catch (e) { /* silencieux */ }
+}
+// Refresh toutes les 5s pour bien suivre le mouvement de la lucarne (durée 30s)
+let _zoneStatusInterval = setInterval(refreshZoneStatus, 5000);
+window.addEventListener('beforeunload', () => {
+  if (_zoneStatusInterval) clearInterval(_zoneStatusInterval);
+});
+// Refresh immédiat après commande manuelle (controls.js appelle loadCurrentData())
+window.loadCurrentData = refreshZoneStatus;
 </script>
 {% endblock %}

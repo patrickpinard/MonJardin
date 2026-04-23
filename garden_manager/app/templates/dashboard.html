@@ -148,11 +148,12 @@
               </div>
             </div>
             {% if zd.zone.has_roof %}
-            <div class="zc-actuator {% if roof_state == 'open' %}zc-actuator-roof-on{% else %}zc-actuator-off{% endif %}">
-              <i class="bi bi-{% if roof_state == 'open' %}wind{% else %}house-fill{% endif %} zc-actuator-icon"></i>
+            <div class="zc-actuator {% if roof_state == 'moving' %}zc-actuator-moving{% elif roof_state == 'open' %}zc-actuator-roof-on{% else %}zc-actuator-off{% endif %}"
+                 data-roof-badge>
+              <i class="bi bi-{% if roof_state == 'moving' %}arrow-repeat{% elif roof_state == 'open' %}wind{% else %}house-fill{% endif %} zc-actuator-icon"></i>
               <div class="zc-actuator-body">
                 <div class="zc-actuator-label">Lucarne</div>
-                <div class="zc-actuator-state">{{ 'Ouverte' if roof_state == 'open' else 'Fermée' }}</div>
+                <div class="zc-actuator-state">{% if roof_state == 'moving' %}En cours…{% elif roof_state == 'open' %}Ouverte{% else %}Fermée{% endif %}</div>
               </div>
             </div>
             {% endif %}

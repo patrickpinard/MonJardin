@@ -642,6 +642,27 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zc-actuator-off .zc-actuator-icon { color: var(--text-tertiary); }
 .zc-actuator-off .zc-actuator-state { color: var(--text-tertiary); }
 
+/* État "en mouvement" (lucarne en cours d'ouverture/fermeture) */
+.zc-actuator-moving {
+  background: rgba(255,159,10,.12);
+  border-color: rgba(255,159,10,.4);
+  animation: actuator-pulse 1.6s ease-in-out infinite;
+}
+.zc-actuator-moving .zc-actuator-icon {
+  color: var(--orange);
+  animation: actuator-spin 1.5s linear infinite;
+  display: inline-block;
+}
+.zc-actuator-moving .zc-actuator-state { color: var(--orange); font-style: italic; }
+@keyframes actuator-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,159,10,.0); }
+  50%      { box-shadow: 0 0 0 4px rgba(255,159,10,.18); }
+}
+@keyframes actuator-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* Plant chips */
 .zc-plant-count {
   margin-left: 5px;

@@ -105,6 +105,28 @@ function updateZoneCards(data) {
     if (alertEl) alertEl.style.display = z.is_alerting ? '' : 'none';
   });
 
+  // ── Lucarne (zone serre uniquement) ──────────────────────
+  const roofEl = document.querySelector('[data-roof-badge]');
+  if (roofEl) {
+    const state  = data.roof_state;        // 'open' | 'close' | 'moving'
+    const target = data.roof_target;       // 'open' | 'close' (si moving)
+    const ico    = roofEl.querySelector('.zc-actuator-icon');
+    const lbl    = roofEl.querySelector('.zc-actuator-state');
+    if (state === 'moving') {
+      roofEl.className = 'zc-actuator zc-actuator-moving';
+      if (ico) ico.className = 'bi bi-arrow-repeat zc-actuator-icon';
+      if (lbl) lbl.textContent = target === 'open' ? "En cours d'ouverture…" : 'En cours de fermeture…';
+    } else if (state === 'open') {
+      roofEl.className = 'zc-actuator zc-actuator-roof-on';
+      if (ico) ico.className = 'bi bi-wind zc-actuator-icon';
+      if (lbl) lbl.textContent = 'Ouverte';
+    } else {
+      roofEl.className = 'zc-actuator zc-actuator-off';
+      if (ico) ico.className = 'bi bi-house-fill zc-actuator-icon';
+      if (lbl) lbl.textContent = 'Fermée';
+    }
+  }
+
   // Vent mesuré par l'Arduino
   const windEl = document.getElementById('dash-wind-arduino');
   if (windEl && data.wind_speed_kmh != null) {
