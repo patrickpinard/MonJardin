@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}MonJardin{% endblock %} — MonJardin</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=25">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=26">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
   <!-- PWA -->
@@ -66,7 +66,11 @@
       <a href="/journal" class="nav-item {% if '/journal' in request.path %}active{% endif %}">
         <i class="bi bi-journal-text"></i> Journal
       </a>
-      <div class="nav-zones-block">
+      <button class="nav-item nav-item-toggle" onclick="toggleZonesMenu(event)" type="button">
+        <i class="bi bi-grid-3x3-gap-fill"></i> Zones
+        <i class="bi bi-chevron-down nav-chevron" id="zones-chevron"></i>
+      </button>
+      <div class="nav-sub" id="nav-sub-zones">
         {% for z in zones_nav %}
         <a href="/zones/{{ z.zone_id }}" class="nav-zone-link {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}">
           <div class="zone-dot" id="sdot-{{ z.zone_id }}" aria-hidden="true"></div>
@@ -252,7 +256,11 @@
   <a href="/journal" class="mobile-menu-item {% if '/journal' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-journal-text"></i> Journal
   </a>
-  <div class="mobile-menu-zones mobile-menu-zones-flat">
+  <button class="mobile-menu-item mobile-menu-toggle" onclick="toggleMobileZonesMenu(event)" type="button">
+    <i class="bi bi-grid-3x3-gap-fill"></i> Zones
+    <i class="bi bi-chevron-down nav-chevron" id="mzones-chevron" style="margin-left:auto;"></i>
+  </button>
+  <div class="mobile-menu-sys mobile-menu-zones-collapsible" id="mobile-menu-zones">
     {% for z in zones_nav %}
     <a href="/zones/{{ z.zone_id }}" class="mobile-menu-subitem {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}" onclick="closeMobileMenu()">
       <div class="zone-dot" id="mdot-{{ z.zone_id }}" aria-hidden="true"></div><span>{{ z.name }}</span><span class="zone-mini-m" id="mmoist-{{ z.zone_id }}">—</span>
@@ -645,6 +653,32 @@ function toggleSidebar() {
   }
 })();
 
+// ── Sous-menu Zones (desktop) ────────────────────────────
+function toggleZonesMenu(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  const sub  = document.getElementById('nav-sub-zones');
+  const chev = document.getElementById('zones-chevron');
+  if (!sub) return;
+  const open = sub.classList.toggle('open');
+  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+  localStorage.setItem('zonesMenuOpen', open ? '1' : '0');
+}
+(function() {
+  const sub  = document.getElementById('nav-sub-zones');
+  const chev = document.getElementById('zones-chevron');
+  if (!sub) return;
+  // Auto-déploiement si on est sur une page zone OU si état stocké = ouvert
+  // Par défaut : ouvert (les zones sont des accès rapides importants)
+  const path = window.location.pathname;
+  const onZonePage = path.startsWith('/zones/');
+  const stored = localStorage.getItem('zonesMenuOpen');
+  const shouldOpen = onZonePage || stored === null || stored === '1';
+  if (shouldOpen) {
+    sub.classList.add('open');
+    if (chev) chev.style.transform = 'rotate(180deg)';
+  }
+})();
+
 // ── Sous-menu Système & Admin (desktop) ──────────────────
 function toggleSysMenu(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -668,6 +702,25 @@ function toggleSysMenu(e) {
     sub.classList.add('open');
     if (chev) chev.style.transform = 'rotate(180deg)';
   }
+})();
+
+// ── Sous-menu Zones (mobile) ─────────────────────────────
+function toggleMobileZonesMenu(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  const sub  = document.getElementById('mobile-menu-zones');
+  const chev = document.getElementById('mzones-chevron');
+  if (!sub) return;
+  const open = sub.classList.toggle('open');
+  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+(function() {
+  // Auto-déploiement sur page zone, sinon ouvert par défaut
+  const sub  = document.getElementById('mobile-menu-zones');
+  const chev = document.getElementById('mzones-chevron');
+  if (!sub) return;
+  // Toujours ouvert par défaut sur mobile (les zones sont les accès rapides)
+  sub.classList.add('open');
+  if (chev) chev.style.transform = 'rotate(180deg)';
 })();
 
 // ── Sous-menu Système & Admin (mobile) ───────────────────

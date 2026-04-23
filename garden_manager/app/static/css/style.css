@@ -218,14 +218,10 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 /* Pas de fond pour l'état "actif" — l'élément du sous-menu actif est déjà mis en évidence */
 
 /* Bloc zones de la sidebar — toujours visible, sans collapse */
-.nav-zones-block {
-  display: flex; flex-direction: column; gap: 2px;
-  margin-top: 8px; padding-top: 8px;
-  border-top: 1px solid var(--border);
-}
+/* Liens des zones individuelles dans la sidebar (sous-menu Zones) */
 .nav-zone-link {
   display: flex; align-items: center; gap: 9px;
-  padding: 8px 10px; border-radius: var(--r-md);
+  padding: 7px 10px 7px 36px; border-radius: var(--r-md);
   color: var(--text-secondary); font-size: 13px; font-weight: 500;
   text-decoration: none;
   transition: background var(--t), color var(--t);
