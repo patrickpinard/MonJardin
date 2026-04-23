@@ -66,8 +66,7 @@
       <a href="/journal" class="nav-item {% if '/journal' in request.path %}active{% endif %}">
         <i class="bi bi-journal-text"></i> Journal
       </a>
-      <div class="nav-section-label">Zones</div>
-      <div class="nav-sub nav-sub-flat" id="nav-sub-zones">
+      <div class="nav-sub nav-sub-flat nav-sub-zones-block">
         {% for z in zones_nav %}
         <a href="/zones/{{ z.zone_id }}" class="nav-sub-item {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}">
           <div class="zone-dot" id="sdot-{{ z.zone_id }}" aria-hidden="true"></div>
@@ -76,24 +75,36 @@
         </a>
         {% endfor %}
       </div>
-      <div class="nav-section-label">Système</div>
-      <a href="/system/arduino" class="nav-item {% if '/system/arduino' in request.path %}active{% endif %}">
-        <i class="bi bi-cpu-fill"></i> Arduino
-      </a>
-      <a href="/system/raspberry" class="nav-item {% if '/system/raspberry' in request.path %}active{% endif %}">
-        <i class="bi bi-hdd-rack-fill"></i> Raspberry Pi
-      </a>
-      <a href="/settings" class="nav-item {% if '/settings' in request.path %}active{% endif %}">
-        <i class="bi bi-gear-fill"></i> Paramètres
-      </a>
-      <a href="/admin" class="nav-item {% if '/admin' in request.path %}active{% endif %}">
-        <i class="bi bi-shield-lock-fill"></i> Administration
-      </a>
-      <div class="nav-section-label">Application</div>
-      <a href="/about" class="nav-item {% if '/about' in request.path %}active{% endif %}">
-        <i class="bi bi-info-circle-fill"></i> À propos
-      </a>
+      {% set sys_active = '/system/' in request.path or '/settings' in request.path or '/admin' in request.path %}
+      <div class="nav-item-expandable">
+        <button class="nav-item nav-item-toggle {% if sys_active %}active{% endif %}" onclick="toggleSysMenu(event)" type="button">
+          <i class="bi bi-sliders"></i> Système &amp; Admin
+          <i class="bi bi-chevron-down nav-chevron" id="sys-chevron"></i>
+        </button>
+      </div>
+      <div class="nav-sub" id="nav-sub-sys">
+        <a href="/system/arduino" class="nav-sub-item {% if '/system/arduino' in request.path %}active{% endif %}">
+          <i class="bi bi-cpu-fill"></i><span>Arduino</span>
+        </a>
+        <a href="/system/raspberry" class="nav-sub-item {% if '/system/raspberry' in request.path %}active{% endif %}">
+          <i class="bi bi-hdd-rack-fill"></i><span>Raspberry Pi</span>
+        </a>
+        <a href="/settings" class="nav-sub-item {% if '/settings' in request.path %}active{% endif %}">
+          <i class="bi bi-gear-fill"></i><span>Paramètres</span>
+        </a>
+        <a href="/admin" class="nav-sub-item {% if '/admin' in request.path %}active{% endif %}">
+          <i class="bi bi-shield-lock-fill"></i><span>Administration</span>
+        </a>
+      </div>
     </nav>
+
+    <div class="sidebar-footer">
+      <a href="/about" class="sidebar-about {% if '/about' in request.path %}active{% endif %}">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>À propos</span>
+        <span class="sidebar-version">v2.0</span>
+      </a>
+    </div>
 
   </aside>
 
@@ -244,7 +255,6 @@
   <a href="/journal" class="mobile-menu-item {% if '/journal' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-journal-text"></i> Journal
   </a>
-  <div class="mobile-menu-section">Zones</div>
   <div class="mobile-menu-zones mobile-menu-zones-flat">
     {% for z in zones_nav %}
     <a href="/zones/{{ z.zone_id }}" class="mobile-menu-subitem {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}" onclick="closeMobileMenu()">
@@ -252,22 +262,27 @@
     </a>
     {% endfor %}
   </div>
-  <div class="mobile-menu-section">Système</div>
-  <a href="/system/arduino" class="mobile-menu-item {% if '/system/arduino' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-cpu-fill"></i> Arduino
-  </a>
-  <a href="/system/raspberry" class="mobile-menu-item {% if '/system/raspberry' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-hdd-rack-fill"></i> Raspberry Pi
-  </a>
-  <a href="/settings" class="mobile-menu-item {% if '/settings' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-gear-fill"></i> Paramètres
-  </a>
-  <a href="/admin" class="mobile-menu-item {% if '/admin' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-shield-lock-fill"></i> Administration
-  </a>
-  <div class="mobile-menu-section">Application</div>
-  <a href="/about" class="mobile-menu-item {% if '/about' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-info-circle-fill"></i> À propos
+  {% set msys_active = '/system/' in request.path or '/settings' in request.path or '/admin' in request.path %}
+  <button class="mobile-menu-item mobile-menu-toggle {% if msys_active %}active{% endif %}" onclick="toggleMobileSysMenu(event)" type="button">
+    <i class="bi bi-sliders"></i> Système &amp; Admin
+    <i class="bi bi-chevron-down nav-chevron" id="msys-chevron" style="margin-left:auto;"></i>
+  </button>
+  <div class="mobile-menu-sys" id="mobile-menu-sys">
+    <a href="/system/arduino" class="mobile-menu-subitem {% if '/system/arduino' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+      <i class="bi bi-cpu-fill"></i><span>Arduino</span>
+    </a>
+    <a href="/system/raspberry" class="mobile-menu-subitem {% if '/system/raspberry' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+      <i class="bi bi-hdd-rack-fill"></i><span>Raspberry Pi</span>
+    </a>
+    <a href="/settings" class="mobile-menu-subitem {% if '/settings' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+      <i class="bi bi-gear-fill"></i><span>Paramètres</span>
+    </a>
+    <a href="/admin" class="mobile-menu-subitem {% if '/admin' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+      <i class="bi bi-shield-lock-fill"></i><span>Administration</span>
+    </a>
+  </div>
+  <a href="/about" class="mobile-menu-item mobile-menu-about {% if '/about' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-info-circle-fill"></i> À propos <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);">v2.0</span>
   </a>
 </nav>
 </div><!-- /#mobile-menu-wrapper -->
@@ -631,6 +646,52 @@ function toggleSidebar() {
 (function() {
   if (localStorage.getItem('sidebarCollapsed') === '1') {
     document.body.classList.add('sidebar-collapsed');
+  }
+})();
+
+// ── Sous-menu Système & Admin (desktop) ──────────────────
+function toggleSysMenu(e) {
+  if (e) e.preventDefault();
+  const sub  = document.getElementById('nav-sub-sys');
+  const chev = document.getElementById('sys-chevron');
+  if (!sub) return;
+  const open = sub.classList.toggle('open');
+  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+  localStorage.setItem('sysMenuOpen', open ? '1' : '0');
+}
+(function() {
+  const sub  = document.getElementById('nav-sub-sys');
+  const chev = document.getElementById('sys-chevron');
+  if (!sub) return;
+  // Auto-déploiement si on est sur une page Système
+  const path = window.location.pathname;
+  const onSysPage = path.startsWith('/system/') || path.startsWith('/settings') || path.startsWith('/admin');
+  const stored = localStorage.getItem('sysMenuOpen');
+  const shouldOpen = onSysPage || stored === '1';
+  if (shouldOpen) {
+    sub.classList.add('open');
+    if (chev) chev.style.transform = 'rotate(180deg)';
+  }
+})();
+
+// ── Sous-menu Système & Admin (mobile) ───────────────────
+function toggleMobileSysMenu(e) {
+  if (e) e.preventDefault();
+  const sub  = document.getElementById('mobile-menu-sys');
+  const chev = document.getElementById('msys-chevron');
+  if (!sub) return;
+  const open = sub.classList.toggle('open');
+  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+(function() {
+  const sub  = document.getElementById('mobile-menu-sys');
+  const chev = document.getElementById('msys-chevron');
+  if (!sub) return;
+  const path = window.location.pathname;
+  const onSysPage = path.startsWith('/system/') || path.startsWith('/settings') || path.startsWith('/admin');
+  if (onSysPage) {
+    sub.classList.add('open');
+    if (chev) chev.style.transform = 'rotate(180deg)';
   }
 })();
 
