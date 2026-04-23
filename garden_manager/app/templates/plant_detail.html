@@ -66,7 +66,12 @@
     <div class="char-item">
       <span class="char-icon">📏</span>
       <div class="char-label">Espacement</div>
-      <div class="char-value">{{ plant.space_cm }} cm</div>
+      <div class="char-value">
+        {{ plant.space_cm }}{% if plant.space_row_cm and plant.space_row_cm != plant.space_cm %} × {{ plant.space_row_cm }}{% endif %} cm
+      </div>
+      {% if plant.space_row_cm and plant.space_row_cm != plant.space_cm %}
+      <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">en ligne · inter-rang</div>
+      {% endif %}
     </div>
     {% endif %}
     {% if plant.height_cm %}

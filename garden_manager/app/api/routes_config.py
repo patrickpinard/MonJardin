@@ -152,14 +152,17 @@ def planting_page():
         for zone in zones
     }
 
-    # Capacités restantes par zone/légume pour le hint quantité
+    # Capacités restantes par zone/légume pour le hint quantité.
+    # Utilise space_row_cm pour les semis en ligne (carotte, radis, etc.) ;
+    # retombe sur space_cm pour les plants individuels (grille carrée).
     zone_capacity: dict = {}
     for zone in zones:
         zone_capacity[zone.zone_id] = {}
         for v in all_vegetables:
-            sp   = v.get("space_cm", 30)
+            sp     = v.get("space_cm", 30)
+            sp_row = v.get("space_row_cm", sp)
             cols = max(1, int((getattr(zone, "length_m", 2.0) or 2.0) * 100 / sp))
-            rows = max(1, int((getattr(zone, "width_m",  1.0) or 1.0) * 100 / sp))
+            rows = max(1, int((getattr(zone, "width_m",  1.0) or 1.0) * 100 / sp_row))
             active_count = sum(
                 1 for p in plantings_by_zone.get(zone.zone_id, [])
                 if p.status == "active" and p.vegetable_name == v["name"]

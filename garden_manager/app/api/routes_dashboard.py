@@ -252,16 +252,20 @@ def zone_detail(zone_id: int):
     for vname, plist in species_map.items():
         info  = plant_info.get(vname, {})
         space = info.get("space_cm", 30)
+        # Inter-rang : pour les semis en ligne (carotte, radis, oignon...).
+        # Si absent, on retombe sur space_cm (grille carrée pour plants individuels).
+        space_row = info.get("space_row_cm", space)
         count = len(plist)
         cols_fit = max(1, int(zone_length * 100 / space))
-        rows_fit = max(1, int(zone_width  * 100 / space))
+        rows_fit = max(1, int(zone_width  * 100 / space_row))
         capacity = cols_fit * rows_fit
-        used_area_cm2 += space * space * count
+        used_area_cm2 += space * space_row * count
         plant_species_summary.append({
             "name":      vname,
             "count":     count,
             "emoji":     info.get("emoji", "🌱"),
             "space_cm":  space,
+            "space_row_cm": space_row,
             "color":     info.get("color_primary", "#4CAF50"),
             "water_need": info.get("water_need", "medium"),
             "capacity":  capacity,

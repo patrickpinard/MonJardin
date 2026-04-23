@@ -194,7 +194,8 @@
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm (variété Longue de Chantenay en juin). Espacement 5 cm après éclaircissage.",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Salade",
@@ -297,7 +298,8 @@
       "notes_fr": "Semis successifs toutes les 2–3 semaines pour une récolte continue. Arrosez au pied pour éviter les maladies du feuillage. Les variétés résistantes à la chaleur (ex. Batavia) sont recommandées en été.",
       "depth_cm": 0.5,
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "space_row_cm": 30
     },
     {
       "name": "Courgette",
@@ -452,7 +454,8 @@
       "depth_cm": 4,
       "planting_tip_fr": "3 graines par poquet, espacement 10 cm. Semer directement en mai–juillet.",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 40
     },
     {
       "name": "Basilic",
@@ -807,7 +810,8 @@
       "notes_fr": "Semez en rangs espacés de 10 cm. Éclaircissez à 5 cm. Arrosez régulièrement et uniformément pour éviter les racines creuses ou ligneuses.",
       "depth_cm": 1.5,
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 20
     },
     {
       "name": "Oignon",
@@ -893,7 +897,8 @@
       "notes_fr": "Plantez les bulbilles pointe vers le haut à 2 cm de profondeur. Arrosez peu après la formation des bulbes pour favoriser la maturation et la conservation.",
       "depth_cm": 1,
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Poireau",
@@ -974,7 +979,8 @@
       "depth_cm": 15,
       "planting_tip_fr": "Transplanter au dibble, 15 cm de profondeur. Espacement 15 cm. Semer en juin.",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 30
     },
     {
       "name": "Chou",
@@ -1211,7 +1217,8 @@
       "notes_fr": "Semez directement, éclaircissez à 10 cm. Montée en graines dès que T° > 18°C prolongée — choisissez des variétés résistantes à la chaleur pour l'été.",
       "depth_cm": 1,
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Ail",
@@ -1285,7 +1292,8 @@
       "notes_fr": "Plantez les caïeux pointe vers le haut à 5 cm de profondeur. La plantation d'automne donne les meilleurs résultats. Supprimez les hampes florales (scapes) pour de gros bulbes.",
       "depth_cm": 5,
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Fenouil",
@@ -1516,7 +1524,8 @@
       "depth_cm": 2,
       "planting_tip_fr": "Semer à 2 cm, espacement 15 cm. Juin pour une conservation automnale.",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Chou-fleur",
@@ -2071,7 +2080,8 @@
       "notes_fr": "Semez directement dès mars. Prévoyez un tuteur ou un grillage de 1,2 m. Après la culture, incorporez les plants en compost vert riche en azote.",
       "depth_cm": 4,
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 40
     },
     {
       "name": "Fève",
@@ -2223,7 +2233,8 @@
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm. Résistante au gel — idéale pour l'automne.",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 15
     },
     {
       "name": "Roquette",
@@ -2303,7 +2314,8 @@
       "depth_cm": 0.5,
       "planting_tip_fr": "Semer à 0,5 cm, sans couverture. Croissance rapide en 4 semaines.",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 20
     },
     {
       "name": "Navet",
@@ -2377,7 +2389,8 @@
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm, espacement 15 cm. Navet d'automne en juin.",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Panais",
@@ -2449,7 +2462,8 @@
       "notes_fr": "Semence à germination lente (3 semaines). Utilisez toujours des graines de l'année — la viabilité baisse rapidement. Sol profond et pierreux comme pour la carotte.",
       "depth_cm": 1,
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 30
     },
     {
       "name": "Persil",
@@ -2536,7 +2550,8 @@
       "notes_fr": "Germination lente (3 semaines) — faites tremper 24h avant semis. Bisannuel : replantez chaque année pour éviter la montée en graines.",
       "depth_cm": 0.5,
       "category": "herbe",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "space_row_cm": 25
     },
     {
       "name": "Ciboulette",
@@ -2942,7 +2957,8 @@
       "notes_fr": "Préférez la mi-ombre en été pour ralentir la montée en graines. Semis en pleine terre directement — n'aime pas le repiquage. Sensible au froid.",
       "depth_cm": 0.5,
       "category": "herbe",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Céleri-branche",
@@ -3385,7 +3401,8 @@
       "depth_cm": 4,
       "planting_tip_fr": "4 graines par poquet, espacement 40 cm. Semer en bloc (pollinisation croisée).",
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 70
     },
     {
       "name": "Souci",
@@ -3561,7 +3578,8 @@
       "notes_fr": "Semez directement en place — n'aime pas le repiquage. Sol pauvre et soleil = fleurs abondantes. En sol riche, produit des feuilles au détriment des fleurs.",
       "depth_cm": 2,
       "category": "fleur",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 40
     },
     {
       "name": "Bourrache",
@@ -3723,7 +3741,8 @@
       "notes_fr": "Semez dense en bandes entre les cultures ou en jachère. L'une des meilleures plantes mellifères de Suisse. En automne, protège le sol de l'érosion.",
       "depth_cm": 0.5,
       "category": "fleur",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 30
     },
     {
       "name": "Lavande",
@@ -4234,7 +4253,8 @@
           "notes": "Acceptable"
         }
       ],
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Mélisse",
@@ -4365,7 +4385,8 @@
           "notes": "Parfait"
         }
       ],
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Cerfeuil",
@@ -4442,7 +4463,8 @@
           "notes": "Zone idéale en plein air"
         }
       ],
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "space_row_cm": 25
     },
     {
       "name": "Hysope",

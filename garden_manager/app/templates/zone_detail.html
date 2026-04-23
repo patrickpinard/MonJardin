@@ -316,9 +316,10 @@
         {% for p in active_plantings %}
         {% set info = plant_info.get(p.vegetable_name, {}) %}
         {% set space = info.get('space_cm', 30) %}
+        {% set space_row = info.get('space_row_cm', space) %}
         {% set depth = info.get('depth_cm') %}
         {% set count_l = (_zone_length * 100 / space) | int %}
-        {% set count_w = (_zone_width  * 100 / space) | int %}
+        {% set count_w = (_zone_width  * 100 / space_row) | int %}
         {% set total = count_l * count_w %}
         {% if p.planted_date and p.expected_harvest_date %}
           {% set total_days = (p.expected_harvest_date - p.planted_date).days %}
@@ -333,7 +334,7 @@
           <div style="font-weight:700;font-size:13px;text-align:center;">{{ p.vegetable_name }}</div>
           {% if p.variety %}<div style="font-size:11px;color:var(--text-tertiary);text-align:center;">{{ p.variety }}</div>{% endif %}
           <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;">
-            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;">↔ {{ space }}cm</span>
+            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;" title="Espacement entre plants{% if space_row != space %} · inter-rang {{ space_row }}cm{% endif %}">↔ {{ space }}{% if space_row != space %}×{{ space_row }}{% endif %} cm</span>
             {% if depth %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);font-size:10px;">↓ {{ depth }}cm</span>{% endif %}
             <span class="attr {% if info.get('water_need') == 'high' %}water-high{% elif info.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:10px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(info.get('water_need','medium'), '💧💧') }}</span>
           </div>
@@ -380,12 +381,13 @@
             {% for p in active_plantings %}
             {% set info = plant_info.get(p.vegetable_name, {}) %}
             {% set space = info.get('space_cm', 30) %}
+            {% set space_row = info.get('space_row_cm', space) %}
             {% set depth = info.get('depth_cm') %}
             {% set count_l = (_zone_length * 100 / space) | int %}
-            {% set count_w = (_zone_width  * 100 / space) | int %}
+            {% set count_w = (_zone_width  * 100 / space_row) | int %}
             <tr>
               <td style="font-weight:700;">{{ info.get('emoji','🌱') }} {{ p.vegetable_name }}</td>
-              <td><span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);">{{ space }} cm</span></td>
+              <td><span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);" title="{% if space_row != space %}Plants {{ space }}cm en ligne · inter-rang {{ space_row }}cm{% else %}{{ space }}cm × {{ space }}cm{% endif %}">{{ space }}{% if space_row != space %} × {{ space_row }}{% endif %} cm</span></td>
               <td>{% if depth %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);">{{ depth }} cm</span>{% else %}<span style="color:var(--text-tertiary);">—</span>{% endif %}</td>
               <td><span class="attr {% if info.get('water_need') == 'high' %}water-high{% elif info.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:11px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(info.get('water_need','medium'), '💧💧') }}</span></td>
               <td>
@@ -483,7 +485,9 @@
           <div style="font-size:22px;margin-bottom:4px;">{{ v.get('emoji','🌱') }}</div>
           <div style="font-weight:700;font-size:13px;margin-bottom:4px;">{{ v.name }}</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
-            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;">↔ {{ v.get('space_cm',30) }} cm</span>
+            {% set _sp = v.get('space_cm', 30) %}
+            {% set _spr = v.get('space_row_cm', _sp) %}
+            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;" title="{% if _spr != _sp %}Plants {{ _sp }}cm en ligne · inter-rang {{ _spr }}cm{% else %}{{ _sp }}cm × {{ _sp }}cm{% endif %}">↔ {{ _sp }}{% if _spr != _sp %}×{{ _spr }}{% endif %} cm</span>
             {% if v.get('depth_cm') %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);font-size:10px;">↓ {{ v.depth_cm }} cm</span>{% endif %}
             <span class="attr {% if v.get('water_need') == 'high' %}water-high{% elif v.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:10px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(v.get('water_need','medium'),'💧💧') }}</span>
           </div>
