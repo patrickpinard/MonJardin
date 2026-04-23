@@ -737,9 +737,17 @@
             </div>
           </div>
           <div class="form-group mt-2">
-            <label class="form-label">Durée arrosage (min)</label>
+            <label class="form-label">
+              <i class="bi bi-stopwatch" style="color:var(--orange);"></i>
+              Durée maximale d'arrosage (min)
+            </label>
             <input type="number" name="irrigation_duration_min" class="form-control"
                    value="{{ zone.irrigation_duration_min }}" min="1" max="120">
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;line-height:1.4;">
+              <i class="bi bi-shield-check" style="color:var(--green);"></i>
+              <strong>Sécurité</strong> — un arrosage manuel ouvert sera automatiquement
+              arrêté après cette durée pour éviter tout débordement en cas d'oubli.
+            </div>
           </div>
           <button type="submit" class="btn btn-primary w-100 mt-2">
             <i class="bi bi-check2"></i> Enregistrer
@@ -1134,10 +1142,13 @@ async function refreshZoneStatus() {
     const rIcon = document.getElementById('zd-roof-icon');
     const rText = document.getElementById('zd-roof-text');
     if (rText) {
-      const state  = data.roof_state;     // 'open' | 'close' | 'moving'
-      const target = data.roof_target;
+      const state = data.roof_state;     // 'open' | 'close' | 'moving'
       if (state === 'moving') {
-        rText.textContent = target === 'open' ? "En cours d'ouverture…" : 'En cours de fermeture…';
+        // Fallback robuste : utiliser la dernière commande utilisateur si l'API ne renvoie pas roof_target
+        const target = (typeof getRoofMovingTarget === 'function')
+          ? getRoofMovingTarget(data.roof_target)
+          : (data.roof_target || 'open');
+        rText.textContent = target === 'close' ? 'En cours de fermeture…' : "En cours d'ouverture…";
         rText.style.color = 'var(--orange)';
         if (rIcon) rIcon.textContent = '⏳';
       } else if (state === 'open') {

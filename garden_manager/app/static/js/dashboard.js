@@ -109,13 +109,16 @@ function updateZoneCards(data) {
   const roofEl = document.querySelector('[data-roof-badge]');
   if (roofEl) {
     const state  = data.roof_state;        // 'open' | 'close' | 'moving'
-    const target = data.roof_target;       // 'open' | 'close' (si moving)
     const ico    = roofEl.querySelector('.zc-actuator-icon');
     const lbl    = roofEl.querySelector('.zc-actuator-state');
     if (state === 'moving') {
+      // Fallback : si serveur ne renvoie pas roof_target, utiliser la dernière commande
+      const target = (typeof getRoofMovingTarget === 'function')
+        ? getRoofMovingTarget(data.roof_target)
+        : (data.roof_target || 'open');
       roofEl.className = 'zc-actuator zc-actuator-moving';
       if (ico) ico.className = 'bi bi-arrow-repeat zc-actuator-icon';
-      if (lbl) lbl.textContent = target === 'open' ? "En cours d'ouverture…" : 'En cours de fermeture…';
+      if (lbl) lbl.textContent = target === 'close' ? 'En cours de fermeture…' : "En cours d'ouverture…";
     } else if (state === 'open') {
       roofEl.className = 'zc-actuator zc-actuator-roof-on';
       if (ico) ico.className = 'bi bi-wind zc-actuator-icon';
