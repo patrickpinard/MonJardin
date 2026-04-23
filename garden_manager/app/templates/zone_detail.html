@@ -926,7 +926,7 @@
 
 {% block scripts %}
 {% set plant_info = plant_info if plant_info is defined else {} %}
-<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script src="{{ url_for('static', filename='js/controls.js') }}?v={{ static_v }}"></script>
 <script>
 // ── Tab switching ───────────────────────────────────────
 const ALL_TABS = ['temps-reel','graphiques','plants','evenements','config'];

@@ -345,8 +345,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/controls.js') }}?v={{ static_v }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v={{ static_v }}"></script>
 <script>
   // Démarre le polling temps réel (cartes zones + lucarne)
   if (typeof initDashboard === 'function') initDashboard();
