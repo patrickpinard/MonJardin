@@ -722,8 +722,6 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .zc-valve-btns { display: flex; gap: 6px; flex: 1; }
 .zc-valve-btns .btn { flex: 1; justify-content: center; }
-.zc-roof-btns { display: flex; gap: 4px; flex-shrink: 0; }
-.zc-roof-btns .btn { padding: 6px 9px; min-width: 32px; justify-content: center; }
 .zc-detail-btn { flex-shrink: 0; font-size: 18px; color: var(--text-tertiary); }
 .zc-detail-btn:hover { color: var(--brand); }
 
