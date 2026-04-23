@@ -1888,7 +1888,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 /* ── Zone cards grid ──────────────────────────────────── */
 .zones-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   width: 100%;
 }
