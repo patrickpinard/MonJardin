@@ -167,9 +167,11 @@
               <div class="zc-bar-track">
                 <div class="zc-bar-fill {{ mc }}" data-bar="{{ zd.zone.zone_id }}"
                      style="width: {{ [zd.moisture, 100] | min }}%;"></div>
-                <div class="zc-bar-mark" style="left: {{ zd.zone.moisture_threshold_low }}%;"
+                <div class="zc-bar-mark zc-bar-mark-low"
+                     style="left: {{ zd.zone.moisture_threshold_low }}%;"
                      title="Seuil bas {{ zd.zone.moisture_threshold_low | int }}%"></div>
-                <div class="zc-bar-mark" style="left: {{ zd.zone.moisture_threshold_high }}%;"
+                <div class="zc-bar-mark zc-bar-mark-high"
+                     style="left: {{ zd.zone.moisture_threshold_high }}%;"
                      title="Seuil haut {{ zd.zone.moisture_threshold_high | int }}%"></div>
               </div>
               <div class="zc-bar-labels">
@@ -219,9 +221,8 @@
         </div>
 
         <!-- Section plants — grille cliquable avec variété + besoin en eau -->
-        {% set _is_collapsible = zd.plantings | length > 2 %}
         <div class="zc-section-plants">
-          {% if _is_collapsible %}
+          {% if zd.plantings %}
           <button class="zc-section-label zc-plants-toggle" type="button"
                   onclick="toggleZonePlants(event, {{ zd.zone.zone_id }})">
             <i class="bi bi-flower1"></i>
@@ -233,11 +234,10 @@
           {% else %}
           <div class="zc-section-label">
             <i class="bi bi-flower1"></i> Plantations actives
-            {% if zd.plantings %}<span class="zc-plant-count">{{ zd.plantings | length }}</span>{% endif %}
           </div>
           {% endif %}
           {% if zd.plantings %}
-          <div class="zo-plants-grid {% if _is_collapsible %}zc-plants-collapsible{% endif %}"
+          <div class="zo-plants-grid zc-plants-collapsible"
                id="zplants-{{ zd.zone.zone_id }}">
             {% for p in zd.plantings %}
             <a href="/plants/{{ p.vegetable_name }}" class="zo-plant-item">
