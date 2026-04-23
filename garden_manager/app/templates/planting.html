@@ -205,8 +205,9 @@
         </div>
         {% if p.expected_harvest_date %}<div class="pc-date">{{ p.expected_harvest_date.strftime('%d.%m.%y') }}</div>{% endif %}
         <div class="pc-actions">
+          {% set _veg_active_count = plantings_by_zone.get(zone.zone_id, []) | selectattr('status','eq','active') | selectattr('vegetable_name','eq', p.vegetable_name) | list | length %}
           <button type="button" class="btn btn-secondary btn-xs" title="Modifier"
-            onclick="openEditModal({{ p.id }},'{{ p.vegetable_name|e }}','{{ (p.variety or '')|e }}','{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}','{{ p.status }}','{{ p.water_need }}','{{ (p.notes or '')|e }}','planting')">
+            onclick="openEditModal({{ p.id }},'{{ p.vegetable_name|e }}','{{ (p.variety or '')|e }}','{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}','{{ p.status }}','{{ p.water_need }}','{{ (p.notes or '')|e }}','planting',{{ _veg_active_count }})">
             <i class="bi bi-pencil"></i>
           </button>
           {% if p.status == 'active' %}
@@ -280,6 +281,14 @@
           </div>
         </div>
         <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">
+            Nombre total de plants <span style="color:var(--text-tertiary);font-weight:400;">(de cette espèce dans la zone)</span>
+          </label>
+          <input type="number" name="quantity" id="ep-quantity" min="0" step="1"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+          <div id="ep-quantity-hint" style="font-size:11px;color:var(--text-tertiary);margin-top:4px;"></div>
+        </div>
+        <div>
           <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Notes</label>
           <textarea name="notes" id="ep-notes" rows="2" placeholder="Observations, remarques…"
             style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);resize:vertical;"></textarea>
@@ -316,7 +325,7 @@ function updateCapacityHint(zoneId, vegName) {
 }
 
 const _editForm = document.getElementById('edit-planting-form');
-function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo) {
+function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo, currentCount) {
   document.getElementById('ep-name').textContent   = name;
   document.getElementById('ep-variety').value      = variety;
   document.getElementById('ep-harvest').value      = harvest;
@@ -324,6 +333,18 @@ function openEditModal(id, name, variety, harvest, status, waterNeed, notes, red
   document.getElementById('ep-water').value        = waterNeed;
   document.getElementById('ep-notes').value        = notes;
   document.getElementById('ep-redirect').value     = redirectTo || 'planting';
+  // Quantité totale de cette espèce dans la zone
+  const cnt = (currentCount === undefined || currentCount === null) ? 1 : Number(currentCount) || 1;
+  const qInput = document.getElementById('ep-quantity');
+  const qHint  = document.getElementById('ep-quantity-hint');
+  if (qInput) {
+    qInput.value = cnt;
+    qInput.min = 1;
+    qInput.dataset.original = cnt;
+    if (qHint) {
+      qHint.textContent = `Actuellement : ${cnt} plant${cnt > 1 ? 's' : ''} actif${cnt > 1 ? 's' : ''} de cette espèce dans la zone. Modifier ce nombre ajoutera ou supprimera des copies.`;
+    }
+  }
   _editForm.action = `/planting/${id}/edit`;
   document.getElementById('edit-overlay').classList.add('visible');
 }

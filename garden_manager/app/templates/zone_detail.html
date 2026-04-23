@@ -366,9 +366,10 @@
             </div>
           </div>
           {% endif %}
+          {% set _veg_active_count = active_plantings | selectattr('vegetable_name','eq', p.vegetable_name) | list | length %}
           <div style="display:flex;gap:6px;margin-top:auto;">
             <button type="button" class="btn btn-ghost btn-xs" style="flex:1;"
-              onclick="openEditModal({{ p.id }},'{{ p.vegetable_name|e }}','{{ (p.variety or '')|e }}','{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}','{{ p.status }}','{{ p.water_need }}','{{ (p.notes or '')|e }}','zone')">
+              onclick="openEditModal({{ p.id }},'{{ p.vegetable_name|e }}','{{ (p.variety or '')|e }}','{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}','{{ p.status }}','{{ p.water_need }}','{{ (p.notes or '')|e }}','zone',{{ _veg_active_count }})">
               <i class="bi bi-pencil"></i> Modifier
             </button>
             <button type="button" class="btn btn-xs" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.25);" title="Supprimer ce plant"
@@ -873,6 +874,14 @@
           </div>
         </div>
         <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">
+            Nombre total de plants <span style="color:var(--text-tertiary);font-weight:400;">(de cette espèce dans la zone)</span>
+          </label>
+          <input type="number" name="quantity" id="ep-quantity" min="1" step="1"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+          <div id="ep-quantity-hint" style="font-size:11px;color:var(--text-tertiary);margin-top:4px;"></div>
+        </div>
+        <div>
           <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Notes</label>
           <textarea name="notes" id="ep-notes" rows="2" placeholder="Observations…"
             style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);resize:vertical;"></textarea>
@@ -1148,12 +1157,18 @@ function renderZoneLayout() {
   // ── Build plant circles ───────────────────────────────────
   const DENSE_THRESH = 9;
   let yOffCm = 0;
+  // Hauteur réservée en bas (en px) pour les bandes-overflow ajoutées si la zone est pleine
+  const overflowBands = [];
 
   for (const plant of ZONE_PLANTS) {
     const spacePx  = plant.space_cm * scale;
     const cols     = Math.max(1, Math.floor(lengthM*100 / plant.space_cm));
     const rowsAvail = Math.max(0, Math.floor((widthM*100 - yOffCm) / plant.space_cm));
-    if (rowsAvail <= 0) continue;
+    // Si plus de place verticale → afficher en bande compacte en overflow (ne pas skipper)
+    if (rowsAvail <= 0) {
+      overflowBands.push(plant);
+      continue;
+    }
     const rows = Math.min(rowsAvail, 6);
 
     if (spacePx < DENSE_THRESH) {
@@ -1275,6 +1290,31 @@ function renderZoneLayout() {
     yOffCm += rowsNeeded * plant.space_cm;
   }
 
+  // ── Bandes "overflow" pour les espèces qui n'ont pas pu être placées ──
+  // Affichées en bas de la zone (légèrement transparentes) pour signaler
+  // que la zone est surchargée mais que les plants existent bien.
+  if (overflowBands.length > 0) {
+    const overflowH = 26;
+    const overflowTotal = overflowBands.length * overflowH;
+    // Réduire la hauteur du soil si nécessaire pour afficher l'overflow
+    const overflowY0 = Math.max(0, H - overflowTotal - 4);
+    overflowBands.forEach((plant, i) => {
+      const band = document.createElement('div');
+      band.className = 'zl-band';
+      band.dataset.plant = plant.name;
+      band.style.cssText = `position:absolute;left:0;top:${overflowY0 + i*overflowH}px;
+        width:${W}px;height:${overflowH - 2}px;
+        background:${plant.color}26;border-top:1px solid ${plant.color}66;
+        border-left:3px solid ${plant.color};
+        display:flex;align-items:center;gap:8px;padding:0 12px;
+        transition:opacity .2s;backdrop-filter:blur(2px);`;
+      band.innerHTML = `<span style="font-size:16px;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;">${plant.emoji}</span>
+        <span style="font-size:11px;color:rgba(255,255,255,.85);font-weight:600;">${plant.name}</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.55);">${plant.count} plants · zone surchargée</span>`;
+      soil.appendChild(band);
+    });
+  }
+
   // Dimension labels
   const lblL = document.createElement('div');
   lblL.style.cssText = `position:absolute;bottom:5px;left:50%;transform:translateX(-50%);
@@ -1336,7 +1376,7 @@ document.getElementById('delete-overlay').addEventListener('click', e => {
 
 // ── Edit modal ──────────────────────────────────────────
 const _editForm = document.getElementById('edit-planting-form');
-function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo) {
+function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo, currentCount) {
   document.getElementById('ep-name').textContent = name;
   document.getElementById('ep-variety').value    = variety;
   document.getElementById('ep-harvest').value    = harvest;
@@ -1344,6 +1384,17 @@ function openEditModal(id, name, variety, harvest, status, waterNeed, notes, red
   document.getElementById('ep-water').value      = waterNeed;
   document.getElementById('ep-notes').value      = notes;
   document.getElementById('ep-redirect').value   = redirectTo || 'zone';
+  // Quantité totale de cette espèce dans la zone
+  const cnt = (currentCount === undefined || currentCount === null) ? 1 : Number(currentCount) || 1;
+  const qInput = document.getElementById('ep-quantity');
+  const qHint  = document.getElementById('ep-quantity-hint');
+  if (qInput) {
+    qInput.value = cnt;
+    qInput.min = 1;
+    if (qHint) {
+      qHint.textContent = `Actuellement : ${cnt} plant${cnt > 1 ? 's' : ''} actif${cnt > 1 ? 's' : ''} de cette espèce dans la zone. Modifier ce nombre ajoutera ou supprimera des copies.`;
+    }
+  }
   _editForm.action = `/planting/${id}/edit`;
   document.getElementById('edit-overlay').classList.add('visible');
 }

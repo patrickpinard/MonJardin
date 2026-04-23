@@ -256,6 +256,46 @@ def edit_planting(planting_id: int):
     if water_need in ("low", "medium", "high"):
         p.water_need = water_need
 
+    # Ajustement du nombre total de plants de cette espèce dans cette zone
+    # (en s'assurant qu'au moins le plant édité reste)
+    quantity_str = form.get("quantity", "").strip()
+    if quantity_str:
+        try:
+            new_qty = int(quantity_str)
+        except ValueError:
+            new_qty = None
+        if new_qty is not None and new_qty >= 1:
+            actives = (Planting.query
+                       .filter_by(zone_id=p.zone_id,
+                                  vegetable_name=p.vegetable_name,
+                                  status="active")
+                       .order_by(Planting.id.desc()).all())
+            current_count = len(actives)
+            diff = new_qty - current_count
+            if diff > 0:
+                # Créer N copies du planting édité
+                for _ in range(diff):
+                    db.session.add(Planting(
+                        zone_id=p.zone_id,
+                        vegetable_name=p.vegetable_name,
+                        variety=p.variety,
+                        planted_date=p.planted_date,
+                        expected_harvest_date=p.expected_harvest_date,
+                        water_need=p.water_need,
+                        status="active",
+                        notes=p.notes,
+                    ))
+            elif diff < 0:
+                # Supprimer les plus récents en épargnant celui édité
+                removed = 0
+                for other in actives:
+                    if other.id == p.id:
+                        continue
+                    db.session.delete(other)
+                    removed += 1
+                    if removed >= -diff:
+                        break
+
     db.session.commit()
     redirect_to = request.form.get("redirect_to", "planting")
     if redirect_to == "zone":
