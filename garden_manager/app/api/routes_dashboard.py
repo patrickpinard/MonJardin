@@ -229,6 +229,54 @@ def zone_detail(zone_id: int):
     plants_db = _load_plants_db()
     plant_info = {v["name"]: v for v in plants_db}
 
+    # ── Recommandation de plage horaire d'arrosage ───────────
+    # Basée sur les water_need des plantations actives + la saison
+    active_plantings = [p for p in plantings if p.status == "active"]
+    water_needs = [plant_info.get(p.vegetable_name, {}).get("water_need", "medium")
+                   for p in active_plantings]
+    high_count = sum(1 for w in water_needs if w == "high")
+    low_count  = sum(1 for w in water_needs if w == "low")
+    month = date.today().month
+    is_hot_season = month in (6, 7, 8)  # juin à août
+    is_cold_season = month in (11, 12, 1, 2)  # novembre à février
+
+    if not active_plantings:
+        watering_window = {
+            "label": "Soir (19h-21h)",
+            "hours": "19:00–21:00",
+            "reason": "Recommandation par défaut — limite l'évaporation.",
+        }
+    elif is_hot_season and high_count >= 1:
+        watering_window = {
+            "label": "Soir tard (20h-22h)",
+            "hours": "20:00–22:00",
+            "reason": f"{high_count} plant(s) gourmand(s) en eau en pleine saison chaude — arroser après le coucher du soleil pour éviter l'évaporation.",
+        }
+    elif is_hot_season:
+        watering_window = {
+            "label": "Soir (19h-21h)",
+            "hours": "19:00–21:00",
+            "reason": "Saison chaude — arrosage du soir pour limiter l'évaporation.",
+        }
+    elif is_cold_season:
+        watering_window = {
+            "label": "Matin (10h-12h)",
+            "hours": "10:00–12:00",
+            "reason": "Saison froide — arroser en milieu de matinée évite le gel des racines la nuit.",
+        }
+    elif low_count > len(active_plantings) / 2:
+        watering_window = {
+            "label": "Matin tôt (6h-9h)",
+            "hours": "06:00–09:00",
+            "reason": "Plants peu gourmands — un arrosage matinal léger suffit.",
+        }
+    else:
+        watering_window = {
+            "label": "Soir (19h-21h)",
+            "hours": "19:00–21:00",
+            "reason": "Mix de besoins — arrosage du soir, fenêtre la plus universelle.",
+        }
+
     # Seasonal advice for current month
     current_month = date.today().month
     seasonal_plants = [
@@ -297,6 +345,7 @@ def zone_detail(zone_id: int):
         plant_species_summary=plant_species_summary,
         remaining_area_m2=remaining_area_m2,
         zone_occupancy_pct=zone_occupancy_pct,
+        watering_window=watering_window,
     )
 
 

@@ -31,11 +31,26 @@
         </div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       {% if trend == 'up' %}
-      <span class="badge badge-valve-open"><i class="bi bi-arrow-up-right"></i> Montante</span>
+      <span class="badge badge-valve-open" title="Humidité du sol en augmentation sur les 2 dernières heures">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+        <i class="bi bi-arrow-up-right" style="margin-left:2px;"></i> montante
+      </span>
       {% elif trend == 'down' %}
-      <span class="badge badge-warning"><i class="bi bi-arrow-down-right"></i> En baisse</span>
+      <span class="badge badge-warning" title="Humidité du sol en baisse sur les 2 dernières heures">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+        <i class="bi bi-arrow-down-right" style="margin-left:2px;"></i> en baisse
+      </span>
+      {% elif trend == 'stable' %}
+      <span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-secondary);" title="Humidité du sol stable sur les 2 dernières heures">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+        <i class="bi bi-dash" style="margin-left:2px;"></i> stable
+      </span>
+      {% else %}
+      <span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-tertiary);" title="Tendance non disponible (pas assez de données récentes)">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+      </span>
       {% endif %}
       <div class="zone-mode-badge {{ zone.irrigation_mode }}" style="font-size:12px;padding:6px 14px;">
         {{ zone.irrigation_mode }}
@@ -210,30 +225,25 @@
 
     <div class="card mb-3">
       <div class="card-title">
-        <i class="bi bi-graph-up"></i> Historique humidité & température
+        <i class="bi bi-graph-up"></i> Historique unifié
         <div class="card-actions">
-          <div class="time-tabs">
-            <button class="time-tab active" onclick="switchZoneTab(this, {{ zone.zone_id }}, 24)">24h</button>
-            <button class="time-tab" onclick="switchZoneTab(this, {{ zone.zone_id }}, 168)">7j</button>
-            <button class="time-tab" onclick="switchZoneTab(this, {{ zone.zone_id }}, 720)">30j</button>
+          <div class="time-tabs" id="combined-time-tabs">
+            <button class="time-tab active" onclick="switchCombinedTab(this, {{ zone.zone_id }}, 24)">24h</button>
+            <button class="time-tab" onclick="switchCombinedTab(this, {{ zone.zone_id }}, 168)">7j</button>
+            <button class="time-tab" onclick="switchCombinedTab(this, {{ zone.zone_id }}, 720)">30j</button>
           </div>
         </div>
       </div>
-      <div id="zoneChart" style="height:300px;"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <i class="bi bi-droplet-half"></i> Historique arrosages
-        <div class="card-actions">
-          <div class="time-tabs">
-            <button class="time-tab active" onclick="switchIrrigChart(this, {{ zone.zone_id }}, 24)">24h</button>
-            <button class="time-tab" onclick="switchIrrigChart(this, {{ zone.zone_id }}, 168)">7j</button>
-            <button class="time-tab" onclick="switchIrrigChart(this, {{ zone.zone_id }}, 720)">30j</button>
-          </div>
-        </div>
+      <!-- Légende explicative -->
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;color:var(--text-tertiary);">
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:3px;background:#30d158;border-radius:2px;"></span>Humidité du sol (%)</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:2px;background:#ff9f0a;border-radius:2px;border-top:2px dashed #ff9f0a;"></span>Temp. extérieure (°C)</span>
+        {% if zone.has_roof %}
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:2px;background:#ff453a;border-radius:2px;border-top:2px dashed #ff453a;"></span>Temp. serre (°C)</span>
+        {% endif %}
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:8px;background:rgba(10,132,255,.25);border:1px solid rgba(10,132,255,.5);border-radius:2px;"></span>Vanne ouverte</span>
       </div>
-      <div id="irrigChart" style="height:200px;"></div>
+      <div id="combinedChart" style="height:380px;"></div>
     </div>
 
   </div><!-- /#tab-graphiques -->
@@ -644,6 +654,26 @@
        ══════════════════════════════════════════════════════ -->
   <div id="tab-config" style="display:none;">
 
+    {% if watering_window %}
+    <!-- Recommandation plage horaire arrosage -->
+    <div class="card mb-3" style="border-left:4px solid var(--blue);">
+      <div class="card-title">
+        <i class="bi bi-clock-history" style="color:var(--blue);"></i>
+        Plage horaire d'arrosage recommandée
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="flex-shrink:0;padding:14px 18px;background:rgba(10,132,255,.1);border:1px solid rgba(10,132,255,.25);border-radius:var(--r-md);text-align:center;">
+          <div style="font-size:11px;color:var(--blue);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Fenêtre idéale</div>
+          <div style="font-size:22px;font-weight:700;color:var(--text-primary);margin-top:4px;letter-spacing:-.4px;">{{ watering_window.hours }}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ watering_window.label }}</div>
+        </div>
+        <div style="flex:1;min-width:180px;font-size:13px;color:var(--text-secondary);line-height:1.5;">
+          {{ watering_window.reason }}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <div class="grid-2">
       <!-- Paramètres zone -->
       <div class="card">
@@ -899,18 +929,19 @@ function switchTab(btn, tabName) {
     document.getElementById('tab-' + t).style.display = t === tabName ? '' : 'none';
   });
   if (tabName === 'graphiques') {
-    loadZoneChart({{ zone.zone_id }}, _currentHours);
-    loadIrrigChart({{ zone.zone_id }}, _currentIrrigHours);
+    loadCombinedChart({{ zone.zone_id }}, _currentHours);
   }
 }
 
-// ── Humidity chart ─────────────────────────────────────
+// ── Graphique unifié (humidité + températures + vannes) ──
 let _currentHours = 24;
-function switchZoneTab(btn, zoneId, hours) {
-  document.querySelectorAll('#tab-graphiques .card:first-child .time-tabs .time-tab').forEach(b => b.classList.remove('active'));
+const _zoneHasRoof = {{ 'true' if zone.has_roof else 'false' }};
+
+function switchCombinedTab(btn, zoneId, hours) {
+  document.querySelectorAll('#combined-time-tabs .time-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _currentHours = hours;
-  loadZoneChart(zoneId, hours);
+  loadCombinedChart(zoneId, hours);
 }
 
 function plotlyTheme() {
@@ -923,87 +954,97 @@ function plotlyTheme() {
     font:{color:fc, size:11, family:'-apple-system,BlinkMacSystemFont,system-ui'},
     xaxis:{gridcolor:gc, linecolor:lc, tickcolor:lc, tickformat:'%H:%M\n%d.%m'},
     yaxis:{gridcolor:gc, linecolor:lc, tickcolor:lc},
-    legend:{orientation:'h', y:-0.22, bgcolor:'transparent', font:{color:fc}},
-    margin:{t:6, b:40, l:42, r:42},
+    legend:{orientation:'h', y:-0.18, bgcolor:'transparent', font:{color:fc}},
+    margin:{t:8, b:48, l:48, r:50},
   };
 }
 
-async function loadZoneChart(zoneId, hours) {
+async function loadCombinedChart(zoneId, hours) {
   const [histResp, irrigResp] = await Promise.all([
     fetch(`/api/data/history?zone_id=${zoneId}&hours=${hours}`),
     fetch(`/api/data/irrigation_events?hours=${hours}`),
   ]);
-  const data     = await histResp.json();
+  const data      = await histResp.json();
   const irrigData = await irrigResp.json();
 
   const readings = data.zones[zoneId] || [];
   const C = {1:'#30d158', 2:'#8BC34A', 3:'#0a84ff', 4:'#bf5af2'};
+  const moistureColor = C[zoneId] || '#30d158';
 
-  // Build 0/1 step signal from open/close events
+  // ── Bandes "vanne ouverte" (shapes Plotly en arrière-plan) ──
   const zEvents = (irrigData.events || [])
     .filter(e => e.zone_id === zoneId)
     .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
   const tStart = new Date(Date.now() - hours * 3600000).toISOString();
-  const tEnd   = readings.length ? readings[readings.length - 1].timestamp : new Date().toISOString();
-  const irrigX = [tStart], irrigY = [0];
-  let vState = 0;
+  const tEnd   = new Date().toISOString();
+  const valveBands = [];
+  let openSince = null;
   for (const ev of zEvents) {
-    irrigX.push(ev.timestamp); irrigY.push(vState);
-    vState = ev.action === 'open' ? 1 : 0;
-    irrigX.push(ev.timestamp); irrigY.push(vState);
+    if (ev.action === 'open' && openSince === null) {
+      openSince = ev.timestamp;
+    } else if (ev.action === 'close' && openSince !== null) {
+      valveBands.push({type:'rect', xref:'x', yref:'paper',
+        x0:openSince, x1:ev.timestamp, y0:0, y1:1,
+        fillcolor:'rgba(10,132,255,.18)', line:{width:0}, layer:'below'});
+      openSince = null;
+    }
   }
-  irrigX.push(tEnd); irrigY.push(vState);
+  // Si la vanne est encore ouverte à la fin
+  if (openSince !== null) {
+    valveBands.push({type:'rect', xref:'x', yref:'paper',
+      x0:openSince, x1:tEnd, y0:0, y1:1,
+      fillcolor:'rgba(10,132,255,.18)', line:{width:0}, layer:'below'});
+  }
 
+  // ── Traces ──
   const traces = [
-    {x: readings.map(r=>r.timestamp), y: readings.map(r=>r.soil_moisture_pct),
-     type:'scatter', mode:'lines', name:'Humidité (%)',
-     line:{color:C[zoneId]||'#30d158', width:2.5}},
-    {x: readings.map(r=>r.timestamp), y: readings.map(r=>r.temperature_c),
-     type:'scatter', mode:'lines', name:'Temp (°C)',
-     line:{color:'#ff9f0a', width:1.5, dash:'dot'}, yaxis:'y2'},
-    {x: irrigX, y: irrigY,
-     type:'scatter', mode:'lines', name:'Arrosage',
-     line:{color:'rgba(10,132,255,.5)', width:1},
-     fill:'tozeroy', fillcolor:'rgba(10,132,255,.15)',
-     yaxis:'y3'},
+    // Humidité du sol (Y1)
+    {
+      x: readings.map(r=>r.timestamp),
+      y: readings.map(r=>r.soil_moisture_pct),
+      type:'scatter', mode:'lines',
+      name:'Humidité du sol',
+      line:{color:moistureColor, width:2.5, shape:'spline'},
+      hovertemplate:'%{y:.1f} %<extra>Humidité</extra>',
+    },
+    // Température extérieure (Y2)
+    {
+      x: readings.map(r=>r.timestamp),
+      y: readings.map(r=>r.temperature_c),
+      type:'scatter', mode:'lines',
+      name:'Temp. extérieure',
+      line:{color:'#ff9f0a', width:1.6, dash:'dash'},
+      yaxis:'y2',
+      hovertemplate:'%{y:.1f} °C<extra>Extérieur</extra>',
+    },
   ];
-
-  Plotly.react('zoneChart', traces, {
-    ...plotlyTheme(),
-    yaxis:  {...plotlyTheme().yaxis, title:'Humidité (%)', range:[0,100]},
-    yaxis2: {...plotlyTheme().yaxis, title:'Temp (°C)', overlaying:'y', side:'right', showgrid:false},
-    yaxis3: {overlaying:'y', side:'left', range:[0,5],
-             showticklabels:false, showgrid:false, zeroline:false,
-             showline:false, ticks:''},
-  }, {responsive:true, displayModeBar:false});
-}
-
-// ── Irrigation chart ───────────────────────────────────
-let _currentIrrigHours = 24;
-function switchIrrigChart(btn, zoneId, hours) {
-  document.querySelectorAll('#tab-graphiques .card:last-child .time-tabs .time-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  _currentIrrigHours = hours;
-  loadIrrigChart(zoneId, hours);
-}
-
-async function loadIrrigChart(zoneId, hours) {
-  const resp = await fetch(`/api/data/irrigation_events?hours=${hours}`);
-  const events = await resp.json();
-  const zoneEvents = (events.events || []).filter(e => e.zone_id === zoneId && e.action === 'open');
-  if (!zoneEvents.length) {
-    Plotly.react('irrigChart', [{type:'scatter', x:[], y:[], name:'Arrosages'}],
-      {...plotlyTheme()}, {responsive:true, displayModeBar:false});
-    return;
+  // Température serre (Y2) — uniquement zone avec serre
+  if (_zoneHasRoof) {
+    const serreVals = readings.map(r => r.temp_serre_c).filter(v => v !== null && v !== undefined);
+    if (serreVals.length > 0) {
+      traces.push({
+        x: readings.map(r=>r.timestamp),
+        y: readings.map(r=>r.temp_serre_c),
+        type:'scatter', mode:'lines',
+        name:'Temp. serre',
+        line:{color:'#ff453a', width:1.8, dash:'dot'},
+        yaxis:'y2',
+        hovertemplate:'%{y:.1f} °C<extra>Serre</extra>',
+      });
+    }
   }
-  Plotly.react('irrigChart', [{
-    x: zoneEvents.map(e=>e.timestamp),
-    y: zoneEvents.map(e=>e.moisture_at_trigger || 0),
-    type:'bar', name:'Humidité au déclenchement (%)',
-    marker:{color:'rgba(10,132,255,.6)'},
-  }], {...plotlyTheme(),
-    yaxis:{...plotlyTheme().yaxis, title:'Humidité (%)', range:[0,100]},
+
+  const theme = plotlyTheme();
+  Plotly.react('combinedChart', traces, {
+    ...theme,
+    shapes: valveBands,
+    xaxis: {...theme.xaxis, range:[tStart, tEnd]},
+    yaxis: {...theme.yaxis, title:'Humidité du sol (%)', range:[0,100]},
+    yaxis2:{...theme.yaxis, title:'Température (°C)',
+            overlaying:'y', side:'right', showgrid:false,
+            zeroline:false},
+    hovermode:'x unified',
   }, {responsive:true, displayModeBar:false});
 }
 
