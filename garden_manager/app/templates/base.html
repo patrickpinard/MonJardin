@@ -66,17 +66,10 @@
       <a href="/journal" class="nav-item {% if '/journal' in request.path %}active{% endif %}">
         <i class="bi bi-journal-text"></i> Journal
       </a>
-      <div class="nav-item-expandable">
-        <a href="/zones" class="nav-item {% if request.path == '/zones' %}active{% endif %}">
-          <i class="bi bi-grid-3x3-gap-fill"></i> Vue des zones
-        </a>
-        <button class="nav-chevron-btn" onclick="toggleZones(event)" title="Afficher zones">
-          <i class="bi bi-chevron-down nav-chevron" id="zones-chevron"></i>
-        </button>
-      </div>
-      <div class="nav-sub" id="nav-sub-zones">
+      <div class="nav-section-label">Zones</div>
+      <div class="nav-sub nav-sub-flat" id="nav-sub-zones">
         {% for z in zones_nav %}
-        <a href="/zones/{{ z.zone_id }}" class="nav-sub-item">
+        <a href="/zones/{{ z.zone_id }}" class="nav-sub-item {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}">
           <div class="zone-dot" id="sdot-{{ z.zone_id }}" aria-hidden="true"></div>
           <span>{{ z.name }}</span>
           <span class="zone-mini-m" id="smoist-{{ z.zone_id }}">—</span>
@@ -251,12 +244,10 @@
   <a href="/journal" class="mobile-menu-item {% if '/journal' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-journal-text"></i> Journal
   </a>
-  <a href="/zones" class="mobile-menu-item {% if request.path == '/zones' %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-grid-3x3-gap-fill"></i> Vue des zones
-  </a>
-  <div class="mobile-menu-zones">
+  <div class="mobile-menu-section">Zones</div>
+  <div class="mobile-menu-zones mobile-menu-zones-flat">
     {% for z in zones_nav %}
-    <a href="/zones/{{ z.zone_id }}" class="mobile-menu-subitem" onclick="closeMobileMenu()">
+    <a href="/zones/{{ z.zone_id }}" class="mobile-menu-subitem {% if request.path == '/zones/' ~ z.zone_id|string %}active{% endif %}" onclick="closeMobileMenu()">
       <div class="zone-dot" id="mdot-{{ z.zone_id }}" aria-hidden="true"></div><span>{{ z.name }}</span><span class="zone-mini-m" id="mmoist-{{ z.zone_id }}">—</span>
     </a>
     {% endfor %}
@@ -287,8 +278,8 @@
     <a href="/dashboard" class="mobile-nav-item {% if request.path in ('/', '/dashboard') %}active{% endif %}">
       <i class="bi bi-grid-1x2-fill"></i><span>Accueil</span>
     </a>
-    <a href="/zones" class="mobile-nav-item {% if request.path == '/zones' or (request.path.startswith('/zones/') and not '/plants' in request.path) %}active{% endif %}">
-      <i class="bi bi-grid-3x3-gap-fill"></i><span>Zones</span>
+    <a href="/conseils" class="mobile-nav-item {% if '/conseils' in request.path %}active{% endif %}">
+      <i class="bi bi-lightbulb-fill"></i><span>Conseils</span>
     </a>
     <a href="/planting" class="mobile-nav-item {% if '/planting' in request.path %}active{% endif %}">
       <i class="bi bi-calendar3"></i><span>Plants</span>
@@ -640,24 +631,6 @@ function toggleSidebar() {
 (function() {
   if (localStorage.getItem('sidebarCollapsed') === '1') {
     document.body.classList.add('sidebar-collapsed');
-  }
-})();
-
-// ── Zones sub-menu toggle ────────────────────────────────
-function toggleZones(e) {
-  e.preventDefault();
-  const sub = document.getElementById('nav-sub-zones');
-  const chev = document.getElementById('zones-chevron');
-  const open = sub.classList.toggle('open');
-  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
-}
-(function() {
-  const path = window.location.pathname;
-  if (path.startsWith('/zones')) {
-    const sub = document.getElementById('nav-sub-zones');
-    const chev = document.getElementById('zones-chevron');
-    if (sub) sub.classList.add('open');
-    if (chev) chev.style.transform = 'rotate(180deg)';
   }
 })();
 

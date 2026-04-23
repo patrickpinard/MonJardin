@@ -186,13 +186,15 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .nav-chevron-btn:hover { background: var(--bg-secondary); color: var(--text-primary); }
 .nav-sub { max-height: 0; overflow: hidden; transition: max-height .25s var(--ease); }
 .nav-sub.open { max-height: 320px; }
+.nav-sub.nav-sub-flat { max-height: none; overflow: visible; }
 .nav-sub-item {
   display: flex; align-items: center; gap: 8px;
-  padding: 7px 10px 7px 36px; border-radius: var(--r-sm);
+  padding: 7px 10px 7px 16px; border-radius: var(--r-sm);
   color: var(--text-secondary); text-decoration: none; font-size: 13px;
   transition: background var(--t), color var(--t);
 }
 .nav-sub-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.nav-sub-item.active { background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; }
 .nav-sub-item .zone-mini-m { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--text-tertiary); }
 .nav-badge {
   margin-left: auto; background: var(--red); color: #fff;
@@ -623,6 +625,8 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .zc-valve-btns { display: flex; gap: 6px; flex: 1; }
 .zc-valve-btns .btn { flex: 1; justify-content: center; }
+.zc-roof-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.zc-roof-btns .btn { padding: 6px 9px; min-width: 32px; justify-content: center; }
 .zc-detail-btn { flex-shrink: 0; font-size: 18px; color: var(--text-tertiary); }
 .zc-detail-btn:hover { color: var(--brand); }
 
@@ -632,6 +636,62 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   display: flex; align-items: center; gap: 4px; margin-top: 3px;
 }
 .zc-last-irr .bi { font-size: 10px; }
+
+/* Mini-barre seuils (intégrée dans la carte dashboard) */
+.zc-bar-wrap { margin-bottom: 5px; }
+.zc-bar-track {
+  position: relative; height: 5px; background: var(--bg-tertiary);
+  border-radius: var(--r-pill); overflow: visible; margin-bottom: 3px;
+}
+.zc-bar-fill {
+  height: 100%; border-radius: var(--r-pill);
+  transition: width .6s var(--ease), background var(--t);
+}
+.zc-bar-fill.low  { background: var(--red);   }
+.zc-bar-fill.ok   { background: var(--green); }
+.zc-bar-fill.high { background: var(--blue);  }
+.zc-bar-mark {
+  position: absolute; top: -2px; width: 2px; height: 9px;
+  background: var(--bg-app); border-radius: 1px; transform: translateX(-50%);
+}
+.zc-bar-labels {
+  display: flex; justify-content: space-between;
+  font-size: 8px; color: var(--text-tertiary); font-weight: 600;
+  letter-spacing: .15px;
+}
+
+/* Bordure gauche colorée selon état d'humidité (signal visuel rapide) */
+.zc-card { border-left-width: 4px; }
+.zc-card-low  { border-left-color: var(--red);   }
+.zc-card-ok   { border-left-color: var(--green); }
+.zc-card-high { border-left-color: var(--blue);  }
+
+/* ── Bandeau d'alerte sticky en haut du dashboard ─────── */
+.alert-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; margin-bottom: 14px;
+  border-radius: var(--r-md); border: 1px solid;
+  animation: alert-pulse 2.4s ease-in-out infinite;
+}
+.alert-banner-dry {
+  background: linear-gradient(90deg, rgba(255,69,58,.14), rgba(255,69,58,.06));
+  border-color: rgba(255,69,58,.35);
+  color: var(--text-primary);
+}
+.alert-banner-icon {
+  font-size: 24px; color: var(--red); flex-shrink: 0;
+}
+.alert-banner-body { flex: 1; min-width: 0; }
+.alert-banner-title {
+  font-size: 14px; font-weight: 700; color: var(--red); line-height: 1.2;
+}
+.alert-banner-sub {
+  font-size: 12px; color: var(--text-secondary); margin-top: 2px;
+}
+@keyframes alert-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,0); }
+  50%      { box-shadow: 0 0 0 4px rgba(255,69,58,.08); }
+}
 
 /* ── Dashboard top two-card grid ─────────────────────────── */
 .dash-top-grid {
@@ -1459,6 +1519,7 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   transition: background var(--t);
 }
 .mobile-menu-subitem:hover { background: var(--bg-secondary); }
+.mobile-menu-subitem.active { background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; }
 .mobile-menu-subitem .zone-mini-m { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--text-tertiary); }
 
 /* ── Mobile nav ───────────────────────────────────────── */

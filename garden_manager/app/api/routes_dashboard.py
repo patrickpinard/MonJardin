@@ -54,7 +54,8 @@ def dashboard():
 
     # Construire les données de zones pour le template
     plants_db = _load_plants_db()
-    emoji_map = {p["name"]: p.get("emoji", "🌱") for p in plants_db}
+    emoji_map      = {p["name"]: p.get("emoji", "🌱") for p in plants_db}
+    water_need_map = {p["name"]: p.get("water_need", "medium") for p in plants_db}
 
     zones_map = {}
     if sensor_data:
@@ -79,6 +80,8 @@ def dashboard():
         plantings = Planting.query.filter_by(zone_id=zone.zone_id, status="active").all()
         for p in plantings:
             p.emoji = emoji_map.get(p.vegetable_name, "🌱")
+            if not getattr(p, "water_need", None):
+                p.water_need = water_need_map.get(p.vegetable_name, "medium")
         alert_since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2)
         recent = (SensorReading.query
                   .filter(SensorReading.zone_id == zone.zone_id,
@@ -108,6 +111,11 @@ def dashboard():
     any_low      = any(zd["mc"] == "low" for zd in zones_data)
     global_status = "alerte" if any_alerting else ("attention" if any_low else "ok")
     driest_zd = min(zones_data, key=lambda z: z["moisture"]) if zones_data else None
+    alerting_zones = [zd for zd in zones_data if zd["mc"] == "low"]
+
+    # Tri : zones sèches d'abord (mc=low), puis ok, puis high — par humidité croissante
+    _mc_order = {"low": 0, "ok": 1, "high": 2}
+    zones_data.sort(key=lambda zd: (_mc_order.get(zd["mc"], 1), zd["moisture"]))
 
     temp = sensor_data.get("temperature_c", 15.0) if sensor_data else 15.0
     temp_serre = sensor_data.get("temp_serre_c") if sensor_data else None
@@ -146,6 +154,7 @@ def dashboard():
         today_date=today,
         global_status=global_status,
         driest_zd=driest_zd,
+        alerting_zones=alerting_zones,
     )
 
 
@@ -293,60 +302,7 @@ def zone_detail(zone_id: int):
     )
 
 
-@dashboard_bp.get("/zones")
-def zones_overview():
-    arduino = current_app.extensions["arduino_client"]
-    sensor_data = arduino.get_all_sensors()
-    actuator_status = arduino.get_actuator_status() or {"valves": [], "roof_state": "close"}
-    weather = current_app.extensions["weather_service"].get_current()
-
-    zones = Zone.query.order_by(Zone.zone_id).all()
-    plants_db = _load_plants_db()
-    emoji_map = {p["name"]: p.get("emoji", "🌱") for p in plants_db}
-    color_map = {p["name"]: p.get("color_primary", "") for p in plants_db}
-
-    zones_map = {}
-    if sensor_data:
-        for z in sensor_data.get("zones", []):
-            zones_map[z["zone_id"]] = z
-
-    valve_map = {v["zone_id"]: v["state"] for v in actuator_status.get("valves", [])}
-
-    zones_data = []
-    for zone in zones:
-        z_sensor = zones_map.get(zone.zone_id, {})
-        if not z_sensor:
-            last = (SensorReading.query.filter_by(zone_id=zone.zone_id)
-                    .order_by(SensorReading.timestamp.desc()).first())
-            moisture = last.soil_moisture_pct if last else 50.0
-        else:
-            moisture = z_sensor.get("soil_moisture_pct", 50.0)
-
-        mc = ("low" if moisture < zone.moisture_threshold_low
-              else "high" if moisture > zone.moisture_threshold_high else "ok")
-
-        plantings = Planting.query.filter_by(zone_id=zone.zone_id, status="active").all()
-        for p in plantings:
-            p.emoji = emoji_map.get(p.vegetable_name, "🌱")
-            p.color = color_map.get(p.vegetable_name, "")
-
-        zones_data.append({
-            "zone": zone,
-            "moisture": round(moisture, 1),
-            "mc": mc,
-            "valve_state": valve_map.get(zone.zone_id, "close"),
-            "plantings": plantings,
-        })
-
-    temp_ext = sensor_data.get("temperature_c") if sensor_data else None
-    temp_serre = sensor_data.get("temp_serre_c") if sensor_data else None
-    return render_template(
-        "zones_overview.html",
-        zones_data=zones_data,
-        temperature_c=round(temp_ext, 1) if temp_ext is not None else weather.get("temperature"),
-        temp_serre_c=round(temp_serre, 1) if temp_serre is not None else None,
-        roof_state=actuator_status.get("roof_state", "close"),
-    )
+# Note : la page /zones (zones_overview) a été fusionnée avec /dashboard en v2.0
 
 
 @dashboard_bp.get("/history")

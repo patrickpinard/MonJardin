@@ -6,6 +6,7 @@
 {% set today_date = today_date if today_date is defined else none %}
 {% set global_status = global_status if global_status is defined else 'ok' %}
 {% set driest_zd = driest_zd if driest_zd is defined else none %}
+{% set alerting_zones = alerting_zones if alerting_zones is defined else [] %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
@@ -21,6 +22,26 @@
 </div>
 
 <div class="page-body">
+
+  <!-- ── Bandeau d'alerte sticky (zones sèches) ── -->
+  {% if alerting_zones %}
+  <div class="alert-banner alert-banner-dry">
+    <i class="bi bi-exclamation-triangle-fill alert-banner-icon"></i>
+    <div class="alert-banner-body">
+      <div class="alert-banner-title">
+        {% if alerting_zones | length == 1 %}
+          Sol sec : {{ alerting_zones[0].zone.name }} ({{ alerting_zones[0].moisture | int }}%)
+        {% else %}
+          {{ alerting_zones | length }} zones avec sol sec
+        {% endif %}
+      </div>
+      <div class="alert-banner-sub">
+        {% set _names = alerting_zones | map(attribute='zone.name') | list %}
+        {{ _names | join(' · ') }} — arrosage automatique au prochain cycle
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- ── Deux cartes en haut du dashboard ── -->
   <div class="dash-top-grid mb-3">
@@ -103,9 +124,9 @@
       {% for zd in zones_data %}
       {% set mc = zd.mc %}
       {% set dash = (zd.moisture / 100 * 175.9) | round(1) %}
-      <div class="zc-card">
+      <div class="zc-card zc-card-{{ mc }}">
 
-        <!-- En-tête : icône + nom + badges état -->
+        <!-- En-tête : icône + nom + statut pilule -->
         <div class="zc-header">
           <div class="zone-icon z{{ zd.zone.zone_id }}">
             {% if zd.zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
@@ -118,10 +139,12 @@
             <div class="zc-desc">Zone {{ zd.zone.zone_id }}{% if zd.zone.has_roof %} · Serre vitrée{% endif %}</div>
           </div>
           <div class="zc-header-status">
+            <span class="zo-status-pill {{ mc }}" data-status-pill="{{ zd.zone.zone_id }}">
+              {% if mc == 'low' %}<i class="bi bi-exclamation-triangle-fill"></i> Sol sec
+              {% elif mc == 'high' %}<i class="bi bi-droplet-fill"></i> Saturé
+              {% else %}<i class="bi bi-check-circle-fill"></i> Optimale{% endif %}
+            </span>
             <div class="zone-mode-badge {{ zd.zone.irrigation_mode }}">{{ zd.zone.irrigation_mode }}</div>
-            <div class="alert-dry-badge" id="alert-{{ zd.zone.zone_id }}" {% if not zd.is_alerting %}style="display:none;"{% endif %}>
-              <i class="bi bi-exclamation-triangle-fill"></i> Sec
-            </div>
           </div>
         </div>
 
@@ -139,8 +162,23 @@
             </div>
           </div>
           <div class="zc-moisture-meta">
-            <div class="moisture-value {{ mc }}" data-zone-text="{{ zd.zone.zone_id }}">{{ zd.moisture }}%</div>
-            <div class="moisture-sub">Seuil {{ zd.zone.moisture_threshold_low | int }}–{{ zd.zone.moisture_threshold_high | int }}%</div>
+            <!-- Mini barre avec marqueurs seuils -->
+            <div class="zc-bar-wrap">
+              <div class="zc-bar-track">
+                <div class="zc-bar-fill {{ mc }}" data-bar="{{ zd.zone.zone_id }}"
+                     style="width: {{ [zd.moisture, 100] | min }}%;"></div>
+                <div class="zc-bar-mark" style="left: {{ zd.zone.moisture_threshold_low }}%;"
+                     title="Seuil bas {{ zd.zone.moisture_threshold_low | int }}%"></div>
+                <div class="zc-bar-mark" style="left: {{ zd.zone.moisture_threshold_high }}%;"
+                     title="Seuil haut {{ zd.zone.moisture_threshold_high | int }}%"></div>
+              </div>
+              <div class="zc-bar-labels">
+                <span>0%</span>
+                <span>{{ zd.zone.moisture_threshold_low | int }}%</span>
+                <span>{{ zd.zone.moisture_threshold_high | int }}%</span>
+                <span>100%</span>
+              </div>
+            </div>
             <div class="zc-last-irr">
               <i class="bi bi-clock"></i>
               {% if zd.last_irrigation %}{{ zd.last_irrigation.timestamp.strftime('%d.%m %H:%M') }}{% else %}Jamais arrosé{% endif %}
@@ -180,26 +218,36 @@
           </div>
         </div>
 
-        <!-- Section plants -->
+        <!-- Section plants — grille cliquable avec variété + besoin en eau -->
         <div class="zc-section-plants">
           <div class="zc-section-label">
-            <i class="bi bi-flower1"></i> Plants actifs
+            <i class="bi bi-flower1"></i> Plantations actives
             {% if zd.plantings %}<span class="zc-plant-count">{{ zd.plantings | length }}</span>{% endif %}
           </div>
           {% if zd.plantings %}
-          <div class="zc-plants-row">
-            {% for p in zd.plantings[:4] %}
-            <span class="zc-plant-chip">
-              <span class="zc-plant-chip-emoji">{{ p.emoji if p.emoji else '🌱' }}</span>
-              <span class="zc-plant-chip-name">{{ p.vegetable_name }}</span>
-            </span>
+          <div class="zo-plants-grid">
+            {% for p in zd.plantings %}
+            <a href="/plants/{{ p.vegetable_name }}" class="zo-plant-item">
+              <div class="zo-plant-emoji">{{ p.emoji }}</div>
+              <div style="min-width:0;">
+                <div class="zo-plant-name">{{ p.vegetable_name }}</div>
+                {% if p.variety %}
+                <div class="zo-plant-variety">{{ p.variety }}</div>
+                {% endif %}
+                <div class="zo-plant-water water-{{ p.water_need }}">
+                  {% if p.water_need == 'high' %}💧💧💧
+                  {% elif p.water_need == 'medium' %}💧💧
+                  {% else %}💧{% endif %}
+                </div>
+              </div>
+            </a>
             {% endfor %}
-            {% if zd.plantings | length > 4 %}
-            <span class="zc-plant-chip zc-plant-more">+{{ zd.plantings | length - 4 }}</span>
-            {% endif %}
           </div>
           {% else %}
-          <div class="zc-plants-empty-sm">Aucun plant actif</div>
+          <div class="zo-plants-empty">
+            <i class="bi bi-plus-circle"></i>
+            <a href="/planting">Ajouter une plantation</a>
+          </div>
           {% endif %}
         </div>
 
@@ -215,7 +263,17 @@
               <i class="bi bi-stop-circle"></i> Stop
             </button>
           </div>
-          <a href="/zones/{{ zd.zone.zone_id }}" class="btn btn-ghost btn-sm zc-detail-btn" title="Voir la zone">
+          {% if zd.zone.has_roof %}
+          <div class="zc-roof-btns">
+            <button class="btn btn-sm btn-warning" onclick="setRoof('open')" title="Ouvrir la lucarne">
+              <i class="bi bi-chevron-up"></i>
+            </button>
+            <button class="btn btn-sm btn-secondary" onclick="setRoof('close')" title="Fermer la lucarne">
+              <i class="bi bi-chevron-down"></i>
+            </button>
+          </div>
+          {% endif %}
+          <a href="/zones/{{ zd.zone.zone_id }}" class="btn btn-ghost btn-sm zc-detail-btn" title="Voir le détail de la zone">
             <i class="bi bi-arrow-right-circle-fill"></i>
           </a>
         </div>
