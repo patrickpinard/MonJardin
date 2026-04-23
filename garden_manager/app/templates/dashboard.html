@@ -348,6 +348,8 @@
 <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script>
+  // Démarre le polling temps réel (cartes zones + lucarne)
+  if (typeof initDashboard === 'function') initDashboard();
   loadForecast();
 
   function switchDashTab(btn, tab) {
