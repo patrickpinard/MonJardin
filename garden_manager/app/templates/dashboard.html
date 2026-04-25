@@ -410,64 +410,108 @@
   </div>
 
   <!-- ── TAB MÉTÉO ── -->
+  {% set forecast_by_day = forecast_by_day if forecast_by_day is defined else [] %}
   <div id="tab-meteo" style="display:none;">
+
+    <!-- Risque gel (si applicable) -->
+    {% if weather.frost_risk %}
+    <div class="card mb-3" style="border-left:4px solid var(--blue);">
+      <div style="display:flex;align-items:center;gap:14px;padding:6px 4px;">
+        <div style="font-size:32px;">❄️</div>
+        <div>
+          <div style="font-weight:700;color:var(--blue);font-size:15px;">Risque de gel détecté</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">
+            Vannes et lucarne seront fermées automatiquement pour protéger les cultures sensibles.
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Comparaison vent prévu / vent mesuré (info unique) -->
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-wind" style="color:var(--blue);"></i>
+        Vent — comparaison prévision vs capteur
+      </div>
+      <div class="wind-compare">
+        <div class="wind-compare-item">
+          <div class="wind-compare-icon">💨</div>
+          <div class="wind-compare-value">{{ weather.wind_kmh }} km/h</div>
+          <div class="wind-compare-label">Prévu (Open-Meteo)</div>
+        </div>
+        <div class="wind-compare-arrow">↔</div>
+        <div class="wind-compare-item">
+          <div class="wind-compare-icon">🌬</div>
+          <div class="wind-compare-value" id="dash-wind-arduino">—</div>
+          <div class="wind-compare-label">Mesuré (anémomètre)</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Le capteur mesure le vent local au jardin, qui peut différer
+        sensiblement des prévisions régionales.
+      </div>
+    </div>
+
+    <!-- Prévisions par jour (jusqu'à 48h) -->
+    {% if forecast_by_day %}
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-calendar-week-fill" style="color:var(--orange);"></i>
+        Prévisions par jour
+      </div>
+      <div class="forecast-day-list">
+        {% for d in forecast_by_day %}
+        <div class="forecast-day-row">
+          <div class="forecast-day-label">
+            <div class="forecast-day-name">{{ d.label }}</div>
+            <div class="forecast-day-date">{{ d.date }}</div>
+          </div>
+          <div class="forecast-day-icon">{{ d.icon }}</div>
+          <div class="forecast-day-temps">
+            {% if d.t_min is not none and d.t_max is not none %}
+            <span class="forecast-day-tmin">{{ d.t_min | int }}°</span>
+            <span class="forecast-day-tsep">→</span>
+            <span class="forecast-day-tmax">{{ d.t_max | int }}°</span>
+            {% else %}—{% endif %}
+          </div>
+          <div class="forecast-day-precip">
+            {% if d.precip > 0 %}
+              <span style="color:var(--blue);font-weight:600;">💧 {{ d.precip }}mm</span>
+            {% elif d.prob_max > 30 %}
+              <span style="color:var(--text-secondary);">{{ d.prob_max }}% pluie</span>
+            {% else %}
+              <span style="color:var(--text-tertiary);">Sec</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Détail horaire 24h : voir le bandeau en haut du dashboard.
+        Source : <strong>{{ weather.source }}</strong>.
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Lien vers historique complet -->
     <div class="card">
       <div class="card-title">
-        <i class="bi bi-cloud-sun-fill"></i>
-        Météo — {{ garden_location }}
-        <span class="badge" style="margin-left:4px;font-weight:500;font-size:10px;">{{ weather.source }}</span>
-        {% if temp_serre_c is not none %}
-        <span class="badge badge-plant" style="margin-left:4px;font-size:10px;">🏠 Serre {{ temp_serre_c }}°C</span>
-        {% endif %}
+        <i class="bi bi-graph-up" style="color:var(--green);"></i>
+        Historique météo
       </div>
-
-      <div class="weather-stats-row">
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🌡️</div>
-          <div class="weather-stat-value">{{ weather.temperature }}°</div>
-          <div class="weather-stat-label">Extérieur</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;font-size:13px;color:var(--text-secondary);line-height:1.5;">
+          Voir l'évolution des températures, humidité et précipitations sur 24h, 7j ou 30j.
         </div>
-        {% if temp_serre_c is not none %}
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🏠</div>
-          <div class="weather-stat-value">{{ temp_serre_c }}°</div>
-          <div class="weather-stat-label">Serre</div>
-        </div>
-        {% endif %}
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🌧️</div>
-          <div class="weather-stat-value">{{ weather.precip_mm_6h }}mm</div>
-          <div class="weather-stat-label">Pluie 6h</div>
-        </div>
-        <div class="weather-stat">
-          <div class="weather-stat-icon">💧</div>
-          <div class="weather-stat-value">{{ weather.precip_prob_pct | int }}%</div>
-          <div class="weather-stat-label">Prob. pluie</div>
-        </div>
-        <div class="weather-stat">
-          <div class="weather-stat-icon">💨</div>
-          <div class="weather-stat-value">{{ weather.wind_kmh }}km/h</div>
-          <div class="weather-stat-label">Vent prévu</div>
-        </div>
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🌬️</div>
-          <div class="weather-stat-value" id="dash-wind-arduino">—</div>
-          <div class="weather-stat-label">Vent mesuré</div>
-        </div>
+        <a href="/history" class="btn btn-primary btn-sm">
+          <i class="bi bi-graph-up"></i> Ouvrir Graphiques
+        </a>
       </div>
-
-      {% if weather.frost_risk %}
-      <div class="greenhouse-note" style="margin:12px 0 8px;">
-        <i class="bi bi-snow" style="color:var(--blue);"></i>
-        <div>
-          <div class="gn-title" style="color:var(--blue);">Risque de gel</div>
-          <div class="gn-body">Vannes et lucarne seront fermées automatiquement.</div>
-        </div>
-      </div>
-      {% endif %}
-
-      <div class="forecast-strip" id="forecastStrip"></div>
     </div>
+
   </div>
 
   <!-- ── TAB PROCHAINES RÉCOLTES ── -->

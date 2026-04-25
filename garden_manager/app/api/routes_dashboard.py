@@ -327,8 +327,10 @@ def dashboard():
     # ── Forecast 24h structuré pour bandeau météo riche ────
     weather_service = current_app.extensions["weather_service"]
     forecast_24h = []
+    forecast_by_day = []
     try:
         full_forecast = weather_service.get_forecast_48h() or []
+        # Bandeau 24h pills (top dashboard)
         for f in full_forecast[:24]:
             ts = f.get("hour") or f.get("timestamp")
             if isinstance(ts, str):
@@ -347,8 +349,44 @@ def dashboard():
                                 else "🌦" if (f.get("precip_prob_pct", 0) or 0) > 40
                                 else "☀️"),
             })
+
+        # Forecast groupé par jour pour le tab Météo (48h → 2 jours)
+        from collections import defaultdict as _dd
+        days_buckets = _dd(list)
+        for f in full_forecast:
+            ts = f.get("hour") or f.get("timestamp")
+            if isinstance(ts, str):
+                try:
+                    dt_obj = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                except Exception:
+                    continue
+            else:
+                dt_obj = ts
+            days_buckets[dt_obj.date()].append(f)
+
+        for d, hours in sorted(days_buckets.items())[:7]:
+            temps   = [h.get("temperature") for h in hours if h.get("temperature") is not None]
+            precips = [h.get("precip_mm") or 0 for h in hours]
+            probs   = [h.get("precip_prob_pct") or 0 for h in hours]
+            t_min = min(temps) if temps else None
+            t_max = max(temps) if temps else None
+            precip_total = sum(precips)
+            prob_max = max(probs) if probs else 0
+            # Label jour
+            if d == today:               label = "Aujourd'hui"
+            elif d == today + timedelta(days=1): label = "Demain"
+            else:                        label = DAY_NAMES_FR[d.weekday()].capitalize() + f" {d.day}"
+            forecast_by_day.append({
+                "label":   label,
+                "date":    d.strftime("%d.%m"),
+                "t_min":   round(t_min, 1) if t_min is not None else None,
+                "t_max":   round(t_max, 1) if t_max is not None else None,
+                "precip":  round(precip_total, 1),
+                "prob_max": int(prob_max),
+                "icon":    ("🌧" if precip_total > 2 else "🌦" if prob_max > 40 else "☀️"),
+            })
     except Exception:
-        forecast_24h = []
+        pass
 
     return render_template(
         "dashboard.html",
@@ -376,6 +414,7 @@ def dashboard():
         pulse_components=pulse_components,
         # Forecast
         forecast_24h=forecast_24h,
+        forecast_by_day=forecast_by_day,
     )
 
 
