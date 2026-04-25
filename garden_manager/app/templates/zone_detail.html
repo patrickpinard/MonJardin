@@ -264,23 +264,6 @@
     </div>
     {% endif %}
 
-    <!-- En-tête dimensions -->
-    <div class="card mb-3" style="padding:12px 16px;">
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <span>📏</span><strong>{{ _zone_length }} m</strong>
-          <span style="color:var(--text-tertiary);">×</span>
-          <strong>{{ _zone_width }} m</strong>
-          <span style="color:var(--text-tertiary);">·</span>
-          <span style="color:var(--green);font-weight:700;">{{ (_zone_length * _zone_width) | round(2) }} m²</span>
-        </div>
-        <span class="badge" style="background:{% if zone.has_roof %}rgba(48,209,88,.1){% else %}rgba(255,159,10,.1){% endif %};color:{% if zone.has_roof %}var(--green){% else %}var(--orange){% endif %};">
-          {{ '🏠 Serre vitrée' if zone.has_roof else '☀️ Plein air' }}
-        </span>
-        <a href="#" onclick="switchTab(document.querySelector('#zone-tab-bar .time-tab:last-child'),'config');return false;" class="btn btn-ghost btn-xs" style="margin-left:auto;"><i class="bi bi-pencil"></i> Modifier dimensions</a>
-      </div>
-    </div>
-
     {% set plant_species_summary = plant_species_summary if plant_species_summary is defined else [] %}
     {% set remaining_area_m2 = remaining_area_m2 if remaining_area_m2 is defined else 0 %}
     {% set zone_occupancy_pct = zone_occupancy_pct if zone_occupancy_pct is defined else 0 %}

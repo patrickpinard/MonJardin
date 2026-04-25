@@ -134,44 +134,35 @@
 <div class="page-header">
   <div class="page-header-row">
     <div>
-      <h1 class="page-title">💡 Conseils &amp; plantations</h1>
-      <div class="page-subtitle">Légumes du mois · Compagnonnage · Bonnes pratiques</div>
+      <h1 class="page-title">💡 Conseils</h1>
+      <div class="page-subtitle">Bonnes pratiques · Associations · Calendrier · Plantations du mois</div>
     </div>
   </div>
 </div>
 
-<div class="page-body" style="display:flex;flex-direction:column;gap:24px;padding-top:20px;">
+<div class="page-body">
 
-  <!-- ── À planter ce mois (déplacé depuis Plantation) ── -->
-  {% if seasonal_plants %}
-  <div class="card">
-    <div class="card-title">
-      <i class="bi bi-calendar3-event-fill" style="color:var(--green);"></i>
-      À planter en {{ current_month_name }} — {{ seasonal_plants | length }} suggestions
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">
-      {% for v in seasonal_plants %}
-      <a href="/plants/{{ v.name }}" class="seasonal-plant-card">
-        <div class="seasonal-plant-emoji">{{ v.get('emoji','🌱') }}</div>
-        <div class="seasonal-plant-name">{{ v.name }}</div>
-        <div class="seasonal-plant-meta">
-          {% if v.water_need == 'high' %}💧💧💧{% elif v.water_need == 'medium' %}💧💧{% else %}💧{% endif %}
-          {% if v.sun_need == 'full' %}☀️{% elif v.sun_need == 'partial' %}⛅{% else %}🌫{% endif %}
-          {% if v.difficulty == 'easy' %}<span style="color:var(--green);">★ Facile</span>
-          {% elif v.difficulty == 'medium' %}<span style="color:var(--orange);">★★ Moyen</span>
-          {% else %}<span style="color:var(--red);">★★★ Difficile</span>{% endif %}
-        </div>
-      </a>
-      {% endfor %}
-    </div>
-    <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:12px;color:var(--text-tertiary);line-height:1.5;">
-      <i class="bi bi-info-circle"></i>
-      Pour planter dans une zone : ouvrez la zone → onglet <strong>Plants</strong> → cliquez sur une cellule <strong>+</strong> du plan visuel.
-    </div>
+  <!-- Tab bar -->
+  <div class="time-tabs mb-3" id="conseils-tabs">
+    <button class="time-tab active" onclick="switchConseilsTab(this,'pratiques')">
+      <i class="bi bi-lightbulb-fill"></i> Bonnes pratiques
+    </button>
+    <button class="time-tab" onclick="switchConseilsTab(this,'associations')">
+      <i class="bi bi-heart-fill"></i> Associations
+    </button>
+    <button class="time-tab" onclick="switchConseilsTab(this,'calendrier')">
+      <i class="bi bi-calendar3"></i> Calendrier
+    </button>
+    <button class="time-tab" onclick="switchConseilsTab(this,'plantations')">
+      <i class="bi bi-flower3"></i> Plantations du mois
+      {% if seasonal_plants %}
+      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ seasonal_plants | length }}</span>
+      {% endif %}
+    </button>
   </div>
-  {% endif %}
 
-  <!-- ── CARROUSEL ── -->
+  <!-- ── TAB 1 : BONNES PRATIQUES (carrousel) ── -->
+  <div id="tab-pratiques">
   <div class="card">
     <div class="carousel-card-header">
       <div class="card-title" style="margin-bottom:0;">
@@ -314,8 +305,10 @@
     </div>
     <div class="carousel-dots" id="carousel-dots"></div>
   </div>
+  </div><!-- /tab-pratiques -->
 
-  <!-- ── COMPAGNONNAGE ── -->
+  <!-- ── TAB 2 : ASSOCIATIONS (compagnonnage) ── -->
+  <div id="tab-associations" style="display:none;">
   <div class="companion-grid">
 
   <!-- bénéfiques -->
@@ -400,8 +393,10 @@
   </div>
 
   </div><!-- /companion-grid -->
+  </div><!-- /tab-associations -->
 
-  <!-- ── SAISONS ── -->
+  <!-- ── TAB 3 : CALENDRIER (saisons) ── -->
+  <div id="tab-calendrier" style="display:none;">
   <div>
     <div class="card-title mb-3" style="padding-left:2px;">
       <i class="bi bi-calendar3"></i> Calendrier saisonnier — {{ garden_location }}
@@ -602,11 +597,63 @@
 
     </div>
   </div>
+  </div><!-- /tab-calendrier -->
+
+  <!-- ── TAB 4 : PLANTATIONS DU MOIS ── -->
+  <div id="tab-plantations" style="display:none;">
+    {% if seasonal_plants %}
+    <div class="card">
+      <div class="card-title">
+        <i class="bi bi-flower3" style="color:var(--green);"></i>
+        À planter en {{ current_month_name }} — {{ seasonal_plants | length }} suggestions
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">
+        {% for v in seasonal_plants %}
+        <a href="/plants/{{ v.name }}" class="seasonal-plant-card">
+          <div class="seasonal-plant-emoji">{{ v.get('emoji','🌱') }}</div>
+          <div class="seasonal-plant-name">{{ v.name }}</div>
+          <div class="seasonal-plant-meta">
+            {% if v.water_need == 'high' %}💧💧💧{% elif v.water_need == 'medium' %}💧💧{% else %}💧{% endif %}
+            {% if v.sun_need == 'full' %}☀️{% elif v.sun_need == 'partial' %}⛅{% else %}🌫{% endif %}
+            {% if v.difficulty == 'easy' %}<span style="color:var(--green);">★ Facile</span>
+            {% elif v.difficulty == 'medium' %}<span style="color:var(--orange);">★★ Moyen</span>
+            {% else %}<span style="color:var(--red);">★★★ Difficile</span>{% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:12px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Pour planter dans une zone : ouvrez la zone → onglet <strong>Plants</strong> → cliquez sur une cellule <strong>+</strong> du plan visuel.
+      </div>
+    </div>
+    {% else %}
+    <div class="card empty-state" style="padding:40px 20px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:8px;">🌱</div>
+      <p style="color:var(--text-secondary);">Aucune plantation recommandée ce mois.</p>
+    </div>
+    {% endif %}
+  </div>
 
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script>
+// ── Tabs Conseils ──────────────────────────────────────
+function switchConseilsTab(btn, tab) {
+  document.querySelectorAll('#conseils-tabs .time-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['pratiques','associations','calendrier','plantations'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = (t === tab) ? '' : 'none';
+  });
+  // Recalcule le carousel quand on revient sur Pratiques (tracks dimensions)
+  if (tab === 'pratiques' && typeof goTo === 'function') {
+    setTimeout(() => { buildDots(); goTo(currentIdx); }, 50);
+  }
+}
+</script>
 <script>
 const CARD_W = 260 + 14;
 let currentIdx = 0;
