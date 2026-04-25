@@ -1212,11 +1212,14 @@ async function refreshZoneStatus() {
         rText.textContent = 'Ouverte';
         rText.style.color = 'var(--orange)';
         if (rIcon) rIcon.textContent = '🪟';
-      } else {
+        window._lastRoofCommand = null;  // mouvement terminé côté serveur
+      } else if (state === 'close') {
         rText.textContent = 'Fermée';
         rText.style.color = 'var(--text-secondary)';
         if (rIcon) rIcon.textContent = '🏠';
+        window._lastRoofCommand = null;
       }
+      // Si state null/undefined : on ne touche pas (évite de figer en cas d'API down)
     }
   } catch (e) { /* silencieux */ }
 }

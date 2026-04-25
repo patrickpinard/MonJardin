@@ -138,12 +138,16 @@ function updateZoneCards(data) {
       if (ico) ico.className = 'bi bi-wind zc-actuator-icon';
       if (lbl) lbl.textContent = 'Ouverte';
       _setFastRefresh(false);
-    } else {
+      // Cleanup mémoire fallback (la commande est terminée côté serveur)
+      window._lastRoofCommand = null;
+    } else if (state === 'close') {
       roofEl.className = 'zc-actuator zc-actuator-off';
       if (ico) ico.className = 'bi bi-house-fill zc-actuator-icon';
       if (lbl) lbl.textContent = 'Fermée';
       _setFastRefresh(false);
+      window._lastRoofCommand = null;
     }
+    // Si state est null/undefined : on ne touche pas au badge (évite de figer)
   }
 
   // Vent mesuré par l'Arduino
