@@ -1309,19 +1309,6 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .cp-bad  { background: rgba(255,69,58,.1);  color: var(--red);
   border: 1px solid rgba(255,69,58,.25); }
 
-.suit-list { display: flex; flex-direction: column; gap: 7px; }
-.suit-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 14px; background: var(--bg-secondary); border-radius: var(--r-md);
-}
-.suit-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.suit-dot.excellent { background: var(--green);  box-shadow: 0 0 6px rgba(48,209,88,.4); }
-.suit-dot.good      { background: var(--teal);   }
-.suit-dot.acceptable{ background: var(--orange); }
-.suit-dot.poor      { background: var(--red);    }
-.suit-zone  { font-weight: 600; font-size: 14px; min-width: 80px; }
-.suit-notes { font-size: 12px; color: var(--text-secondary); flex: 1; }
-
 .greenhouse-note {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 15px 16px;

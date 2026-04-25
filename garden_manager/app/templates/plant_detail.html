@@ -191,26 +191,6 @@
     </div>
   </div>
 
-  <!-- Zone suitability -->
-  {% if plant.zone_recommendations %}
-  <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-geo-alt-fill"></i> Zones recommandées</div>
-    <div class="suit-list">
-      {% for rec in plant.zone_recommendations %}
-      {% set zone_obj = zones | selectattr('zone_id', 'eq', rec.zone_id) | first | default(None) %}
-      <div class="suit-item">
-        <div class="suit-dot {{ rec.suitability }}"></div>
-        <div class="suit-zone">Zone {{ rec.zone_id }} — {{ rec.label }}</div>
-        <div class="suit-notes">{{ rec.notes }}</div>
-        <span class="badge {% if rec.suitability == 'excellent' %}badge-plant{% elif rec.suitability == 'good' %}badge-roof-open{% elif rec.suitability == 'poor' %}badge-warning{% else %}badge-valve-close{% endif %}" style="font-size:10px;">
-          {{ {'excellent': 'Excellent', 'good': 'Bien', 'acceptable': 'Acceptable', 'poor': 'Difficile'}.get(rec.suitability, rec.suitability) }}
-        </span>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
   <!-- Add to zone form -->
   <div class="card mb-3">
     <div class="card-title"><i class="bi bi-plus-circle-fill"></i> Planter dans une zone</div>
