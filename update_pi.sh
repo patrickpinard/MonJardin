@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
 #  MonJardin — Script de mise à jour sur Raspberry Pi
-#  Usage : bash update_pi.sh [--branch v2.0] [--restart]
+#  Usage : bash update_pi.sh [--branch v3.0] [--restart]
 #  Peut être lancé depuis n'importe quel répertoire.
 # ============================================================
 set -euo pipefail
@@ -32,7 +32,7 @@ _find_repo() {
 }
 
 REPO_DIR="$(_find_repo)" || { echo "[ERR] Dépôt git MonJardin introuvable."; echo "      Lancez : cd ~/MonJardin && bash update_pi.sh"; exit 1; }
-BRANCH="${BRANCH:-v2.0}"
+BRANCH="${BRANCH:-v3.0}"
 APP_DIR="$REPO_DIR/garden_manager"
 LOG_DIR="$APP_DIR/logs"
 SERVICE_NAME="monjardin"

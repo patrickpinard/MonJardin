@@ -46,7 +46,7 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 ![À propos](docs/screenshot_about.png)
 
-*Présentation du projet, fonctionnalités v2.0, matériel et stack technique.*
+*Présentation du projet, fonctionnalités v3.0, matériel et stack technique.*
 
 ### Interface mobile iPhone (PWA) — 4 écrans
 
@@ -257,7 +257,7 @@ bash ~/MonJardin/update_pi.sh --restart
 Le script :
 1. Détecte automatiquement le repo MonJardin
 2. Sauvegarde la base de données (5 derniers backups conservés)
-3. `git pull origin v2.0`
+3. `git pull origin v3.0`
 4. Met à jour les dépendances Python (compatible Bookworm / PEP 668)
 5. Redémarre l'application (systemd ou manuel)
 
