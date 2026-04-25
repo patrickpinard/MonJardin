@@ -66,11 +66,17 @@
     <button class="time-tab active" onclick="switchDashTab(this,'zones')">
       <i class="bi bi-grid-1x2-fill"></i> Zones
     </button>
+    <button class="time-tab" onclick="switchDashTab(this,'taches')">
+      <i class="bi bi-calendar3-event-fill"></i> Tâches
+      {% if monthly_tasks %}
+      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ monthly_tasks | length }}</span>
+      {% endif %}
+    </button>
     <button class="time-tab" onclick="switchDashTab(this,'meteo')">
       <i class="bi bi-cloud-sun-fill"></i> Météo
     </button>
     <button class="time-tab" onclick="switchDashTab(this,'recoltes')">
-      <i class="bi bi-basket2-fill"></i> Prochaines récoltes
+      <i class="bi bi-basket2-fill"></i> Récoltes
       {% if harvest_list %}
       <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ harvest_list | length }}</span>
       {% endif %}
@@ -180,48 +186,45 @@
           </div>
         </div>
 
-        <!-- Section plants — grille cliquable avec variété + besoin en eau -->
+        <!-- Section plants — plant-grid identique à zone_detail -->
         <div class="zc-section-plants">
-          {% if zd.plantings %}
-          <button class="zc-section-label zc-plants-toggle" type="button"
-                  onclick="toggleZonePlants(event, {{ zd.zone.zone_id }})">
-            <i class="bi bi-flower1"></i>
-            <span>Plantations actives</span>
-            <span class="zc-plant-count">{{ zd.plantings | length }}</span>
-            <i class="bi bi-chevron-down nav-chevron zc-plants-chevron"
-               id="zpchev-{{ zd.zone.zone_id }}"></i>
-          </button>
-          {% else %}
           <div class="zc-section-label">
-            <i class="bi bi-flower1"></i> Plantations actives
+            <i class="bi bi-flower1"></i>
+            <span>Plan visuel</span>
+            {% if zd.species_summary %}
+            <span class="zc-plant-count">{{ zd.plantings | length }}</span>
+            {% endif %}
+            <span style="margin-left:auto;font-size:9px;color:var(--text-tertiary);font-weight:500;text-transform:none;letter-spacing:0;">
+              {{ zd.zone.length_m }}×{{ zd.zone.width_m }} m
+            </span>
           </div>
-          {% endif %}
-          {% if zd.plantings %}
-          <div class="zo-plants-grid zc-plants-collapsible"
-               id="zplants-{{ zd.zone.zone_id }}">
-            {% for p in zd.plantings %}
-            <a href="/plants/{{ p.vegetable_name }}" class="zo-plant-item">
-              <div class="zo-plant-emoji">{{ p.emoji }}</div>
-              <div style="min-width:0;">
-                <div class="zo-plant-name">{{ p.vegetable_name }}</div>
-                {% if p.variety %}
-                <div class="zo-plant-variety">{{ p.variety }}</div>
+          <!-- Wrapper avec ratio = proportions réelles de la zone -->
+          <div class="plant-grid-wrap plant-grid-wrap-mini"
+               style="aspect-ratio: {{ zd.zone.length_m }} / {{ zd.zone.width_m }};">
+            <div class="plant-grid plant-grid-fill plant-grid-mini">
+              {% for s in zd.species_summary %}
+              <a href="/zones/{{ zd.zone.zone_id }}" class="plant-cell" style="text-decoration:none;">
+                <span class="plant-cell-emoji">{{ s.emoji }}</span>
+                <span class="plant-cell-name">{{ s.name }}</span>
+                {% if s.count > 1 %}<span class="plant-cell-count">{{ s.count }}×</span>{% endif %}
+                {% if s.days_left is not none and s.days_left <= 14 %}
+                <span class="plant-cell-harvest {% if s.days_left < 0 %}late{% elif s.days_left <= 3 %}soon{% endif %}">
+                  {% if s.days_left < 0 %}⚠️ {{ -s.days_left }}j
+                  {% elif s.days_left == 0 %}🎉
+                  {% else %}{{ s.days_left }}j{% endif %}
+                </span>
                 {% endif %}
-                <div class="zo-plant-water water-{{ p.water_need }}">
-                  {% if p.water_need == 'high' %}💧💧💧
-                  {% elif p.water_need == 'medium' %}💧💧
-                  {% else %}💧{% endif %}
-                </div>
-              </div>
-            </a>
-            {% endfor %}
+              </a>
+              {% endfor %}
+              <!-- Cellules vides "+ planter" : redirige vers la zone -->
+              {% for _ in range(3) %}
+              <a href="/zones/{{ zd.zone.zone_id }}" class="plant-cell plant-cell-empty" style="text-decoration:none;" title="Ajouter une plantation">
+                <span class="plant-cell-emoji">+</span>
+                <span class="plant-cell-name">Planter</span>
+              </a>
+              {% endfor %}
+            </div>
           </div>
-          {% else %}
-          <div class="zo-plants-empty">
-            <i class="bi bi-plus-circle"></i>
-            <a href="/planting">Ajouter une plantation</a>
-          </div>
-          {% endif %}
         </div>
 
         <!-- Pied de carte -->
@@ -245,16 +248,21 @@
       {% endfor %}
     </div>
 
-    <!-- ── Carte Tâches du mois (calendrier saisonnier) ── -->
-    {% if monthly_tasks %}
-    <div class="card mb-3">
+  </div>
+
+  <!-- ── TAB TÂCHES ── -->
+  <div id="tab-taches" style="display:none;">
+    <div class="card">
       <div class="card-title">
         <i class="bi bi-calendar3-event-fill" style="color:var(--green);"></i>
         Tâches du mois — {{ current_month_name }}
+        {% if monthly_tasks %}
         <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
           {{ monthly_tasks | length }} suggestion{{ 's' if monthly_tasks | length > 1 else '' }}
         </span>
+        {% endif %}
       </div>
+      {% if monthly_tasks %}
       <div class="monthly-tasks">
         {% for t in monthly_tasks %}
         <div class="task-row task-{{ t.kind }} {% if t.done %}task-done{% endif %}">
@@ -264,14 +272,25 @@
             <div class="task-detail">{{ t.detail }}</div>
           </div>
           {% if t.done %}
-          <span class="task-check"><i class="bi bi-check-circle-fill"></i></span>
+          <span class="task-check" title="Déjà planté"><i class="bi bi-check-circle-fill"></i></span>
           {% endif %}
         </div>
         {% endfor %}
       </div>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:12px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Tâches générées automatiquement depuis les mois optimaux (région suisse) et vos plantations actives.
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:30px 20px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🌱</div>
+        <p style="color:var(--text-secondary);">Aucune tâche suggérée pour ce mois.</p>
+        <a href="/conseils" class="btn btn-secondary btn-sm" style="margin-top:10px;">
+          <i class="bi bi-lightbulb"></i> Voir les conseils saisonniers
+        </a>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
-
   </div>
 
   <!-- ── TAB MÉTÉO ── -->
@@ -403,33 +422,11 @@
   function switchDashTab(btn, tab) {
     document.querySelectorAll('#dash-tabs .time-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    ['zones','meteo','recoltes'].forEach(t => {
+    ['zones','taches','meteo','recoltes'].forEach(t => {
       const el = document.getElementById('tab-' + t);
       if (el) el.style.display = (t === tab) ? '' : 'none';
     });
   }
 
-  // ── Section "Plantations actives" repliable par carte (zone) ──
-  function _setZonePlantsOpen(zoneId, open) {
-    const grid = document.getElementById('zplants-' + zoneId);
-    const chev = document.getElementById('zpchev-' + zoneId);
-    if (!grid) return;
-    grid.classList.toggle('open', open);
-    if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
-  }
-  function toggleZonePlants(e, zoneId) {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
-    const grid = document.getElementById('zplants-' + zoneId);
-    if (!grid) return;
-    const open = !grid.classList.contains('open');
-    _setZonePlantsOpen(zoneId, open);
-    try { localStorage.setItem('zPlantsOpen-' + zoneId, open ? '1' : '0'); } catch (_) {}
-  }
-  // Restauration de l'état au chargement (replié par défaut)
-  document.querySelectorAll('.zc-plants-collapsible').forEach(grid => {
-    const zoneId = grid.id.replace('zplants-', '');
-    const stored = localStorage.getItem('zPlantsOpen-' + zoneId);
-    if (stored === '1') _setZonePlantsOpen(zoneId, true);
-  });
 </script>
 {% endblock %}

@@ -2,7 +2,7 @@
 import json
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 from pathlib import Path
 
 from flask import Blueprint, current_app, render_template, send_from_directory, \
@@ -106,6 +106,32 @@ def dashboard():
                                  .order_by(IrrigationLog.timestamp.desc())
                                  .first())
 
+    # ── species_summary par zone (pour le plant-grid des cartes du dashboard) ──
+    # Charge la DB plants pour les emojis + récolte prochaine
+    _plants_db = _load_plants_db()
+    _emoji_global = {p["name"]: p.get("emoji", "🌱") for p in _plants_db}
+    from collections import defaultdict as _dd
+    for zd in zones_data:
+        groups: dict = _dd(list)
+        for p in zd["plantings"]:
+            groups[p.vegetable_name].append(p)
+        species = []
+        for vname, plist in groups.items():
+            rep = max(plist, key=lambda p: p.id)
+            harvest_dates = [p.expected_harvest_date for p in plist if p.expected_harvest_date]
+            next_harvest  = min(harvest_dates) if harvest_dates else None
+            d_left = (next_harvest - date.today()).days if next_harvest else None
+            species.append({
+                "name":       vname,
+                "emoji":      _emoji_global.get(vname, "🌱"),
+                "count":      len(plist),
+                "rep_id":     rep.id,
+                "days_left":  d_left,
+            })
+        # Trier : récolte proche en premier
+        species.sort(key=lambda s: (s["days_left"] is None, s["days_left"] or 9999))
+        zd["species_summary"] = species
+
     # Bandeau d'alerte : zones dont l'humidité est sous le seuil bas
     alerting_zones = [zd for zd in zones_data if zd["mc"] == "low"]
 
@@ -117,7 +143,6 @@ def dashboard():
     temp_serre = sensor_data.get("temp_serre_c") if sensor_data else None
 
     # Prochaines récoltes globales (60 jours)
-    from datetime import date
     today = date.today()
     all_plantings = Planting.query.filter_by(status="active").all()
     zone_name_map = {z.zone_id: z.name for z in zones}

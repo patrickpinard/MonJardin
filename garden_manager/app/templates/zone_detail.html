@@ -281,37 +281,9 @@
       </div>
     </div>
 
-    <!-- Occupation de la zone -->
     {% set plant_species_summary = plant_species_summary if plant_species_summary is defined else [] %}
     {% set remaining_area_m2 = remaining_area_m2 if remaining_area_m2 is defined else 0 %}
     {% set zone_occupancy_pct = zone_occupancy_pct if zone_occupancy_pct is defined else 0 %}
-    {% if plant_species_summary %}
-    <div class="card mb-3">
-      <div class="card-title"><i class="bi bi-pie-chart-fill"></i> Occupation de la zone</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;">
-        <span style="color:var(--text-secondary);">Remplissage</span>
-        <span style="font-weight:700;color:{% if zone_occupancy_pct >= 90 %}var(--red){% elif zone_occupancy_pct >= 70 %}var(--orange){% else %}var(--green){% endif %};">
-          {{ zone_occupancy_pct }}% occupé · {{ remaining_area_m2 }} m² libre
-        </span>
-      </div>
-      <div style="height:8px;border-radius:4px;background:var(--bg-tertiary);overflow:hidden;">
-        <div style="height:100%;width:{{ zone_occupancy_pct }}%;border-radius:4px;
-          background:{% if zone_occupancy_pct >= 90 %}var(--red){% elif zone_occupancy_pct >= 70 %}var(--orange){% else %}var(--green){% endif %};
-          transition:width .3s;"></div>
-      </div>
-      <!-- Répartition par espèce -->
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
-        {% for s in plant_species_summary %}
-        <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;
-          background:rgba(255,255,255,.05);border:1px solid var(--border);">
-          {{ s.emoji }} {{ s.name }}
-          <span style="color:var(--green);">{{ s.count }}</span>
-          <span style="color:var(--text-tertiary);">/ {{ s.capacity }}</span>
-        </span>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
 
     <!-- Plan visuel des plantations — grille emoji style App Store -->
     {% set active_plantings = plantings | selectattr('status','eq','active') | list %}
@@ -319,8 +291,14 @@
     <div class="card mb-3">
       <div class="card-title">
         <i class="bi bi-grid-1x2-fill"></i> Plan visuel
-        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
-          {{ _zone_length }} m × {{ _zone_width }} m · tap pour modifier
+        {% set _occ_color = 'var(--red)' if zone_occupancy_pct >= 90 else ('var(--orange)' if zone_occupancy_pct >= 70 else 'var(--green)') %}
+        <span style="margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;">
+          <span style="color:var(--text-tertiary);">{{ active_plantings | length }} plant{{ 's' if active_plantings | length > 1 else '' }}</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--border);">
+            <span style="width:6px;height:6px;border-radius:50%;background:{{ _occ_color }};"></span>
+            <strong style="color:{{ _occ_color }};">{{ zone_occupancy_pct }}%</strong>
+            <span style="color:var(--text-tertiary);">occupé</span>
+          </span>
         </span>
       </div>
       <!-- Container avec ratio = proportions réelles de la zone -->
@@ -357,40 +335,6 @@
       {% endif %}
     </div>
 
-    <!-- Tableau espacement -->
-    {% if active_plantings %}
-    <div class="card mb-3">
-      <div class="card-title"><i class="bi bi-table"></i> Espacement & recommandations</div>
-      <div style="overflow-x:auto;">
-        <table class="table-modern">
-          <thead><tr><th>Plant</th><th>Espacement</th><th>Profondeur</th><th>Eau</th><th>Capacité zone</th><th>Conseil</th></tr></thead>
-          <tbody>
-            {% for p in active_plantings %}
-            {% set info = plant_info.get(p.vegetable_name, {}) %}
-            {% set space = info.get('space_cm', 30) %}
-            {% set space_row = info.get('space_row_cm', space) %}
-            {% set depth = info.get('depth_cm') %}
-            {% set count_l = (_zone_length * 100 / space) | int %}
-            {% set count_w = (_zone_width  * 100 / space_row) | int %}
-            <tr>
-              <td style="font-weight:700;">{{ info.get('emoji','🌱') }} {{ p.vegetable_name }}</td>
-              <td><span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);" title="{% if space_row != space %}Plants {{ space }}cm en ligne · inter-rang {{ space_row }}cm{% else %}{{ space }}cm × {{ space }}cm{% endif %}">{{ space }}{% if space_row != space %} × {{ space_row }}{% endif %} cm</span></td>
-              <td>{% if depth %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);">{{ depth }} cm</span>{% else %}<span style="color:var(--text-tertiary);">—</span>{% endif %}</td>
-              <td><span class="attr {% if info.get('water_need') == 'high' %}water-high{% elif info.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:11px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(info.get('water_need','medium'), '💧💧') }}</span></td>
-              <td>
-                <span style="font-weight:700;color:var(--green);">{{ count_l * count_w }}</span>
-                <span style="font-size:11px;color:var(--text-tertiary);">({{ count_l }}×{{ count_w }})</span>
-              </td>
-              <td style="font-size:11px;color:var(--text-secondary);max-width:200px;">
-                {{ info.get('planting_tip_fr', info.get('notes_fr',''))[:90] }}{% if info.get('planting_tip_fr', info.get('notes_fr','')) | length > 90 %}…{% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- Associations entre plants -->
     <div class="card mb-3">
       <div class="card-title"><i class="bi bi-people-fill" style="color:var(--green);"></i> Associations entre vos plants</div>
@@ -423,7 +367,6 @@
       </div>
       {% endif %}
     </div>
-    {% endif %}
 
     <!-- Autres plantations (non actives) -->
     {% if other_plantings %}
@@ -949,6 +892,12 @@
                 data-qp-emoji="{{ v.get('emoji','🌱') }}"
                 data-qp-companions="{{ v.get('companions', []) | join(',') }}"
                 data-qp-bad="{{ v.get('bad_companions', []) | join(',') }}"
+                data-qp-space="{{ v.get('space_cm', '') }}"
+                data-qp-space-row="{{ v.get('space_row_cm', '') }}"
+                data-qp-depth="{{ v.get('depth_cm', '') }}"
+                data-qp-water="{{ v.get('water_need', 'medium') }}"
+                data-qp-sun="{{ v.get('sun_need', 'full') }}"
+                data-qp-tip="{{ (v.get('planting_tip_fr') or v.get('notes_fr', ''))[:140] | e }}"
                 onclick="qpSelectVeg(this)">
           <span class="qp-veg-emoji">{{ v.get('emoji','🌱') }}</span>
           <span class="qp-veg-name">{{ v.name }}</span>
@@ -956,7 +905,7 @@
         {% endfor %}
       </div>
 
-      <!-- Sélection actuelle + compagnonnage + quantité -->
+      <!-- Sélection actuelle + recommandations + compagnonnage + quantité -->
       <div id="qp-selection" style="display:none;margin-top:14px;padding:12px;background:var(--bg-secondary);border:1px solid var(--green);border-radius:var(--r-md);">
         <div style="display:flex;align-items:center;gap:12px;">
           <span id="qp-sel-emoji" style="font-size:32px;line-height:1;"></span>
@@ -964,6 +913,20 @@
             <div style="font-weight:700;font-size:14px;" id="qp-sel-name">—</div>
             <div style="font-size:11px;color:var(--text-tertiary);" id="qp-sel-cat"></div>
           </div>
+          <span id="qp-sel-capacity" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--r-pill);background:rgba(48,209,88,.1);color:var(--green);"></span>
+        </div>
+
+        <!-- Recommandations (espacement, profondeur, eau, soleil) -->
+        <div id="qp-recos" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
+          <span class="qp-reco" id="qp-reco-space" title="Espacement entre plants">↔ <span></span></span>
+          <span class="qp-reco" id="qp-reco-depth" title="Profondeur de plantation">↓ <span></span></span>
+          <span class="qp-reco" id="qp-reco-water" title="Besoin en eau"><span></span></span>
+          <span class="qp-reco" id="qp-reco-sun"   title="Exposition"><span></span></span>
+        </div>
+
+        <!-- Conseil de plantation -->
+        <div id="qp-tip" style="display:none;margin-top:8px;padding:7px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);font-size:11px;color:var(--text-secondary);line-height:1.5;">
+          <i class="bi bi-lightbulb" style="color:var(--orange);"></i> <span id="qp-tip-text"></span>
         </div>
 
         <!-- Compagnonnage live -->
@@ -1329,6 +1292,10 @@ const _activeSpeciesInZone = [
   {% for s in plant_species_summary %}{{ s.name | tojson }}{% if not loop.last %}, {% endif %}{% endfor %}
 ];
 
+// Dimensions de la zone (pour calculer la capacité dans le modal)
+const _ZONE_LENGTH_M = {{ _zone_length }};
+const _ZONE_WIDTH_M  = {{ _zone_width }};
+
 function qpSelectVeg(btn) {
   document.querySelectorAll('.qp-veg-item').forEach(el => el.classList.remove('selected'));
   btn.classList.add('selected');
@@ -1337,11 +1304,45 @@ function qpSelectVeg(btn) {
   const cat   = btn.dataset.qpCat;
   const companions = (btn.dataset.qpCompanions || '').split(',').filter(Boolean);
   const bad        = (btn.dataset.qpBad || '').split(',').filter(Boolean);
+  const space     = parseInt(btn.dataset.qpSpace) || 30;
+  const spaceRow  = parseInt(btn.dataset.qpSpaceRow) || space;
+  const depth     = parseInt(btn.dataset.qpDepth) || 0;
+  const water     = btn.dataset.qpWater || 'medium';
+  const sun       = btn.dataset.qpSun || 'full';
+  const tip       = btn.dataset.qpTip || '';
 
   document.getElementById('qp-veg-name').value = name;
   document.getElementById('qp-sel-name').textContent = name;
   document.getElementById('qp-sel-emoji').textContent = emoji;
   document.getElementById('qp-sel-cat').textContent = cat;
+
+  // ── Recommandations (espacement / profondeur / eau / soleil) ──
+  const cols = Math.max(1, Math.floor(_ZONE_LENGTH_M * 100 / space));
+  const rows = Math.max(1, Math.floor(_ZONE_WIDTH_M  * 100 / spaceRow));
+  const cap  = cols * rows;
+  document.getElementById('qp-sel-capacity').textContent = '~' + cap + ' max';
+
+  const spaceTxt = (spaceRow !== space) ? `${space} × ${spaceRow} cm` : `${space} cm`;
+  document.querySelector('#qp-reco-space span').textContent = spaceTxt;
+  if (depth) {
+    document.getElementById('qp-reco-depth').style.display = '';
+    document.querySelector('#qp-reco-depth span').textContent = depth + ' cm';
+  } else {
+    document.getElementById('qp-reco-depth').style.display = 'none';
+  }
+  const waterIcons = {high:'💧💧💧', medium:'💧💧', low:'💧'};
+  const waterLabels = {high:'Élevé', medium:'Moyen', low:'Faible'};
+  document.querySelector('#qp-reco-water span').textContent = (waterIcons[water] || '💧💧') + ' ' + (waterLabels[water] || 'Moyen');
+  const sunIcons = {full:'☀️ Plein soleil', partial:'⛅ Mi-ombre', shade:'🌫 Ombre'};
+  document.querySelector('#qp-reco-sun span').textContent = sunIcons[sun] || '☀️ Plein soleil';
+
+  // Conseil
+  if (tip) {
+    document.getElementById('qp-tip').style.display = '';
+    document.getElementById('qp-tip-text').textContent = tip;
+  } else {
+    document.getElementById('qp-tip').style.display = 'none';
+  }
 
   // ── Compagnonnage live ──
   const goodInZone = companions.filter(c => _activeSpeciesInZone.includes(c));
