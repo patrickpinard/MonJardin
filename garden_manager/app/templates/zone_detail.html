@@ -12,7 +12,7 @@
 <div class="page-header">
   <div class="page-header-row">
     <div style="display:flex;align-items:center;gap:12px;">
-      <button onclick="history.length > 1 ? history.back() : location.href='/zones'" class="btn btn-ghost btn-icon">
+      <button onclick="history.length > 1 ? history.back() : location.href='/dashboard'" class="btn btn-ghost btn-icon">
         <i class="bi bi-arrow-left"></i>
       </button>
       <div>
@@ -31,11 +31,26 @@
         </div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       {% if trend == 'up' %}
-      <span class="badge badge-valve-open"><i class="bi bi-arrow-up-right"></i> Montante</span>
+      <span class="badge badge-valve-open" title="Humidité du sol en augmentation sur les 2 dernières heures">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+        <i class="bi bi-arrow-up-right" style="margin-left:2px;"></i> montante
+      </span>
       {% elif trend == 'down' %}
-      <span class="badge badge-warning"><i class="bi bi-arrow-down-right"></i> En baisse</span>
+      <span class="badge badge-warning" title="Humidité du sol en baisse sur les 2 dernières heures">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+        <i class="bi bi-arrow-down-right" style="margin-left:2px;"></i> en baisse
+      </span>
+      {% elif trend == 'stable' %}
+      <span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-secondary);" title="Humidité du sol stable sur les 2 dernières heures">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+        <i class="bi bi-dash" style="margin-left:2px;"></i> stable
+      </span>
+      {% else %}
+      <span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-tertiary);" title="Tendance non disponible (pas assez de données récentes)">
+        <i class="bi bi-droplet-fill"></i> Humidité du sol
+      </span>
       {% endif %}
       <div class="zone-mode-badge {{ zone.irrigation_mode }}" style="font-size:12px;padding:6px 14px;">
         {{ zone.irrigation_mode }}
@@ -101,18 +116,18 @@
             {% else %}—{% endif %}
           </div>
         </div>
-        <div class="char-item">
-          <span class="char-icon">{% if valve_state == 'open' %}🚿{% else %}🔒{% endif %}</span>
+        <div class="char-item" id="zd-valve-card">
+          <span class="char-icon" id="zd-valve-icon">{% if valve_state == 'open' %}🚿{% else %}🔒{% endif %}</span>
           <div class="char-label">Vanne</div>
-          <div class="char-value" style="color:{% if valve_state == 'open' %}var(--blue){% else %}var(--text-secondary){% endif %};">
+          <div class="char-value" id="zd-valve-text" style="color:{% if valve_state == 'open' %}var(--blue){% else %}var(--text-secondary){% endif %};">
             {{ 'Ouverte' if valve_state == 'open' else 'Fermée' }}
           </div>
         </div>
         {% if zone.has_roof %}
-        <div class="char-item">
-          <span class="char-icon">{{ '🪟' if roof_state == 'open' else '🏠' }}</span>
+        <div class="char-item" id="zd-roof-card">
+          <span class="char-icon" id="zd-roof-icon">{{ '🪟' if roof_state == 'open' else '🏠' }}</span>
           <div class="char-label">Lucarne</div>
-          <div class="char-value" style="color:{% if roof_state == 'open' %}var(--orange){% else %}var(--text-secondary){% endif %};">
+          <div class="char-value" id="zd-roof-text" style="color:{% if roof_state == 'open' %}var(--orange){% else %}var(--text-secondary){% endif %};">
             {{ 'Ouverte' if roof_state == 'open' else 'Fermée' }}
           </div>
         </div>
@@ -210,30 +225,25 @@
 
     <div class="card mb-3">
       <div class="card-title">
-        <i class="bi bi-graph-up"></i> Historique humidité & température
+        <i class="bi bi-graph-up"></i> Historique unifié
         <div class="card-actions">
-          <div class="time-tabs">
-            <button class="time-tab active" onclick="switchZoneTab(this, {{ zone.zone_id }}, 24)">24h</button>
-            <button class="time-tab" onclick="switchZoneTab(this, {{ zone.zone_id }}, 168)">7j</button>
-            <button class="time-tab" onclick="switchZoneTab(this, {{ zone.zone_id }}, 720)">30j</button>
+          <div class="time-tabs" id="combined-time-tabs">
+            <button class="time-tab active" onclick="switchCombinedTab(this, {{ zone.zone_id }}, 24)">24h</button>
+            <button class="time-tab" onclick="switchCombinedTab(this, {{ zone.zone_id }}, 168)">7j</button>
+            <button class="time-tab" onclick="switchCombinedTab(this, {{ zone.zone_id }}, 720)">30j</button>
           </div>
         </div>
       </div>
-      <div id="zoneChart" style="height:300px;"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <i class="bi bi-droplet-half"></i> Historique arrosages
-        <div class="card-actions">
-          <div class="time-tabs">
-            <button class="time-tab active" onclick="switchIrrigChart(this, {{ zone.zone_id }}, 24)">24h</button>
-            <button class="time-tab" onclick="switchIrrigChart(this, {{ zone.zone_id }}, 168)">7j</button>
-            <button class="time-tab" onclick="switchIrrigChart(this, {{ zone.zone_id }}, 720)">30j</button>
-          </div>
-        </div>
+      <!-- Légende explicative -->
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;color:var(--text-tertiary);">
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:3px;background:#30d158;border-radius:2px;"></span>Humidité du sol (%)</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:2px;background:#ff9f0a;border-radius:2px;border-top:2px dashed #ff9f0a;"></span>Temp. extérieure (°C)</span>
+        {% if zone.has_roof %}
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:2px;background:#ff453a;border-radius:2px;border-top:2px dashed #ff453a;"></span>Temp. serre (°C)</span>
+        {% endif %}
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:8px;background:rgba(10,132,255,.25);border:1px solid rgba(10,132,255,.5);border-radius:2px;"></span>Vanne ouverte</span>
       </div>
-      <div id="irrigChart" style="height:200px;"></div>
+      <div id="combinedChart" style="height:380px;"></div>
     </div>
 
   </div><!-- /#tab-graphiques -->
@@ -254,165 +264,58 @@
     </div>
     {% endif %}
 
-    <!-- En-tête dimensions -->
-    <div class="card mb-3" style="padding:12px 16px;">
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <span>📏</span><strong>{{ _zone_length }} m</strong>
-          <span style="color:var(--text-tertiary);">×</span>
-          <strong>{{ _zone_width }} m</strong>
-          <span style="color:var(--text-tertiary);">·</span>
-          <span style="color:var(--green);font-weight:700;">{{ (_zone_length * _zone_width) | round(2) }} m²</span>
-        </div>
-        <span class="badge" style="background:{% if zone.has_roof %}rgba(48,209,88,.1){% else %}rgba(255,159,10,.1){% endif %};color:{% if zone.has_roof %}var(--green){% else %}var(--orange){% endif %};">
-          {{ '🏠 Serre vitrée' if zone.has_roof else '☀️ Plein air' }}
-        </span>
-        <a href="#" onclick="switchTab(document.querySelector('#zone-tab-bar .time-tab:last-child'),'config');return false;" class="btn btn-ghost btn-xs" style="margin-left:auto;"><i class="bi bi-pencil"></i> Modifier dimensions</a>
-      </div>
-    </div>
+    {% set plant_species_summary = plant_species_summary if plant_species_summary is defined else [] %}
+    {% set remaining_area_m2 = remaining_area_m2 if remaining_area_m2 is defined else 0 %}
+    {% set zone_occupancy_pct = zone_occupancy_pct if zone_occupancy_pct is defined else 0 %}
 
-    <!-- Visualisation visuelle zone -->
-    <div class="card mb-3">
-      <div class="card-title"><i class="bi bi-grid-1x2-fill"></i> Plan visuel des plantations</div>
-
-      {% set plant_species_summary = plant_species_summary if plant_species_summary is defined else [] %}
-      {% set remaining_area_m2 = remaining_area_m2 if remaining_area_m2 is defined else 0 %}
-      {% set zone_occupancy_pct = zone_occupancy_pct if zone_occupancy_pct is defined else 0 %}
-
-      <!-- Barre de capacité globale -->
-      {% if plant_species_summary %}
-      <div style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;">
-          <span style="color:var(--text-secondary);">Occupation de la zone</span>
-          <span style="font-weight:700;color:{% if zone_occupancy_pct >= 90 %}var(--red){% elif zone_occupancy_pct >= 70 %}var(--orange){% else %}var(--green){% endif %};">
-            {{ zone_occupancy_pct }}% occupé · {{ remaining_area_m2 }} m² libre
-          </span>
-        </div>
-        <div style="height:8px;border-radius:4px;background:var(--bg-tertiary);overflow:hidden;">
-          <div style="height:100%;width:{{ zone_occupancy_pct }}%;border-radius:4px;
-            background:{% if zone_occupancy_pct >= 90 %}var(--red){% elif zone_occupancy_pct >= 70 %}var(--orange){% else %}var(--green){% endif %};
-            transition:width .3s;"></div>
-        </div>
-        <!-- Répartition par espèce -->
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
-          {% for s in plant_species_summary %}
-          <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;
-            background:rgba(255,255,255,.05);border:1px solid var(--border);">
-            {{ s.emoji }} {{ s.name }}
-            <span style="color:var(--green);">{{ s.count }}</span>
-            <span style="color:var(--text-tertiary);">/ {{ s.capacity }}</span>
-          </span>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-      <div id="zone-layout-wrap" style="min-height:120px;"></div>
-      {% set active_plantings = plantings | selectattr('status','eq','active') | list %}
-      {% if not active_plantings %}
-      <div class="empty-state" style="padding:20px;">
-        <i class="bi bi-flower1" style="font-size:24px;display:block;margin-bottom:6px;"></i>
-        <p>Aucune plantation active — ajoutez des plants pour voir le plan.</p>
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- Cartes plantations (style visuel) -->
+    <!-- Plan visuel des plantations — grille emoji style App Store -->
     {% set active_plantings = plantings | selectattr('status','eq','active') | list %}
     {% set other_plantings = plantings | rejectattr('status','eq','active') | list %}
-    {% if active_plantings %}
     <div class="card mb-3">
       <div class="card-title">
-        <i class="bi bi-flower2"></i> Plants actifs
-        <a href="/planting" class="btn btn-secondary btn-sm" style="margin-left:auto;"><i class="bi bi-plus"></i> Ajouter</a>
+        <i class="bi bi-grid-1x2-fill"></i> Plan visuel
+        {% set _occ_color = 'var(--red)' if zone_occupancy_pct >= 90 else ('var(--orange)' if zone_occupancy_pct >= 70 else 'var(--green)') %}
+        <span style="margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;">
+          <span style="color:var(--text-tertiary);">{{ active_plantings | length }} plant{{ 's' if active_plantings | length > 1 else '' }}</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--border);">
+            <span style="width:6px;height:6px;border-radius:50%;background:{{ _occ_color }};"></span>
+            <strong style="color:{{ _occ_color }};">{{ zone_occupancy_pct }}%</strong>
+            <span style="color:var(--text-tertiary);">occupé</span>
+          </span>
+        </span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;">
-        {% for p in active_plantings %}
-        {% set info = plant_info.get(p.vegetable_name, {}) %}
-        {% set space = info.get('space_cm', 30) %}
-        {% set depth = info.get('depth_cm') %}
-        {% set count_l = (_zone_length * 100 / space) | int %}
-        {% set count_w = (_zone_width  * 100 / space) | int %}
-        {% set total = count_l * count_w %}
-        {% if p.planted_date and p.expected_harvest_date %}
-          {% set total_days = (p.expected_harvest_date - p.planted_date).days %}
-          {% set elapsed_days = (today_date - p.planted_date).days %}
-          {% set days_left = (p.expected_harvest_date - today_date).days %}
-          {% if total_days > 0 %}
-            {% set pct = [[((elapsed_days / total_days) * 100) | int, 0] | max, 100] | min %}
-          {% else %}{% set pct = 100 %}{% set days_left = 0 %}{% endif %}
-        {% else %}{% set pct = 0 %}{% set days_left = none %}{% endif %}
-        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;display:flex;flex-direction:column;gap:6px;">
-          <div style="font-size:32px;text-align:center;line-height:1.2;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;">{{ info.get('emoji','🌱') }}</div>
-          <div style="font-weight:700;font-size:13px;text-align:center;">{{ p.vegetable_name }}</div>
-          {% if p.variety %}<div style="font-size:11px;color:var(--text-tertiary);text-align:center;">{{ p.variety }}</div>{% endif %}
-          <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;">
-            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;">↔ {{ space }}cm</span>
-            {% if depth %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);font-size:10px;">↓ {{ depth }}cm</span>{% endif %}
-            <span class="attr {% if info.get('water_need') == 'high' %}water-high{% elif info.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:10px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(info.get('water_need','medium'), '💧💧') }}</span>
-          </div>
-          <div style="font-size:11px;color:var(--text-tertiary);text-align:center;">~{{ total }} plants ({{ count_l }}×{{ count_w }})</div>
-          {% if pct > 0 %}
-          <div>
-            <div style="height:4px;border-radius:2px;background:var(--bg-tertiary);overflow:hidden;">
-              <div style="height:100%;width:{{ pct }}%;background:{% if days_left is not none and days_left < 0 %}var(--red){% elif days_left is not none and days_left <= 7 %}var(--orange){% else %}var(--green){% endif %};"></div>
-            </div>
-            <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;text-align:center;">
-              {% if days_left is not none %}
-                {% if days_left < 0 %}⚠️ {{ -days_left }}j de retard
-                {% elif days_left == 0 %}🎉 Récolte aujourd'hui
-                {% else %}{{ days_left }}j avant récolte{% endif %}
-              {% endif %}
-            </div>
-          </div>
+      <!-- Container avec ratio = proportions réelles de la zone -->
+      <div class="plant-grid-wrap" style="aspect-ratio: {{ _zone_length }} / {{ _zone_width }};">
+      <div class="plant-grid plant-grid-fill">
+        {% for s in plant_species_summary %}
+        <div class="plant-cell"
+             onclick="openEditModal({{ s.rep_id }}, '{{ s.name|e }}', '{{ s.variety|e }}', '{{ s.harvest }}', '{{ s.status }}', '{{ s.water_need }}', '{{ s.notes|e }}', 'zone', {{ s.count }})">
+          <span class="plant-cell-emoji">{{ s.emoji }}</span>
+          <span class="plant-cell-name">{{ s.name }}</span>
+          {% if s.count > 1 %}<span class="plant-cell-count">{{ s.count }}×</span>{% endif %}
+          {% if s.days_left is not none and s.days_left <= 14 %}
+          <span class="plant-cell-harvest {% if s.days_left < 0 %}late{% elif s.days_left <= 3 %}soon{% endif %}">
+            {% if s.days_left < 0 %}⚠️ {{ -s.days_left }}j
+            {% elif s.days_left == 0 %}🎉
+            {% else %}{{ s.days_left }}j{% endif %}
+          </span>
           {% endif %}
-          <div style="display:flex;gap:6px;margin-top:auto;">
-            <button type="button" class="btn btn-ghost btn-xs" style="flex:1;"
-              onclick="openEditModal({{ p.id }},'{{ p.vegetable_name|e }}','{{ (p.variety or '')|e }}','{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}','{{ p.status }}','{{ p.water_need }}','{{ (p.notes or '')|e }}','zone')">
-              <i class="bi bi-pencil"></i> Modifier
-            </button>
-            <button type="button" class="btn btn-xs" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.25);" title="Supprimer ce plant"
-              onclick="openDeleteModal({{ p.id }}, '{{ p.vegetable_name|e }}', '{{ (p.variety or '')|e }}', '{{ info.get('emoji','🌱') }}')">
-              <i class="bi bi-trash3"></i>
-            </button>
-          </div>
+        </div>
+        {% endfor %}
+        <!-- Cellules vides "+ planter" -->
+        {% for _ in range(6) %}
+        <div class="plant-cell plant-cell-empty" onclick="openQuickPlant({{ zone.zone_id }})" title="Ajouter une plantation">
+          <span class="plant-cell-emoji">+</span>
+          <span class="plant-cell-name">Planter</span>
         </div>
         {% endfor %}
       </div>
-    </div>
-    {% endif %}
-
-    <!-- Tableau espacement -->
-    {% if active_plantings %}
-    <div class="card mb-3">
-      <div class="card-title"><i class="bi bi-table"></i> Espacement & recommandations</div>
-      <div style="overflow-x:auto;">
-        <table class="table-modern">
-          <thead><tr><th>Plant</th><th>Espacement</th><th>Profondeur</th><th>Eau</th><th>Capacité zone</th><th>Conseil</th></tr></thead>
-          <tbody>
-            {% for p in active_plantings %}
-            {% set info = plant_info.get(p.vegetable_name, {}) %}
-            {% set space = info.get('space_cm', 30) %}
-            {% set depth = info.get('depth_cm') %}
-            {% set count_l = (_zone_length * 100 / space) | int %}
-            {% set count_w = (_zone_width  * 100 / space) | int %}
-            <tr>
-              <td style="font-weight:700;">{{ info.get('emoji','🌱') }} {{ p.vegetable_name }}</td>
-              <td><span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);">{{ space }} cm</span></td>
-              <td>{% if depth %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);">{{ depth }} cm</span>{% else %}<span style="color:var(--text-tertiary);">—</span>{% endif %}</td>
-              <td><span class="attr {% if info.get('water_need') == 'high' %}water-high{% elif info.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:11px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(info.get('water_need','medium'), '💧💧') }}</span></td>
-              <td>
-                <span style="font-weight:700;color:var(--green);">{{ count_l * count_w }}</span>
-                <span style="font-size:11px;color:var(--text-tertiary);">({{ count_l }}×{{ count_w }})</span>
-              </td>
-              <td style="font-size:11px;color:var(--text-secondary);max-width:200px;">
-                {{ info.get('planting_tip_fr', info.get('notes_fr',''))[:90] }}{% if info.get('planting_tip_fr', info.get('notes_fr','')) | length > 90 %}…{% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      </div><!-- /.plant-grid-wrap -->
+      {% if not active_plantings %}
+      <div style="text-align:center;padding:12px 16px;font-size:12px;color:var(--text-tertiary);">
+        Aucune plantation active. Cliquez sur une cellule <strong>+</strong> pour planter.
       </div>
+      {% endif %}
     </div>
 
     <!-- Associations entre plants -->
@@ -447,7 +350,6 @@
       </div>
       {% endif %}
     </div>
-    {% endif %}
 
     <!-- Autres plantations (non actives) -->
     {% if other_plantings %}
@@ -496,7 +398,9 @@
           <div style="font-size:22px;margin-bottom:4px;">{{ v.get('emoji','🌱') }}</div>
           <div style="font-weight:700;font-size:13px;margin-bottom:4px;">{{ v.name }}</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
-            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;">↔ {{ v.get('space_cm',30) }} cm</span>
+            {% set _sp = v.get('space_cm', 30) %}
+            {% set _spr = v.get('space_row_cm', _sp) %}
+            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;" title="{% if _spr != _sp %}Plants {{ _sp }}cm en ligne · inter-rang {{ _spr }}cm{% else %}{{ _sp }}cm × {{ _sp }}cm{% endif %}">↔ {{ _sp }}{% if _spr != _sp %}×{{ _spr }}{% endif %} cm</span>
             {% if v.get('depth_cm') %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);font-size:10px;">↓ {{ v.depth_cm }} cm</span>{% endif %}
             <span class="attr {% if v.get('water_need') == 'high' %}water-high{% elif v.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:10px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(v.get('water_need','medium'),'💧💧') }}</span>
           </div>
@@ -548,41 +452,58 @@
         <i class="bi bi-droplet-fill" style="color:var(--blue);"></i> Événements d'arrosage
         <a href="/journal" class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:11px;">Voir journal global</a>
       </div>
-      <div style="overflow-x:auto;">
-        <table class="table-modern">
-          <thead><tr><th>Date/Heure</th><th>Action</th><th>Déclencheur</th><th>Humidité</th><th>Raison</th></tr></thead>
-          <tbody>
-            {% for ev in recent_events %}
-            <tr>
-              <td class="jcol-date">
-                <span class="jdate">{{ ev.timestamp.strftime('%d.%m.%y') }}</span>
-                <span class="jtime">{{ ev.timestamp.strftime('%H:%M') }}</span>
-              </td>
-              <td>
-                <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
-                  <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
-                  {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
-                </span>
-              </td>
-              <td><span class="attr easy">
-                {%- if ev.trigger_type == 'auto' %}⚙️ Auto
-                {%- elif ev.trigger_type == 'manual' %}👤 Manuel
-                {%- elif ev.trigger_type == 'weather' %}🌦️ Météo
-                {%- elif ev.trigger_type == 'frost' %}❄️ Gel
-                {%- else %}{{ ev.trigger_type or '—' }}{%- endif %}
-              </span></td>
-              <td>
-                {% if ev.moisture_at_trigger is not none %}
-                <span style="font-weight:600;font-size:12px;color:{% if ev.moisture_at_trigger < 30 %}var(--red){% elif ev.moisture_at_trigger > 65 %}var(--blue){% else %}var(--green){% endif %};">
-                  {{ ev.moisture_at_trigger | round(1) }}%
-                </span>
-                {% else %}<span style="color:var(--text-tertiary)">—</span>{% endif %}
-              </td>
-              <td class="jcol-reason">{{ ev.reason or '—' }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+
+      <!-- Filtres Type (cohérence avec le journal global) -->
+      <div class="filter-bar" style="margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="filter-label">Type</span>
+          <button class="filter-chip active" data-zev-type="all"     onclick="setZevType(this,'all')">Tous</button>
+          <button class="filter-chip"        data-zev-type="auto"    onclick="setZevType(this,'auto')">⚙️ Auto</button>
+          <button class="filter-chip"        data-zev-type="manual"  onclick="setZevType(this,'manual')">👤 Manuel</button>
+          <button class="filter-chip"        data-zev-type="weather" onclick="setZevType(this,'weather')">🌦️ Météo</button>
+          <button class="filter-chip"        data-zev-type="frost"   onclick="setZevType(this,'frost')">❄️ Gel</button>
+        </div>
+      </div>
+
+      <!-- Liste cards (style identique au journal global) -->
+      <div id="zone-events-list">
+        {% for ev in recent_events %}
+        {% set kcolor = '#2196F3' if ev.action == 'open' else '#6b7280' %}
+        {% set kicon  = 'bi-droplet-fill' if ev.action == 'open' else 'bi-droplet' %}
+        <div class="ev-card" data-type="{{ ev.trigger_type or 'system' }}"
+             style="border-left-color:{{ kcolor }};">
+          <div class="ev-row1">
+            <i class="bi {{ kicon }}" style="color:{{ kcolor }};font-size:13px;flex-shrink:0;"></i>
+            <span class="ev-time">
+              <span class="ev-date">{{ ev.timestamp.strftime('%d.%m.%y') }}</span>
+              <span class="ev-hour">{{ ev.timestamp.strftime('%H:%M') }}</span>
+            </span>
+            <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
+              <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
+              {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
+            </span>
+            {% if ev.moisture_at_trigger is not none %}
+            <span class="ev-moisture {% if ev.moisture_at_trigger < 30 %}ev-m-low{% elif ev.moisture_at_trigger > 65 %}ev-m-high{% else %}ev-m-ok{% endif %}">
+              {{ ev.moisture_at_trigger | round(1) }}%
+            </span>
+            {% endif %}
+          </div>
+          <div class="ev-row2">
+            <span class="ev-trigger">
+              {%- if ev.trigger_type == 'auto' %}⚙️ Auto
+              {%- elif ev.trigger_type == 'manual' %}👤 Manuel
+              {%- elif ev.trigger_type == 'weather' %}🌦️ Météo
+              {%- elif ev.trigger_type == 'frost' %}❄️ Gel
+              {%- elif ev.trigger_type == 'heatwave' %}🌡️ Canicule
+              {%- else %}ℹ️ {{ ev.trigger_type or 'Système' }}{%- endif %}
+            </span>
+            <span class="ev-reason">{{ ev.reason or '—' }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="zev-empty" style="display:none;padding:14px;color:var(--text-tertiary);font-size:13px;text-align:center;">
+        Aucun événement pour ce filtre.
       </div>
     </div>
     {% else %}
@@ -635,6 +556,26 @@
        TAB 5 : CONFIGURATION
        ══════════════════════════════════════════════════════ -->
   <div id="tab-config" style="display:none;">
+
+    {% if watering_window %}
+    <!-- Recommandation plage horaire arrosage -->
+    <div class="card mb-3" style="border-left:4px solid var(--blue);">
+      <div class="card-title">
+        <i class="bi bi-clock-history" style="color:var(--blue);"></i>
+        Plage horaire d'arrosage recommandée
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="flex-shrink:0;padding:14px 18px;background:rgba(10,132,255,.1);border:1px solid rgba(10,132,255,.25);border-radius:var(--r-md);text-align:center;">
+          <div style="font-size:11px;color:var(--blue);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Fenêtre idéale</div>
+          <div style="font-size:22px;font-weight:700;color:var(--text-primary);margin-top:4px;letter-spacing:-.4px;">{{ watering_window.hours }}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ watering_window.label }}</div>
+        </div>
+        <div style="flex:1;min-width:180px;font-size:13px;color:var(--text-secondary);line-height:1.5;">
+          {{ watering_window.reason }}
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
     <div class="grid-2">
       <!-- Paramètres zone -->
@@ -699,9 +640,17 @@
             </div>
           </div>
           <div class="form-group mt-2">
-            <label class="form-label">Durée arrosage (min)</label>
+            <label class="form-label">
+              <i class="bi bi-stopwatch" style="color:var(--orange);"></i>
+              Durée maximale d'arrosage (min)
+            </label>
             <input type="number" name="irrigation_duration_min" class="form-control"
                    value="{{ zone.irrigation_duration_min }}" min="1" max="120">
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;line-height:1.4;">
+              <i class="bi bi-shield-check" style="color:var(--green);"></i>
+              <strong>Sécurité</strong> — un arrosage manuel ouvert sera automatiquement
+              arrêté après cette durée pour éviter tout débordement en cas d'oubli.
+            </div>
           </div>
           <button type="submit" class="btn btn-primary w-100 mt-2">
             <i class="bi bi-check2"></i> Enregistrer
@@ -856,6 +805,14 @@
           </div>
         </div>
         <div>
+          <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">
+            Nombre total de plants <span style="color:var(--text-tertiary);font-weight:400;">(de cette espèce dans la zone)</span>
+          </label>
+          <input type="number" name="quantity" id="ep-quantity" min="1" step="1"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+          <div id="ep-quantity-hint" style="font-size:11px;color:var(--text-tertiary);margin-top:4px;"></div>
+        </div>
+        <div>
           <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Notes</label>
           <textarea name="notes" id="ep-notes" rows="2" placeholder="Observations…"
             style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);resize:vertical;"></textarea>
@@ -863,7 +820,135 @@
       </div>
       <div class="modal-actions" style="margin:16px -20px -20px;border-radius:0 0 16px 16px;overflow:hidden;">
         <button type="button" class="modal-btn cancel" onclick="closeEditModal()">Annuler</button>
+        <button type="button" class="modal-btn" style="color:var(--red);"
+                onclick="deleteSpeciesFromZone()" title="Supprimer toutes les plantations de cette espèce dans la zone">
+          <i class="bi bi-trash3"></i> Supprimer
+        </button>
         <button type="submit" class="modal-btn" style="color:var(--green);">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL QUICK-PLANT — ajout rapide depuis cellule vide
+     ══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="qp-overlay">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-icon" style="background:rgba(48,209,88,.15);color:var(--green);">
+        <i class="bi bi-flower3"></i>
+      </div>
+      <div class="modal-title">Planter dans <span style="color:var(--green);">{{ zone.name }}</span></div>
+      <div class="modal-body" style="font-size:13px;color:var(--text-secondary);margin-top:4px;">
+        Choisissez un légume puis sa quantité.
+      </div>
+    </div>
+    <form id="qp-form" method="post" action="{{ url_for('config.add_planting') }}" style="padding:0 20px 20px;">
+      <input type="hidden" name="zone_id"        id="qp-zone-id" value="{{ zone.zone_id }}">
+      <input type="hidden" name="vegetable_name" id="qp-veg-name">
+      <input type="hidden" name="redirect_to"    value="zone">
+
+      <!-- Recherche -->
+      <div style="margin-bottom:10px;">
+        <input type="text" id="qp-search" placeholder="Rechercher un légume…" autocomplete="off"
+          style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);"
+          oninput="qpFilterList()">
+      </div>
+
+      <!-- Filtres catégorie -->
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">
+        <button type="button" class="filter-chip active" data-qp-cat="all"     onclick="qpSetCat(this,'all')">Tous</button>
+        <button type="button" class="filter-chip"        data-qp-cat="légume"  onclick="qpSetCat(this,'légume')">🥬 Légumes</button>
+        <button type="button" class="filter-chip"        data-qp-cat="herbe"   onclick="qpSetCat(this,'herbe')">🌿 Herbes</button>
+        <button type="button" class="filter-chip"        data-qp-cat="fleur"   onclick="qpSetCat(this,'fleur')">🌸 Fleurs</button>
+      </div>
+
+      <!-- Liste légumes -->
+      <div id="qp-veg-list" style="max-height:320px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;padding:4px;border:1px solid var(--border);border-radius:var(--r-md);">
+        {% set _all_vegs = plant_info.values() | list %}
+        {% for v in _all_vegs %}
+        <button type="button" class="qp-veg-item"
+                data-qp-name="{{ v.name|e }}"
+                data-qp-cat="{{ v.get('category','légume') }}"
+                data-qp-emoji="{{ v.get('emoji','🌱') }}"
+                data-qp-companions="{{ v.get('companions', []) | join(',') }}"
+                data-qp-bad="{{ v.get('bad_companions', []) | join(',') }}"
+                data-qp-space="{{ v.get('space_cm', '') }}"
+                data-qp-space-row="{{ v.get('space_row_cm', '') }}"
+                data-qp-depth="{{ v.get('depth_cm', '') }}"
+                data-qp-water="{{ v.get('water_need', 'medium') }}"
+                data-qp-sun="{{ v.get('sun_need', 'full') }}"
+                data-qp-tip="{{ (v.get('planting_tip_fr') or v.get('notes_fr', ''))[:140] | e }}"
+                onclick="qpSelectVeg(this)">
+          <span class="qp-veg-emoji">{{ v.get('emoji','🌱') }}</span>
+          <span class="qp-veg-name">{{ v.name }}</span>
+        </button>
+        {% endfor %}
+      </div>
+
+      <!-- Sélection actuelle + recommandations + compagnonnage + quantité -->
+      <div id="qp-selection" style="display:none;margin-top:14px;padding:12px;background:var(--bg-secondary);border:1px solid var(--green);border-radius:var(--r-md);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span id="qp-sel-emoji" style="font-size:32px;line-height:1;"></span>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:14px;" id="qp-sel-name">—</div>
+            <div style="font-size:11px;color:var(--text-tertiary);" id="qp-sel-cat"></div>
+          </div>
+          <span id="qp-sel-capacity" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--r-pill);background:rgba(48,209,88,.1);color:var(--green);"></span>
+        </div>
+
+        <!-- Recommandations (espacement, profondeur, eau, soleil) -->
+        <div id="qp-recos" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
+          <span class="qp-reco" id="qp-reco-space" title="Espacement entre plants">↔ <span></span></span>
+          <span class="qp-reco" id="qp-reco-depth" title="Profondeur de plantation">↓ <span></span></span>
+          <span class="qp-reco" id="qp-reco-water" title="Besoin en eau"><span></span></span>
+          <span class="qp-reco" id="qp-reco-sun"   title="Exposition"><span></span></span>
+        </div>
+
+        <!-- Conseil de plantation -->
+        <div id="qp-tip" style="display:none;margin-top:8px;padding:7px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);font-size:11px;color:var(--text-secondary);line-height:1.5;">
+          <i class="bi bi-lightbulb" style="color:var(--orange);"></i> <span id="qp-tip-text"></span>
+        </div>
+
+        <!-- Compagnonnage live -->
+        <div id="qp-companion-info" style="margin-top:10px;display:none;font-size:12px;line-height:1.5;">
+          <div id="qp-bad-row" style="display:none;padding:6px 10px;background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.3);border-radius:var(--r-sm);color:var(--red);margin-bottom:6px;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Incompatible</strong> avec : <span id="qp-bad-list"></span>
+          </div>
+          <div id="qp-good-row" style="display:none;padding:6px 10px;background:rgba(48,209,88,.1);border:1px solid rgba(48,209,88,.3);border-radius:var(--r-sm);color:var(--green);">
+            <i class="bi bi-check-circle-fill"></i>
+            <strong>Bonne association</strong> avec : <span id="qp-good-list"></span>
+          </div>
+          <div id="qp-suggest-row" style="display:none;padding:6px 10px;background:rgba(48,209,88,.04);border:1px dashed rgba(48,209,88,.3);border-radius:var(--r-sm);color:var(--text-secondary);margin-top:6px;">
+            <i class="bi bi-lightbulb-fill" style="color:var(--green);"></i>
+            Suggestions à associer : <span id="qp-suggest-list" style="color:var(--green);font-weight:600;"></span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:3px;">Variété (optionnel)</label>
+            <input type="text" name="variety" placeholder="ex. Cœur de bœuf"
+              style="width:100%;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);padding:7px 10px;font-size:13px;font-family:var(--font);">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:3px;">Quantité</label>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button type="button" onclick="qpAdjustQty(-1)" style="width:30px;height:32px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);cursor:pointer;font-size:16px;">−</button>
+              <input type="number" name="quantity" id="qp-qty" value="1" min="1" max="50"
+                style="flex:1;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);padding:7px 10px;font-size:13px;text-align:center;font-family:var(--font);">
+              <button type="button" onclick="qpAdjustQty(1)" style="width:30px;height:32px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);cursor:pointer;font-size:16px;">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin:14px -20px -20px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <button type="button" class="modal-btn cancel" onclick="closeQuickPlant()">Annuler</button>
+        <button type="submit" class="modal-btn" id="qp-submit" style="color:var(--green);" disabled>
+          <i class="bi bi-flower3"></i> Planter
+        </button>
       </div>
     </form>
   </div>
@@ -872,7 +957,7 @@
 
 {% block scripts %}
 {% set plant_info = plant_info if plant_info is defined else {} %}
-<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script src="{{ url_for('static', filename='js/controls.js') }}?v={{ static_v }}"></script>
 <script>
 // ── Tab switching ───────────────────────────────────────
 const ALL_TABS = ['temps-reel','graphiques','plants','evenements','config'];
@@ -883,19 +968,19 @@ function switchTab(btn, tabName) {
     document.getElementById('tab-' + t).style.display = t === tabName ? '' : 'none';
   });
   if (tabName === 'graphiques') {
-    loadZoneChart({{ zone.zone_id }}, _currentHours);
-    loadIrrigChart({{ zone.zone_id }}, _currentIrrigHours);
+    loadCombinedChart({{ zone.zone_id }}, _currentHours);
   }
-  if (tabName === 'plants') renderZoneLayout();
 }
 
-// ── Humidity chart ─────────────────────────────────────
+// ── Graphique unifié (humidité + températures + vannes) ──
 let _currentHours = 24;
-function switchZoneTab(btn, zoneId, hours) {
-  document.querySelectorAll('#tab-graphiques .card:first-child .time-tabs .time-tab').forEach(b => b.classList.remove('active'));
+const _zoneHasRoof = {{ 'true' if zone.has_roof else 'false' }};
+
+function switchCombinedTab(btn, zoneId, hours) {
+  document.querySelectorAll('#combined-time-tabs .time-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _currentHours = hours;
-  loadZoneChart(zoneId, hours);
+  loadCombinedChart(zoneId, hours);
 }
 
 function plotlyTheme() {
@@ -908,397 +993,98 @@ function plotlyTheme() {
     font:{color:fc, size:11, family:'-apple-system,BlinkMacSystemFont,system-ui'},
     xaxis:{gridcolor:gc, linecolor:lc, tickcolor:lc, tickformat:'%H:%M\n%d.%m'},
     yaxis:{gridcolor:gc, linecolor:lc, tickcolor:lc},
-    legend:{orientation:'h', y:-0.22, bgcolor:'transparent', font:{color:fc}},
-    margin:{t:6, b:40, l:42, r:42},
+    legend:{orientation:'h', y:-0.18, bgcolor:'transparent', font:{color:fc}},
+    margin:{t:8, b:48, l:48, r:50},
   };
 }
 
-async function loadZoneChart(zoneId, hours) {
+async function loadCombinedChart(zoneId, hours) {
   const [histResp, irrigResp] = await Promise.all([
     fetch(`/api/data/history?zone_id=${zoneId}&hours=${hours}`),
     fetch(`/api/data/irrigation_events?hours=${hours}`),
   ]);
-  const data     = await histResp.json();
+  const data      = await histResp.json();
   const irrigData = await irrigResp.json();
 
   const readings = data.zones[zoneId] || [];
   const C = {1:'#30d158', 2:'#8BC34A', 3:'#0a84ff', 4:'#bf5af2'};
+  const moistureColor = C[zoneId] || '#30d158';
 
-  // Build 0/1 step signal from open/close events
+  // ── Bandes "vanne ouverte" (shapes Plotly en arrière-plan) ──
   const zEvents = (irrigData.events || [])
     .filter(e => e.zone_id === zoneId)
     .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
   const tStart = new Date(Date.now() - hours * 3600000).toISOString();
-  const tEnd   = readings.length ? readings[readings.length - 1].timestamp : new Date().toISOString();
-  const irrigX = [tStart], irrigY = [0];
-  let vState = 0;
+  const tEnd   = new Date().toISOString();
+  const valveBands = [];
+  let openSince = null;
   for (const ev of zEvents) {
-    irrigX.push(ev.timestamp); irrigY.push(vState);
-    vState = ev.action === 'open' ? 1 : 0;
-    irrigX.push(ev.timestamp); irrigY.push(vState);
+    if (ev.action === 'open' && openSince === null) {
+      openSince = ev.timestamp;
+    } else if (ev.action === 'close' && openSince !== null) {
+      valveBands.push({type:'rect', xref:'x', yref:'paper',
+        x0:openSince, x1:ev.timestamp, y0:0, y1:1,
+        fillcolor:'rgba(10,132,255,.18)', line:{width:0}, layer:'below'});
+      openSince = null;
+    }
   }
-  irrigX.push(tEnd); irrigY.push(vState);
+  // Si la vanne est encore ouverte à la fin
+  if (openSince !== null) {
+    valveBands.push({type:'rect', xref:'x', yref:'paper',
+      x0:openSince, x1:tEnd, y0:0, y1:1,
+      fillcolor:'rgba(10,132,255,.18)', line:{width:0}, layer:'below'});
+  }
 
+  // ── Traces ──
   const traces = [
-    {x: readings.map(r=>r.timestamp), y: readings.map(r=>r.soil_moisture_pct),
-     type:'scatter', mode:'lines', name:'Humidité (%)',
-     line:{color:C[zoneId]||'#30d158', width:2.5}},
-    {x: readings.map(r=>r.timestamp), y: readings.map(r=>r.temperature_c),
-     type:'scatter', mode:'lines', name:'Temp (°C)',
-     line:{color:'#ff9f0a', width:1.5, dash:'dot'}, yaxis:'y2'},
-    {x: irrigX, y: irrigY,
-     type:'scatter', mode:'lines', name:'Arrosage',
-     line:{color:'rgba(10,132,255,.5)', width:1},
-     fill:'tozeroy', fillcolor:'rgba(10,132,255,.15)',
-     yaxis:'y3'},
+    // Humidité du sol (Y1)
+    {
+      x: readings.map(r=>r.timestamp),
+      y: readings.map(r=>r.soil_moisture_pct),
+      type:'scatter', mode:'lines',
+      name:'Humidité du sol',
+      line:{color:moistureColor, width:2.5, shape:'spline'},
+      hovertemplate:'%{y:.1f} %<extra>Humidité</extra>',
+    },
+    // Température extérieure (Y2)
+    {
+      x: readings.map(r=>r.timestamp),
+      y: readings.map(r=>r.temperature_c),
+      type:'scatter', mode:'lines',
+      name:'Temp. extérieure',
+      line:{color:'#ff9f0a', width:1.6, dash:'dash'},
+      yaxis:'y2',
+      hovertemplate:'%{y:.1f} °C<extra>Extérieur</extra>',
+    },
   ];
+  // Température serre (Y2) — uniquement zone avec serre
+  if (_zoneHasRoof) {
+    const serreVals = readings.map(r => r.temp_serre_c).filter(v => v !== null && v !== undefined);
+    if (serreVals.length > 0) {
+      traces.push({
+        x: readings.map(r=>r.timestamp),
+        y: readings.map(r=>r.temp_serre_c),
+        type:'scatter', mode:'lines',
+        name:'Temp. serre',
+        line:{color:'#ff453a', width:1.8, dash:'dot'},
+        yaxis:'y2',
+        hovertemplate:'%{y:.1f} °C<extra>Serre</extra>',
+      });
+    }
+  }
 
-  Plotly.react('zoneChart', traces, {
-    ...plotlyTheme(),
-    yaxis:  {...plotlyTheme().yaxis, title:'Humidité (%)', range:[0,100]},
-    yaxis2: {...plotlyTheme().yaxis, title:'Temp (°C)', overlaying:'y', side:'right', showgrid:false},
-    yaxis3: {overlaying:'y', side:'left', range:[0,5],
-             showticklabels:false, showgrid:false, zeroline:false,
-             showline:false, ticks:''},
+  const theme = plotlyTheme();
+  Plotly.react('combinedChart', traces, {
+    ...theme,
+    shapes: valveBands,
+    xaxis: {...theme.xaxis, range:[tStart, tEnd]},
+    yaxis: {...theme.yaxis, title:'Humidité du sol (%)', range:[0,100]},
+    yaxis2:{...theme.yaxis, title:'Température (°C)',
+            overlaying:'y', side:'right', showgrid:false,
+            zeroline:false},
+    hovermode:'x unified',
   }, {responsive:true, displayModeBar:false});
-}
-
-// ── Irrigation chart ───────────────────────────────────
-let _currentIrrigHours = 24;
-function switchIrrigChart(btn, zoneId, hours) {
-  document.querySelectorAll('#tab-graphiques .card:last-child .time-tabs .time-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  _currentIrrigHours = hours;
-  loadIrrigChart(zoneId, hours);
-}
-
-async function loadIrrigChart(zoneId, hours) {
-  const resp = await fetch(`/api/data/irrigation_events?hours=${hours}`);
-  const events = await resp.json();
-  const zoneEvents = (events.events || []).filter(e => e.zone_id === zoneId && e.action === 'open');
-  if (!zoneEvents.length) {
-    Plotly.react('irrigChart', [{type:'scatter', x:[], y:[], name:'Arrosages'}],
-      {...plotlyTheme()}, {responsive:true, displayModeBar:false});
-    return;
-  }
-  Plotly.react('irrigChart', [{
-    x: zoneEvents.map(e=>e.timestamp),
-    y: zoneEvents.map(e=>e.moisture_at_trigger || 0),
-    type:'bar', name:'Humidité au déclenchement (%)',
-    marker:{color:'rgba(10,132,255,.6)'},
-  }], {...plotlyTheme(),
-    yaxis:{...plotlyTheme().yaxis, title:'Humidité (%)', range:[0,100]},
-  }, {responsive:true, displayModeBar:false});
-}
-
-// ── Zone visual layout ──────────────────────────────────
-// Build species list — prefer server-computed summary, fall back to template grouping
-{% set plant_species_summary = plant_species_summary if plant_species_summary is defined else [] %}
-{% if plant_species_summary %}
-const ZONE_PLANTS = [
-  {% for s in plant_species_summary %}
-  {
-    name:       {{ s.name      | tojson }},
-    emoji:      {{ s.emoji     | tojson }},
-    space_cm:   {{ s.space_cm  }},
-    color:      {{ s.color     | tojson }},
-    water_need: {{ s.water_need | tojson }},
-    count:      {{ s.count     }},
-    capacity:   {{ s.capacity  }},
-  },
-  {% endfor %}
-];
-{% else %}
-// Fallback: group by species directly in template (no server restart needed)
-{% set _ap = plantings | selectattr('status','eq','active') | list %}
-{% set _seen = [] %}
-const ZONE_PLANTS = [
-{% for p in _ap %}
-{% if p.vegetable_name not in _seen %}
-{% set _ = _seen.append(p.vegetable_name) %}
-{% set _info = plant_info.get(p.vegetable_name, {}) %}
-{% set _spc  = _info.get('space_cm', 30) %}
-{% set _cnt  = _ap | selectattr('vegetable_name','eq',p.vegetable_name) | list | length %}
-{% set _cols = [1, (_zone_length * 100 / _spc) | int] | max %}
-{% set _rows = [1, (_zone_width  * 100 / _spc) | int] | max %}
-  {
-    name:       {{ p.vegetable_name | tojson }},
-    emoji:      {{ _info.get('emoji','🌱') | tojson }},
-    space_cm:   {{ _spc }},
-    color:      {{ _info.get('color_primary','#4CAF50') | tojson }},
-    water_need: {{ _info.get('water_need','medium') | tojson }},
-    count:      {{ _cnt }},
-    capacity:   {{ _cols * _rows }},
-  },
-{% endif %}
-{% endfor %}
-];
-{% endif %}
-
-function renderZoneLayout() {
-  const wrap = document.getElementById('zone-layout-wrap');
-  if (!wrap) return;
-
-  wrap.innerHTML = '';
-
-  if (!ZONE_PLANTS.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:36px 20px;color:var(--text-tertiary);"><span style="font-size:36px;display:block;margin-bottom:10px;">🌱</span><div style="font-size:13px;">Aucun plant actif dans cette zone</div></div>';
-    return;
-  }
-
-  const lengthM = {{ (_zone_length or 2.0) | float }};
-  const widthM  = {{ (_zone_width  or 1.0) | float }};
-  const W = Math.min((wrap.clientWidth || 560) - 4, 720);
-  const scale   = W / (lengthM * 100);
-  const H       = Math.max(140, Math.round(widthM * 100 * scale));
-
-  // ── Soil canvas ───────────────────────────────────────────
-  const soil = document.createElement('div');
-  soil.id = 'zl-soil';
-  soil.style.cssText = `position:relative;width:${W}px;height:${H}px;
-    background:linear-gradient(160deg,#6D4C41 0%,#4E342E 55%,#3E2723 100%);
-    border-radius:14px;overflow:hidden;
-    border:2px solid rgba(255,255,255,.08);
-    box-shadow:inset 0 2px 12px rgba(0,0,0,.45);`;
-
-  // Grid
-  for (let x = 50; x < lengthM*100; x += 50) {
-    const l = document.createElement('div');
-    l.style.cssText = `position:absolute;left:${x*scale}px;top:0;width:1px;height:100%;background:rgba(255,255,255,.07);pointer-events:none;`;
-    soil.appendChild(l);
-    if (x % 100 === 0) {
-      const lbl = document.createElement('div');
-      lbl.style.cssText = `position:absolute;left:${x*scale+3}px;top:3px;font-size:9px;color:rgba(255,255,255,.28);font-family:monospace;pointer-events:none;`;
-      lbl.textContent = (x/100)+'m';
-      soil.appendChild(lbl);
-    }
-  }
-  for (let y = 50; y < widthM*100; y += 50) {
-    const l = document.createElement('div');
-    l.style.cssText = `position:absolute;left:0;top:${y*scale}px;width:100%;height:1px;background:rgba(255,255,255,.07);pointer-events:none;`;
-    soil.appendChild(l);
-  }
-
-  // Floating tooltip
-  const tip = document.createElement('div');
-  tip.style.cssText = `position:absolute;z-index:99;pointer-events:none;opacity:0;
-    transition:opacity .12s;will-change:opacity;
-    background:rgba(18,18,26,.96);border:1px solid rgba(255,255,255,.13);
-    border-radius:10px;padding:9px 12px;font-size:12px;color:#fff;white-space:nowrap;
-    box-shadow:0 6px 20px rgba(0,0,0,.55);`;
-  soil.appendChild(tip);
-
-  // ── Active filter state ───────────────────────────────────
-  let activePlant = 'all';
-
-  function applyFilter(name) {
-    activePlant = name;
-    // Update pills
-    document.querySelectorAll('#zl-pills .zl-pill').forEach(btn => {
-      const isMe = btn.dataset.plant === name;
-      const pObj = ZONE_PLANTS.find(p => p.name === btn.dataset.plant);
-      const col  = pObj ? pObj.color : '#30d158';
-      if (btn.dataset.plant === 'all') {
-        const on = name === 'all';
-        btn.style.borderColor = on ? 'var(--green)' : 'var(--border)';
-        btn.style.background  = on ? 'rgba(48,209,88,.12)' : 'transparent';
-        btn.style.color       = on ? 'var(--green)' : 'var(--text-secondary)';
-      } else {
-        btn.style.borderColor = isMe ? col : 'var(--border)';
-        btn.style.background  = isMe ? col + '22' : 'transparent';
-        btn.style.color       = isMe ? col : 'var(--text-secondary)';
-      }
-    });
-    // Update circles (ghosts always stay at 0.25, planted dots filtered)
-    soil.querySelectorAll('.zl-dot').forEach(d => {
-      if (d.dataset.planted === '0') {
-        d.style.opacity = name === 'all' || d.dataset.plant === name ? '0.4' : '0.1';
-        d.style.filter  = '';
-        return;
-      }
-      const match = name === 'all' || d.dataset.plant === name;
-      d.style.opacity = match ? '1' : '0.12';
-      d.style.filter  = match ? '' : 'grayscale(1) brightness(.6)';
-    });
-    // Update dense bands
-    soil.querySelectorAll('.zl-band').forEach(b => {
-      const match = name === 'all' || b.dataset.plant === name;
-      b.style.opacity = match ? '1' : '0.12';
-    });
-  }
-
-  // ── Build plant circles ───────────────────────────────────
-  const DENSE_THRESH = 9;
-  let yOffCm = 0;
-
-  for (const plant of ZONE_PLANTS) {
-    const spacePx  = plant.space_cm * scale;
-    const cols     = Math.max(1, Math.floor(lengthM*100 / plant.space_cm));
-    const rowsAvail = Math.max(0, Math.floor((widthM*100 - yOffCm) / plant.space_cm));
-    if (rowsAvail <= 0) continue;
-    const rows = Math.min(rowsAvail, 6);
-
-    if (spacePx < DENSE_THRESH) {
-      const rowsNeeded = Math.ceil(plant.count / cols) || 1;
-      const bandH = Math.max(rowsNeeded * spacePx, 28);
-      const band  = document.createElement('div');
-      band.className = 'zl-band';
-      band.dataset.plant = plant.name;
-      band.style.cssText = `position:absolute;left:0;top:${yOffCm*scale}px;
-        width:${W}px;height:${bandH}px;
-        background:${plant.color}1a;border-top:2px dashed ${plant.color}55;
-        display:flex;align-items:center;gap:8px;padding:0 12px;
-        transition:opacity .2s;`;
-      band.innerHTML = `<span style="font-size:18px;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;">${plant.emoji}</span>
-        <span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600;">${plant.name}</span>
-        <span style="font-size:10px;color:rgba(255,255,255,.4);">${plant.count}/${plant.capacity} plants · espacement ${plant.space_cm}cm</span>`;
-      soil.appendChild(band);
-      yOffCm += rowsNeeded * plant.space_cm;
-      continue;
-    }
-
-    const r_px = spacePx * 0.40;
-    const fs   = Math.min(Math.max(r_px * 0.90, 10), 28);
-    const rowsNeeded = Math.ceil(plant.count / cols) || 1;
-    let plantedSoFar = 0;
-
-    for (let row = 0; row < rowsNeeded; row++) {
-      for (let col = 0; col < cols; col++) {
-        const cx = (col + 0.5) * spacePx;
-        const cy = yOffCm * scale + (row + 0.5) * spacePx;
-        if (cx + r_px > W + 2) break;
-
-        const isPlanted = plantedSoFar < plant.count;
-        plantedSoFar++;
-
-        const dot = document.createElement('div');
-        dot.className = 'zl-dot';
-        dot.dataset.plant = plant.name;
-        dot.dataset.planted = isPlanted ? '1' : '0';
-
-        const emojiSpan = `<span style="font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7));line-height:1;">${plant.emoji}</span>`;
-        if (isPlanted) {
-          dot.style.cssText = `
-            position:absolute;
-            left:${cx - r_px}px; top:${cy - r_px}px;
-            width:${r_px*2}px; height:${r_px*2}px;
-            border-radius:50%; overflow:hidden;
-            background:radial-gradient(circle at 33% 33%, ${plant.color}ee 0%, ${plant.color}77 70%);
-            border:1.5px solid ${plant.color}cc;
-            display:flex;align-items:center;justify-content:center;
-            font-size:${fs}px;line-height:1;cursor:pointer;
-            transition:transform .15s, opacity .2s, filter .2s, box-shadow .15s;
-            box-shadow:0 2px 8px rgba(0,0,0,.4), inset 0 1px 3px rgba(255,255,255,.18);`;
-          dot.innerHTML = emojiSpan;
-        } else {
-          // Ghost slot — place disponible (emoji pâle + contour pointillé)
-          dot.style.cssText = `
-            position:absolute;
-            left:${cx - r_px}px; top:${cy - r_px}px;
-            width:${r_px*2}px; height:${r_px*2}px;
-            border-radius:50%; overflow:hidden;
-            background:${plant.color}0a;
-            border:1.5px dashed ${plant.color}44;
-            display:flex;align-items:center;justify-content:center;
-            font-size:${fs}px;line-height:1;cursor:default;
-            transition:opacity .2s, filter .2s;
-            opacity:0.28;
-            filter:grayscale(.6);`;
-          dot.innerHTML = emojiSpan;
-        }
-
-        if (isPlanted) {
-          dot.addEventListener('mouseenter', () => {
-            if (activePlant === 'all' || activePlant === plant.name) {
-              dot.style.transform  = 'scale(1.25)';
-              dot.style.zIndex     = '20';
-              dot.style.boxShadow  = `0 4px 16px ${plant.color}88, inset 0 1px 3px rgba(255,255,255,.25)`;
-            }
-            const wIcon = {'high':'💧💧💧','medium':'💧💧','low':'💧'}[plant.water_need]||'💧💧';
-            tip.innerHTML = `
-              <div style="font-weight:700;font-size:13px;margin-bottom:5px;">${plant.emoji} ${plant.name}</div>
-              <div style="color:rgba(255,255,255,.55);font-size:11px;line-height:1.8;">
-                En terre : <strong style="color:#fff;">${plant.count} / ${plant.capacity} possibles</strong><br>
-                Espacement : <strong style="color:#fff;">${plant.space_cm} cm</strong><br>
-                Eau : ${wIcon}
-              </div>`;
-            const sr = soil.getBoundingClientRect();
-            const dr = dot.getBoundingClientRect();
-            const tx = Math.min(dr.left - sr.left + r_px - 80, W - 190);
-            const ty = Math.max(dr.top  - sr.top  - 85, 6);
-            tip.style.left = tx + 'px';
-            tip.style.top  = ty + 'px';
-            tip.style.opacity = '1';
-          });
-          dot.addEventListener('mouseleave', () => {
-            dot.style.transform = '';
-            dot.style.zIndex    = '';
-            dot.style.boxShadow = `0 2px 8px rgba(0,0,0,.4), inset 0 1px 3px rgba(255,255,255,.18)`;
-            tip.style.opacity   = '0';
-          });
-          dot.addEventListener('click', () => {
-            applyFilter(activePlant === plant.name ? 'all' : plant.name);
-          });
-        } else {
-          dot.addEventListener('mouseenter', () => {
-            tip.innerHTML = `<div style="font-size:11px;color:rgba(255,255,255,.6);">Place disponible pour<br><strong style="color:#fff;">${plant.emoji} ${plant.name}</strong></div>`;
-            const sr = soil.getBoundingClientRect();
-            const dr = dot.getBoundingClientRect();
-            tip.style.left = Math.min(dr.left - sr.left, W - 160) + 'px';
-            tip.style.top  = Math.max(dr.top  - sr.top - 55, 6) + 'px';
-            tip.style.opacity = '1';
-          });
-          dot.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
-        }
-
-        soil.appendChild(dot);
-      }
-    }
-    yOffCm += rowsNeeded * plant.space_cm;
-  }
-
-  // Dimension labels
-  const lblL = document.createElement('div');
-  lblL.style.cssText = `position:absolute;bottom:5px;left:50%;transform:translateX(-50%);
-    font-size:10px;color:rgba(255,255,255,.38);white-space:nowrap;pointer-events:none;`;
-  lblL.textContent = `← ${lengthM} m →`;
-  soil.appendChild(lblL);
-
-  const lblW = document.createElement('div');
-  lblW.style.cssText = `position:absolute;top:50%;left:4px;
-    font-size:10px;color:rgba(255,255,255,.38);pointer-events:none;
-    writing-mode:vertical-rl;transform:rotate(180deg) translateY(50%);`;
-  lblW.textContent = `← ${widthM} m →`;
-  soil.appendChild(lblW);
-
-  // ── Pills selector ────────────────────────────────────────
-  const pillsDiv = document.createElement('div');
-  pillsDiv.id = 'zl-pills';
-  pillsDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center;';
-
-  const pillBase = 'display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid;outline:none;';
-
-  const allBtn = document.createElement('button');
-  allBtn.className = 'zl-pill';
-  allBtn.dataset.plant = 'all';
-  allBtn.style.cssText = pillBase + 'border-color:var(--green);background:rgba(48,209,88,.12);color:var(--green);';
-  allBtn.innerHTML = '<i class="bi bi-grid-1x2" style="font-size:11px;"></i> Tous';
-  allBtn.onclick = () => applyFilter('all');
-  pillsDiv.appendChild(allBtn);
-
-  for (const plant of ZONE_PLANTS) {
-    const btn = document.createElement('button');
-    btn.className = 'zl-pill';
-    btn.dataset.plant = plant.name;
-    btn.style.cssText = pillBase + 'border-color:var(--border);background:transparent;color:var(--text-secondary);';
-    btn.innerHTML = `${plant.emoji} ${plant.name}`;
-    btn.onclick = () => applyFilter(activePlant === plant.name ? 'all' : plant.name);
-    pillsDiv.appendChild(btn);
-  }
-
-  wrap.appendChild(pillsDiv);
-  wrap.appendChild(soil);
 }
 
 // ── Delete modal ────────────────────────────────────────
@@ -1319,7 +1105,9 @@ document.getElementById('delete-overlay').addEventListener('click', e => {
 
 // ── Edit modal ──────────────────────────────────────────
 const _editForm = document.getElementById('edit-planting-form');
-function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo) {
+let _editCurrentSpecies = '';   // mémorise l'espèce pour le bouton Supprimer
+let _editCurrentCount   = 1;
+function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo, currentCount) {
   document.getElementById('ep-name').textContent = name;
   document.getElementById('ep-variety').value    = variety;
   document.getElementById('ep-harvest').value    = harvest;
@@ -1327,8 +1115,43 @@ function openEditModal(id, name, variety, harvest, status, waterNeed, notes, red
   document.getElementById('ep-water').value      = waterNeed;
   document.getElementById('ep-notes').value      = notes;
   document.getElementById('ep-redirect').value   = redirectTo || 'zone';
+  // Quantité totale de cette espèce dans la zone
+  const cnt = (currentCount === undefined || currentCount === null) ? 1 : Number(currentCount) || 1;
+  _editCurrentSpecies = name;
+  _editCurrentCount   = cnt;
+  const qInput = document.getElementById('ep-quantity');
+  const qHint  = document.getElementById('ep-quantity-hint');
+  if (qInput) {
+    qInput.value = cnt;
+    qInput.min = 1;
+    if (qHint) {
+      qHint.textContent = `Actuellement : ${cnt} plant${cnt > 1 ? 's' : ''} actif${cnt > 1 ? 's' : ''} de cette espèce dans la zone. Modifier ce nombre ajoutera ou supprimera des copies.`;
+    }
+  }
   _editForm.action = `/planting/${id}/edit`;
   document.getElementById('edit-overlay').classList.add('visible');
+}
+
+// Suppression de TOUTES les plantations d'une espèce dans la zone
+function deleteSpeciesFromZone() {
+  const name  = _editCurrentSpecies;
+  const cnt   = _editCurrentCount;
+  if (!name) return;
+  showConfirm({
+    title:    'Supprimer toute l\'espèce',
+    body:     `Supprimer définitivement les ${cnt} plantation${cnt > 1 ? 's' : ''} de ${name} de cette zone ?`,
+    okLabel:  'Supprimer',
+    okClass:  'confirm-danger',
+    icon:     'bi-trash3-fill',
+  }, () => {
+    // POST avec form pour bénéficier du flash
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = `/planting/zone/{{ zone.zone_id }}/species/${encodeURIComponent(name)}/delete`;
+    form.style.display = 'none';
+    document.body.appendChild(form);
+    form.submit();
+  });
 }
 function closeEditModal() {
   document.getElementById('edit-overlay').classList.remove('visible');
@@ -1336,5 +1159,208 @@ function closeEditModal() {
 document.getElementById('edit-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeEditModal();
 });
+
+// ── Filtre type — événements de la zone ─────────────────
+function setZevType(btn, val) {
+  document.querySelectorAll('[data-zev-type]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('#zone-events-list .ev-card');
+  let visible = 0;
+  cards.forEach(c => {
+    const show = (val === 'all') || (c.dataset.type === val);
+    c.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  const empty = document.getElementById('zev-empty');
+  if (empty) empty.style.display = visible === 0 ? '' : 'none';
+}
+
+// ── Polling temps réel : MAJ statut vanne + lucarne ────
+const _ZONE_ID = {{ zone.zone_id }};
+async function refreshZoneStatus() {
+  try {
+    const resp = await fetch('/api/data/current');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const zone = (data.zones || []).find(z => z.zone_id === _ZONE_ID);
+    if (!zone) return;
+
+    // Vanne
+    const vIcon = document.getElementById('zd-valve-icon');
+    const vText = document.getElementById('zd-valve-text');
+    if (vText) {
+      const open = zone.valve_state === 'open';
+      vText.textContent = open ? 'Ouverte' : 'Fermée';
+      vText.style.color = open ? 'var(--blue)' : 'var(--text-secondary)';
+      if (vIcon) vIcon.textContent = open ? '🚿' : '🔒';
+    }
+
+    // Lucarne (si présente)
+    const rIcon = document.getElementById('zd-roof-icon');
+    const rText = document.getElementById('zd-roof-text');
+    if (rText) {
+      const state = data.roof_state;     // 'open' | 'close' | 'moving'
+      if (state === 'moving') {
+        // Fallback robuste : utiliser la dernière commande utilisateur si l'API ne renvoie pas roof_target
+        const target = (typeof getRoofMovingTarget === 'function')
+          ? getRoofMovingTarget(data.roof_target)
+          : (data.roof_target || 'open');
+        rText.textContent = target === 'close' ? 'En cours de fermeture…' : "En cours d'ouverture…";
+        rText.style.color = 'var(--orange)';
+        if (rIcon) rIcon.textContent = '⏳';
+      } else if (state === 'open') {
+        rText.textContent = 'Ouverte';
+        rText.style.color = 'var(--orange)';
+        if (rIcon) rIcon.textContent = '🪟';
+      } else {
+        rText.textContent = 'Fermée';
+        rText.style.color = 'var(--text-secondary)';
+        if (rIcon) rIcon.textContent = '🏠';
+      }
+    }
+  } catch (e) { /* silencieux */ }
+}
+// Refresh toutes les 5s pour bien suivre le mouvement de la lucarne (durée 30s)
+let _zoneStatusInterval = setInterval(refreshZoneStatus, 5000);
+window.addEventListener('beforeunload', () => {
+  if (_zoneStatusInterval) clearInterval(_zoneStatusInterval);
+});
+// Refresh immédiat après commande manuelle (controls.js appelle loadCurrentData())
+window.loadCurrentData = refreshZoneStatus;
+
+// ── Modal Quick-Plant : ajout rapide depuis cellule vide ─
+function openQuickPlant(zoneId) {
+  document.getElementById('qp-zone-id').value = zoneId;
+  document.getElementById('qp-veg-name').value = '';
+  document.getElementById('qp-search').value = '';
+  document.getElementById('qp-selection').style.display = 'none';
+  document.getElementById('qp-submit').disabled = true;
+  document.getElementById('qp-qty').value = 1;
+  // Reset filtres
+  document.querySelectorAll('[data-qp-cat]').forEach(b => b.classList.remove('active'));
+  const allBtn = document.querySelector('[data-qp-cat="all"]');
+  if (allBtn) allBtn.classList.add('active');
+  document.querySelectorAll('.qp-veg-item').forEach(el => el.style.display = '');
+  document.querySelectorAll('.qp-veg-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('qp-overlay').classList.add('visible');
+  setTimeout(() => document.getElementById('qp-search').focus(), 150);
+}
+function closeQuickPlant() {
+  document.getElementById('qp-overlay').classList.remove('visible');
+}
+document.getElementById('qp-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeQuickPlant();
+});
+
+let _qpCat = 'all';
+function qpSetCat(btn, cat) {
+  document.querySelectorAll('[data-qp-cat]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _qpCat = cat;
+  qpFilterList();
+}
+function qpFilterList() {
+  const q = (document.getElementById('qp-search').value || '').trim().toLowerCase();
+  document.querySelectorAll('.qp-veg-item').forEach(el => {
+    const name = (el.dataset.qpName || '').toLowerCase();
+    const cat  = el.dataset.qpCat || 'légume';
+    const matchSearch = !q || name.includes(q);
+    const matchCat    = (_qpCat === 'all') || (cat === _qpCat);
+    el.style.display = (matchSearch && matchCat) ? '' : 'none';
+  });
+}
+// Liste des espèces actives dans cette zone (côté serveur, sans doublons)
+const _activeSpeciesInZone = [
+  {% for s in plant_species_summary %}{{ s.name | tojson }}{% if not loop.last %}, {% endif %}{% endfor %}
+];
+
+// Dimensions de la zone (pour calculer la capacité dans le modal)
+const _ZONE_LENGTH_M = {{ zone.length_m | default(2.0) }};
+const _ZONE_WIDTH_M  = {{ zone.width_m  | default(1.0) }};
+
+function qpSelectVeg(btn) {
+  document.querySelectorAll('.qp-veg-item').forEach(el => el.classList.remove('selected'));
+  btn.classList.add('selected');
+  const name  = btn.dataset.qpName;
+  const emoji = btn.dataset.qpEmoji;
+  const cat   = btn.dataset.qpCat;
+  const companions = (btn.dataset.qpCompanions || '').split(',').filter(Boolean);
+  const bad        = (btn.dataset.qpBad || '').split(',').filter(Boolean);
+  const space     = parseInt(btn.dataset.qpSpace) || 30;
+  const spaceRow  = parseInt(btn.dataset.qpSpaceRow) || space;
+  const depth     = parseInt(btn.dataset.qpDepth) || 0;
+  const water     = btn.dataset.qpWater || 'medium';
+  const sun       = btn.dataset.qpSun || 'full';
+  const tip       = btn.dataset.qpTip || '';
+
+  document.getElementById('qp-veg-name').value = name;
+  document.getElementById('qp-sel-name').textContent = name;
+  document.getElementById('qp-sel-emoji').textContent = emoji;
+  document.getElementById('qp-sel-cat').textContent = cat;
+
+  // ── Recommandations (espacement / profondeur / eau / soleil) ──
+  const cols = Math.max(1, Math.floor(_ZONE_LENGTH_M * 100 / space));
+  const rows = Math.max(1, Math.floor(_ZONE_WIDTH_M  * 100 / spaceRow));
+  const cap  = cols * rows;
+  document.getElementById('qp-sel-capacity').textContent = '~' + cap + ' max';
+
+  const spaceTxt = (spaceRow !== space) ? `${space} × ${spaceRow} cm` : `${space} cm`;
+  document.querySelector('#qp-reco-space span').textContent = spaceTxt;
+  if (depth) {
+    document.getElementById('qp-reco-depth').style.display = '';
+    document.querySelector('#qp-reco-depth span').textContent = depth + ' cm';
+  } else {
+    document.getElementById('qp-reco-depth').style.display = 'none';
+  }
+  const waterIcons = {high:'💧💧💧', medium:'💧💧', low:'💧'};
+  const waterLabels = {high:'Élevé', medium:'Moyen', low:'Faible'};
+  document.querySelector('#qp-reco-water span').textContent = (waterIcons[water] || '💧💧') + ' ' + (waterLabels[water] || 'Moyen');
+  const sunIcons = {full:'☀️ Plein soleil', partial:'⛅ Mi-ombre', shade:'🌫 Ombre'};
+  document.querySelector('#qp-reco-sun span').textContent = sunIcons[sun] || '☀️ Plein soleil';
+
+  // Conseil
+  if (tip) {
+    document.getElementById('qp-tip').style.display = '';
+    document.getElementById('qp-tip-text').textContent = tip;
+  } else {
+    document.getElementById('qp-tip').style.display = 'none';
+  }
+
+  // ── Compagnonnage live ──
+  const goodInZone = companions.filter(c => _activeSpeciesInZone.includes(c));
+  const badInZone  = bad.filter(c => _activeSpeciesInZone.includes(c));
+  const suggest    = companions.filter(c => !_activeSpeciesInZone.includes(c) && c !== name);
+
+  const info  = document.getElementById('qp-companion-info');
+  const goodR = document.getElementById('qp-good-row');
+  const badR  = document.getElementById('qp-bad-row');
+  const sugR  = document.getElementById('qp-suggest-row');
+
+  if (goodInZone.length || badInZone.length || suggest.length) info.style.display = '';
+  else info.style.display = 'none';
+
+  if (goodInZone.length) {
+    goodR.style.display = '';
+    document.getElementById('qp-good-list').textContent = goodInZone.join(', ');
+  } else { goodR.style.display = 'none'; }
+
+  if (badInZone.length) {
+    badR.style.display = '';
+    document.getElementById('qp-bad-list').textContent = badInZone.join(', ');
+  } else { badR.style.display = 'none'; }
+
+  if (suggest.length) {
+    sugR.style.display = '';
+    document.getElementById('qp-suggest-list').textContent = suggest.slice(0, 5).join(', ');
+  } else { sugR.style.display = 'none'; }
+
+  document.getElementById('qp-selection').style.display = '';
+  document.getElementById('qp-submit').disabled = false;
+}
+function qpAdjustQty(delta) {
+  const inp = document.getElementById('qp-qty');
+  const v = Math.max(1, Math.min(50, (parseInt(inp.value) || 1) + delta));
+  inp.value = v;
+}
 </script>
 {% endblock %}

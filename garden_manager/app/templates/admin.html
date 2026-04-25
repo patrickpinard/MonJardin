@@ -540,7 +540,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+<script src="{{ url_for('static', filename='js/controls.js') }}?v={{ static_v }}"></script>
 <script>
 // ── Tab switching ───────────────────────────────────────
 const ADMIN_TABS = ['acces','systeme','alertes','simulation'];

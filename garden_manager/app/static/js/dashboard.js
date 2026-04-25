@@ -25,15 +25,27 @@ let _refreshInterval = null;
 function initDashboard() {
   loadCurrentData();
   loadMainChart(_chartHours);
-  // M11 : clearInterval au beforeunload pour éviter les intervalles fantômes
+  // Refresh général toutes les 10s (humidité + lucarne)
   _refreshInterval = setInterval(() => {
     loadCurrentData();
     loadMainChart(_chartHours);
     loadJournal();
-  }, 30000);
+  }, 10000);
   window.addEventListener('beforeunload', () => {
     if (_refreshInterval) clearInterval(_refreshInterval);
+    if (_fastRefreshInterval) clearInterval(_fastRefreshInterval);
   });
+}
+
+// Poll rapide (3s) pendant un mouvement de lucarne, sinon désactivé.
+let _fastRefreshInterval = null;
+function _setFastRefresh(enable) {
+  if (enable && !_fastRefreshInterval) {
+    _fastRefreshInterval = setInterval(loadCurrentData, 3000);
+  } else if (!enable && _fastRefreshInterval) {
+    clearInterval(_fastRefreshInterval);
+    _fastRefreshInterval = null;
+  }
 }
 
 // M12 : affichage visuel si les données ne se chargent plus
@@ -104,6 +116,35 @@ function updateZoneCards(data) {
     const alertEl = document.getElementById(`alert-${z.zone_id}`);
     if (alertEl) alertEl.style.display = z.is_alerting ? '' : 'none';
   });
+
+  // ── Lucarne (zone serre uniquement) ──────────────────────
+  const roofEl = document.querySelector('[data-roof-badge]');
+  if (roofEl) {
+    const state  = data.roof_state;        // 'open' | 'close' | 'moving'
+    const ico    = roofEl.querySelector('.zc-actuator-icon');
+    const lbl    = roofEl.querySelector('.zc-actuator-state');
+    if (state === 'moving') {
+      // Fallback : si serveur ne renvoie pas roof_target, utiliser la dernière commande
+      const target = (typeof getRoofMovingTarget === 'function')
+        ? getRoofMovingTarget(data.roof_target)
+        : (data.roof_target || 'open');
+      roofEl.className = 'zc-actuator zc-actuator-moving';
+      if (ico) ico.className = 'bi bi-arrow-repeat zc-actuator-icon';
+      if (lbl) lbl.textContent = target === 'close' ? 'En cours de fermeture…' : "En cours d'ouverture…";
+      // Active le poll rapide (3s) pour bien suivre le mouvement
+      _setFastRefresh(true);
+    } else if (state === 'open') {
+      roofEl.className = 'zc-actuator zc-actuator-roof-on';
+      if (ico) ico.className = 'bi bi-wind zc-actuator-icon';
+      if (lbl) lbl.textContent = 'Ouverte';
+      _setFastRefresh(false);
+    } else {
+      roofEl.className = 'zc-actuator zc-actuator-off';
+      if (ico) ico.className = 'bi bi-house-fill zc-actuator-icon';
+      if (lbl) lbl.textContent = 'Fermée';
+      _setFastRefresh(false);
+    }
+  }
 
   // Vent mesuré par l'Arduino
   const windEl = document.getElementById('dash-wind-arduino');

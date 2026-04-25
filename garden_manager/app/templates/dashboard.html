@@ -4,8 +4,16 @@
 {% block content %}
 {% set harvest_list = harvest_list if harvest_list is defined else [] %}
 {% set today_date = today_date if today_date is defined else none %}
-{% set global_status = global_status if global_status is defined else 'ok' %}
-{% set driest_zd = driest_zd if driest_zd is defined else none %}
+{% set alerting_zones = alerting_zones if alerting_zones is defined else [] %}
+{% set actions = actions if actions is defined else [] %}
+{% set hero_lines = hero_lines if hero_lines is defined else [] %}
+{% set hero_greeting = hero_greeting if hero_greeting is defined else 'Bonjour' %}
+{% set hero_today_label = hero_today_label if hero_today_label is defined else '' %}
+{% set pulse_score = pulse_score if pulse_score is defined else 75 %}
+{% set pulse_label = pulse_label if pulse_label is defined else 'Bon' %}
+{% set pulse_color = pulse_color if pulse_color is defined else 'green' %}
+{% set pulse_components = pulse_components if pulse_components is defined else {} %}
+{% set forecast_24h = forecast_24h if forecast_24h is defined else [] %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
@@ -22,75 +30,154 @@
 
 <div class="page-body">
 
-  <!-- ── Deux cartes en haut du dashboard ── -->
-  <div class="dash-top-grid mb-3">
+  <!-- ══════════════════════════════════════════════════════
+       HERO — "Aujourd'hui" + Pulse Score
+       ══════════════════════════════════════════════════════ -->
+  <div class="hero-grid mb-3">
 
-    <!-- Carte 1 : Statut global jardin -->
-    <div class="card dtc dtc-status dtc-{{ global_status }}">
-      <div class="dtc-icon-wrap">
-        {% if global_status == 'alerte' %}
-          <i class="bi bi-exclamation-octagon-fill dtc-icon dtc-icon-alerte"></i>
-        {% elif global_status == 'attention' %}
-          <i class="bi bi-exclamation-triangle-fill dtc-icon dtc-icon-attention"></i>
-        {% else %}
-          <i class="bi bi-check-circle-fill dtc-icon dtc-icon-ok"></i>
-        {% endif %}
+    <!-- Hero "Aujourd'hui" -->
+    <div class="card hero-today">
+      <div class="hero-today-head">
+        <div class="hero-greet">{{ hero_greeting }} <span class="hero-owner">{{ garden_owner.split(' ')[0] }}</span></div>
+        <div class="hero-date">{{ hero_today_label }}</div>
       </div>
-      <div class="dtc-body">
-        <div class="dtc-label">État du jardin</div>
-        <div class="dtc-title">
-          {% if global_status == 'alerte' %}Alerte sécheresse
-          {% elif global_status == 'attention' %}Humidité basse
-          {% else %}Tout va bien{% endif %}
+      <div class="hero-lines">
+        {% for ln in hero_lines %}
+        <div class="hero-line">
+          <span class="hero-line-icon">{{ ln.icon }}</span>
+          <span class="hero-line-text">{{ ln.text }}</span>
         </div>
-        {% if driest_zd and global_status != 'ok' %}
-        <div class="dtc-sub">Zone la plus sèche : <strong>{{ driest_zd.zone.name }}</strong> — {{ driest_zd.moisture }}%</div>
-        {% else %}
-        <div class="dtc-sub">{{ zones_data | length }} zone(s) dans les seuils</div>
-        {% endif %}
+        {% endfor %}
       </div>
     </div>
 
-    <!-- Carte 2 : Prochaines récoltes -->
-    <div class="card dtc dtc-harvest">
-      <div class="dtc-icon-wrap">
-        <i class="bi bi-basket2-fill dtc-icon" style="color:var(--orange);"></i>
+    <!-- Pulse Score -->
+    <div class="card pulse-card">
+      <svg class="pulse-svg" viewBox="0 0 120 120">
+        <circle class="pulse-bg" cx="60" cy="60" r="52"/>
+        <circle class="pulse-fill pulse-{{ pulse_color }}"
+                cx="60" cy="60" r="52"
+                stroke-dasharray="{{ (pulse_score / 100 * 326.7) | round(1) }} 326.7"
+                stroke-dashoffset="0"
+                transform="rotate(-90 60 60)"/>
+      </svg>
+      <div class="pulse-center">
+        <div class="pulse-value pulse-{{ pulse_color }}">{{ pulse_score }}</div>
+        <div class="pulse-max">/ 100</div>
       </div>
-      <div class="dtc-body">
-        <div class="dtc-label">Prochaines récoltes</div>
-        {% if harvest_list %}
-          {% set h = harvest_list[0] %}
-          <div class="dtc-title">{{ h.emoji }} {{ h.vegetable_name }}</div>
-          <div class="dtc-sub">
-            {% if h.days_left < 0 %}⚠️ {{ (-h.days_left) }}j de retard
-            {% elif h.days_left == 0 %}🎉 Aujourd'hui !
-            {% else %}Dans {{ h.days_left }} jour{{ 's' if h.days_left > 1 else '' }}{% endif %}
-            · {{ h.zone_name }}
-          </div>
-          {% if harvest_list | length > 1 %}
-          <div class="dtc-more" onclick="switchDashTab(document.querySelector('#dash-tabs .time-tab:nth-child(3)'),'recoltes')">
-            +{{ harvest_list | length - 1 }} autre(s) <i class="bi bi-arrow-right"></i>
-          </div>
-          {% endif %}
-        {% else %}
-          <div class="dtc-title" style="color:var(--text-tertiary);">Aucune récolte</div>
-          <div class="dtc-sub">Pas de récolte dans les 60 prochains jours</div>
+      <div class="pulse-info">
+        <div class="pulse-title">État du jardin</div>
+        <div class="pulse-label pulse-{{ pulse_color }}">{{ pulse_label }}</div>
+        {% if pulse_components %}
+        <div class="pulse-components">
+          <div title="Humidité dans seuils">💧 {{ pulse_components.moisture }}/40</div>
+          <div title="Aucune alerte">⚠️ {{ pulse_components.alerts }}/30</div>
+          <div title="Plants en bonne santé">🌱 {{ pulse_components.plants }}/20</div>
+          <div title="Météo favorable">☀️ {{ pulse_components.weather }}/10</div>
+        </div>
         {% endif %}
       </div>
     </div>
 
   </div>
 
+  <!-- ══════════════════════════════════════════════════════
+       BANDEAU MÉTÉO RICHE 24h
+       ══════════════════════════════════════════════════════ -->
+  <div class="card weather-strip-card mb-3">
+    <div class="weather-strip-head">
+      <div class="weather-strip-now">
+        <div class="weather-now-icon">
+          {% if weather.frost_risk %}❄️
+          {% elif (weather.precip_mm_6h or 0) > 0 %}🌧
+          {% elif (weather.precip_prob_pct or 0) > 40 %}🌦
+          {% else %}☀️{% endif %}
+        </div>
+        <div class="weather-now-temp">{{ weather.temperature }}°</div>
+        <div class="weather-now-meta">
+          <div>{{ garden_location }}</div>
+          <div class="weather-now-sub">
+            <span title="Probabilité de pluie sur 6h">💧 {{ weather.precip_prob_pct | int }}%</span>
+            <span title="Vent">💨 {{ weather.wind_kmh }} km/h</span>
+            {% if temp_serre_c is not none %}<span title="Serre">🏠 {{ temp_serre_c }}°</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="weather-strip-source">
+        <span class="badge" style="font-size:10px;">{{ weather.source }}</span>
+      </div>
+    </div>
+    {% if forecast_24h %}
+    <div class="weather-strip-scroll" id="weather-forecast-strip">
+      {% for f in forecast_24h %}
+      <div class="forecast-pill">
+        <div class="forecast-hour">{{ f.hour }}</div>
+        <div class="forecast-icon">{{ f.icon }}</div>
+        <div class="forecast-temp">{{ f.temperature | round(0) | int }}°</div>
+        {% if f.precip_pct > 20 %}
+        <div class="forecast-rain">{{ f.precip_pct }}%</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Bandeau d'actions concrètes (arrosage, lucarne, récolte) ── -->
+  {% if actions %}
+  <div class="actions-banner mb-3">
+    {% for a in actions %}
+    <div class="action-row action-{{ a.color }}">
+      <div class="action-icon">{{ a.icon }}</div>
+      <div class="action-body">
+        <div class="action-label">{{ a.label }}</div>
+        <div class="action-detail">{{ a.detail }}</div>
+      </div>
+      <button type="button" class="action-btn action-btn-{{ a.color }}"
+              onclick="{{ a.btn_action }}">
+        {{ a.btn_label }}
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Bandeau d'alerte sticky (zones sèches) ── -->
+  {% if alerting_zones %}
+  <div class="alert-banner alert-banner-dry">
+    <i class="bi bi-exclamation-triangle-fill alert-banner-icon"></i>
+    <div class="alert-banner-body">
+      <div class="alert-banner-title">
+        {% if alerting_zones | length == 1 %}
+          Sol sec : {{ alerting_zones[0].zone.name }} ({{ alerting_zones[0].moisture | int }}%)
+        {% else %}
+          {{ alerting_zones | length }} zones avec sol sec
+        {% endif %}
+      </div>
+      <div class="alert-banner-sub">
+        {% set _names = alerting_zones | map(attribute='zone.name') | list %}
+        {{ _names | join(' · ') }} — arrosage automatique au prochain cycle
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Tab bar -->
   <div class="time-tabs mb-3" id="dash-tabs">
     <button class="time-tab active" onclick="switchDashTab(this,'zones')">
       <i class="bi bi-grid-1x2-fill"></i> Zones
     </button>
+    <button class="time-tab" onclick="switchDashTab(this,'taches')">
+      <i class="bi bi-calendar3-event-fill"></i> Tâches
+      {% if monthly_tasks %}
+      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ monthly_tasks | length }}</span>
+      {% endif %}
+    </button>
     <button class="time-tab" onclick="switchDashTab(this,'meteo')">
       <i class="bi bi-cloud-sun-fill"></i> Météo
     </button>
     <button class="time-tab" onclick="switchDashTab(this,'recoltes')">
-      <i class="bi bi-basket2-fill"></i> Prochaines récoltes
+      <i class="bi bi-basket2-fill"></i> Récoltes
       {% if harvest_list %}
       <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ harvest_list | length }}</span>
       {% endif %}
@@ -103,9 +190,9 @@
       {% for zd in zones_data %}
       {% set mc = zd.mc %}
       {% set dash = (zd.moisture / 100 * 175.9) | round(1) %}
-      <div class="zc-card">
+      <div class="zc-card zc-card-{{ mc }}">
 
-        <!-- En-tête : icône + nom + badges état -->
+        <!-- En-tête : icône + nom + statut pilule -->
         <div class="zc-header">
           <div class="zone-icon z{{ zd.zone.zone_id }}">
             {% if zd.zone.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
@@ -118,10 +205,12 @@
             <div class="zc-desc">Zone {{ zd.zone.zone_id }}{% if zd.zone.has_roof %} · Serre vitrée{% endif %}</div>
           </div>
           <div class="zc-header-status">
+            <span class="zo-status-pill {{ mc }}" data-status-pill="{{ zd.zone.zone_id }}">
+              {% if mc == 'low' %}<i class="bi bi-exclamation-triangle-fill"></i> Sol sec
+              {% elif mc == 'high' %}<i class="bi bi-droplet-fill"></i> Saturé
+              {% else %}<i class="bi bi-check-circle-fill"></i> Optimale{% endif %}
+            </span>
             <div class="zone-mode-badge {{ zd.zone.irrigation_mode }}">{{ zd.zone.irrigation_mode }}</div>
-            <div class="alert-dry-badge" id="alert-{{ zd.zone.zone_id }}" {% if not zd.is_alerting %}style="display:none;"{% endif %}>
-              <i class="bi bi-exclamation-triangle-fill"></i> Sec
-            </div>
           </div>
         </div>
 
@@ -139,8 +228,25 @@
             </div>
           </div>
           <div class="zc-moisture-meta">
-            <div class="moisture-value {{ mc }}" data-zone-text="{{ zd.zone.zone_id }}">{{ zd.moisture }}%</div>
-            <div class="moisture-sub">Seuil {{ zd.zone.moisture_threshold_low | int }}–{{ zd.zone.moisture_threshold_high | int }}%</div>
+            <!-- Mini barre avec marqueurs seuils -->
+            <div class="zc-bar-wrap">
+              <div class="zc-bar-track">
+                <div class="zc-bar-fill {{ mc }}" data-bar="{{ zd.zone.zone_id }}"
+                     style="width: {{ [zd.moisture, 100] | min }}%;"></div>
+                <div class="zc-bar-mark zc-bar-mark-low"
+                     style="left: {{ zd.zone.moisture_threshold_low }}%;"
+                     title="Seuil bas {{ zd.zone.moisture_threshold_low | int }}%"></div>
+                <div class="zc-bar-mark zc-bar-mark-high"
+                     style="left: {{ zd.zone.moisture_threshold_high }}%;"
+                     title="Seuil haut {{ zd.zone.moisture_threshold_high | int }}%"></div>
+              </div>
+              <div class="zc-bar-labels">
+                <span>0%</span>
+                <span>{{ zd.zone.moisture_threshold_low | int }}%</span>
+                <span>{{ zd.zone.moisture_threshold_high | int }}%</span>
+                <span>100%</span>
+              </div>
+            </div>
             <div class="zc-last-irr">
               <i class="bi bi-clock"></i>
               {% if zd.last_irrigation %}{{ zd.last_irrigation.timestamp.strftime('%d.%m %H:%M') }}{% else %}Jamais arrosé{% endif %}
@@ -169,38 +275,57 @@
               </div>
             </div>
             {% if zd.zone.has_roof %}
-            <div class="zc-actuator {% if roof_state == 'open' %}zc-actuator-roof-on{% else %}zc-actuator-off{% endif %}">
-              <i class="bi bi-{% if roof_state == 'open' %}wind{% else %}house-fill{% endif %} zc-actuator-icon"></i>
+            <div class="zc-actuator {% if roof_state == 'moving' %}zc-actuator-moving{% elif roof_state == 'open' %}zc-actuator-roof-on{% else %}zc-actuator-off{% endif %}"
+                 data-roof-badge>
+              <i class="bi bi-{% if roof_state == 'moving' %}arrow-repeat{% elif roof_state == 'open' %}wind{% else %}house-fill{% endif %} zc-actuator-icon"></i>
               <div class="zc-actuator-body">
                 <div class="zc-actuator-label">Lucarne</div>
-                <div class="zc-actuator-state">{{ 'Ouverte' if roof_state == 'open' else 'Fermée' }}</div>
+                <div class="zc-actuator-state">{% if roof_state == 'moving' %}En cours…{% elif roof_state == 'open' %}Ouverte{% else %}Fermée{% endif %}</div>
               </div>
             </div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Section plants -->
+        <!-- Section plants — plant-grid identique à zone_detail -->
         <div class="zc-section-plants">
           <div class="zc-section-label">
-            <i class="bi bi-flower1"></i> Plants actifs
-            {% if zd.plantings %}<span class="zc-plant-count">{{ zd.plantings | length }}</span>{% endif %}
-          </div>
-          {% if zd.plantings %}
-          <div class="zc-plants-row">
-            {% for p in zd.plantings[:4] %}
-            <span class="zc-plant-chip">
-              <span class="zc-plant-chip-emoji">{{ p.emoji if p.emoji else '🌱' }}</span>
-              <span class="zc-plant-chip-name">{{ p.vegetable_name }}</span>
-            </span>
-            {% endfor %}
-            {% if zd.plantings | length > 4 %}
-            <span class="zc-plant-chip zc-plant-more">+{{ zd.plantings | length - 4 }}</span>
+            <i class="bi bi-flower1"></i>
+            <span>Plan visuel</span>
+            {% if zd.species_summary %}
+            <span class="zc-plant-count">{{ zd.plantings | length }}</span>
             {% endif %}
+            <span style="margin-left:auto;font-size:9px;color:var(--text-tertiary);font-weight:500;text-transform:none;letter-spacing:0;">
+              {{ zd.zone.length_m }}×{{ zd.zone.width_m }} m
+            </span>
           </div>
-          {% else %}
-          <div class="zc-plants-empty-sm">Aucun plant actif</div>
-          {% endif %}
+          <!-- Wrapper avec ratio = proportions réelles de la zone -->
+          <div class="plant-grid-wrap plant-grid-wrap-mini"
+               style="aspect-ratio: {{ zd.zone.length_m }} / {{ zd.zone.width_m }};">
+            <div class="plant-grid plant-grid-fill plant-grid-mini">
+              {% for s in zd.species_summary %}
+              <a href="/zones/{{ zd.zone.zone_id }}" class="plant-cell" style="text-decoration:none;">
+                <span class="plant-cell-emoji">{{ s.emoji }}</span>
+                <span class="plant-cell-name">{{ s.name }}</span>
+                {% if s.count > 1 %}<span class="plant-cell-count">{{ s.count }}×</span>{% endif %}
+                {% if s.days_left is not none and s.days_left <= 14 %}
+                <span class="plant-cell-harvest {% if s.days_left < 0 %}late{% elif s.days_left <= 3 %}soon{% endif %}">
+                  {% if s.days_left < 0 %}⚠️ {{ -s.days_left }}j
+                  {% elif s.days_left == 0 %}🎉
+                  {% else %}{{ s.days_left }}j{% endif %}
+                </span>
+                {% endif %}
+              </a>
+              {% endfor %}
+              <!-- Cellules vides "+ planter" : redirige vers la zone -->
+              {% for _ in range(3) %}
+              <a href="/zones/{{ zd.zone.zone_id }}" class="plant-cell plant-cell-empty" style="text-decoration:none;" title="Ajouter une plantation">
+                <span class="plant-cell-emoji">+</span>
+                <span class="plant-cell-name">Planter</span>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
         </div>
 
         <!-- Pied de carte -->
@@ -215,7 +340,7 @@
               <i class="bi bi-stop-circle"></i> Stop
             </button>
           </div>
-          <a href="/zones/{{ zd.zone.zone_id }}" class="btn btn-ghost btn-sm zc-detail-btn" title="Voir la zone">
+          <a href="/zones/{{ zd.zone.zone_id }}" class="btn btn-ghost btn-sm zc-detail-btn" title="Voir le détail de la zone (contrôle lucarne, graphiques, plants…)">
             <i class="bi bi-arrow-right-circle-fill"></i>
           </a>
         </div>
@@ -223,67 +348,170 @@
       </div>
       {% endfor %}
     </div>
+
+  </div>
+
+  <!-- ── TAB TÂCHES ── -->
+  <div id="tab-taches" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <i class="bi bi-calendar3-event-fill" style="color:var(--green);"></i>
+        Tâches du mois — {{ current_month_name }}
+        {% if monthly_tasks %}
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
+          {{ monthly_tasks | length }} suggestion{{ 's' if monthly_tasks | length > 1 else '' }}
+        </span>
+        {% endif %}
+      </div>
+      {% if monthly_tasks %}
+      <div class="monthly-tasks" id="monthly-tasks-list">
+        {% for t in monthly_tasks %}
+        {% set _task_id = (t.kind ~ '-' ~ (t.label | replace(' ', '_'))) %}
+        <div class="task-row task-{{ t.kind }} {% if t.done %}task-done{% endif %}"
+             data-task-id="{{ _task_id }}">
+          <span class="task-icon">{{ t.icon }}</span>
+          <div class="task-body">
+            <div class="task-label">{{ t.label }}</div>
+            <div class="task-detail">{{ t.detail }}</div>
+          </div>
+          <div class="task-actions">
+            {% if t.done %}
+            <span class="task-check" title="Déjà fait"><i class="bi bi-check-circle-fill"></i></span>
+            {% else %}
+            <button type="button" class="task-btn task-btn-validate"
+                    onclick="validateTask(this)" title="Marquer comme fait">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button type="button" class="task-btn task-btn-dismiss"
+                    onclick="dismissTask(this)" title="Pas intéressé / déjà fait ailleurs">
+              <i class="bi bi-x-lg"></i>
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:12px;color:var(--text-tertiary);line-height:1.5;flex-wrap:wrap;gap:8px;">
+        <span><i class="bi bi-info-circle"></i> Mois optimaux (région suisse) et plantations actives.</span>
+        <button type="button" class="btn btn-ghost btn-xs" onclick="resetTasks()" title="Réafficher les tâches masquées">
+          <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+        </button>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:30px 20px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🌱</div>
+        <p style="color:var(--text-secondary);">Aucune tâche suggérée pour ce mois.</p>
+        <a href="/conseils" class="btn btn-secondary btn-sm" style="margin-top:10px;">
+          <i class="bi bi-lightbulb"></i> Voir les conseils saisonniers
+        </a>
+      </div>
+      {% endif %}
+    </div>
   </div>
 
   <!-- ── TAB MÉTÉO ── -->
+  {% set forecast_by_day = forecast_by_day if forecast_by_day is defined else [] %}
   <div id="tab-meteo" style="display:none;">
+
+    <!-- Risque gel (si applicable) -->
+    {% if weather.frost_risk %}
+    <div class="card mb-3" style="border-left:4px solid var(--blue);">
+      <div style="display:flex;align-items:center;gap:14px;padding:6px 4px;">
+        <div style="font-size:32px;">❄️</div>
+        <div>
+          <div style="font-weight:700;color:var(--blue);font-size:15px;">Risque de gel détecté</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">
+            Vannes et lucarne seront fermées automatiquement pour protéger les cultures sensibles.
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Comparaison vent prévu / vent mesuré (info unique) -->
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-wind" style="color:var(--blue);"></i>
+        Vent — comparaison prévision vs capteur
+      </div>
+      <div class="wind-compare">
+        <div class="wind-compare-item">
+          <div class="wind-compare-icon">💨</div>
+          <div class="wind-compare-value">{{ weather.wind_kmh }} km/h</div>
+          <div class="wind-compare-label">Prévu (Open-Meteo)</div>
+        </div>
+        <div class="wind-compare-arrow">↔</div>
+        <div class="wind-compare-item">
+          <div class="wind-compare-icon">🌬</div>
+          <div class="wind-compare-value" id="dash-wind-arduino">—</div>
+          <div class="wind-compare-label">Mesuré (anémomètre)</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Le capteur mesure le vent local au jardin, qui peut différer
+        sensiblement des prévisions régionales.
+      </div>
+    </div>
+
+    <!-- Prévisions par jour (jusqu'à 48h) -->
+    {% if forecast_by_day %}
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-calendar-week-fill" style="color:var(--orange);"></i>
+        Prévisions par jour
+      </div>
+      <div class="forecast-day-list">
+        {% for d in forecast_by_day %}
+        <div class="forecast-day-row">
+          <div class="forecast-day-label">
+            <div class="forecast-day-name">{{ d.label }}</div>
+            <div class="forecast-day-date">{{ d.date }}</div>
+          </div>
+          <div class="forecast-day-icon">{{ d.icon }}</div>
+          <div class="forecast-day-temps">
+            {% if d.t_min is not none and d.t_max is not none %}
+            <span class="forecast-day-tmin">{{ d.t_min | int }}°</span>
+            <span class="forecast-day-tsep">→</span>
+            <span class="forecast-day-tmax">{{ d.t_max | int }}°</span>
+            {% else %}—{% endif %}
+          </div>
+          <div class="forecast-day-precip">
+            {% if d.precip > 0 %}
+              <span style="color:var(--blue);font-weight:600;">💧 {{ d.precip }}mm</span>
+            {% elif d.prob_max > 30 %}
+              <span style="color:var(--text-secondary);">{{ d.prob_max }}% pluie</span>
+            {% else %}
+              <span style="color:var(--text-tertiary);">Sec</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Détail horaire 24h : voir le bandeau en haut du dashboard.
+        Source : <strong>{{ weather.source }}</strong>.
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Lien vers historique complet -->
     <div class="card">
       <div class="card-title">
-        <i class="bi bi-cloud-sun-fill"></i>
-        Météo — {{ garden_location }}
-        <span class="badge" style="margin-left:4px;font-weight:500;font-size:10px;">{{ weather.source }}</span>
-        {% if temp_serre_c is not none %}
-        <span class="badge badge-plant" style="margin-left:4px;font-size:10px;">🏠 Serre {{ temp_serre_c }}°C</span>
-        {% endif %}
+        <i class="bi bi-graph-up" style="color:var(--green);"></i>
+        Historique météo
       </div>
-
-      <div class="weather-stats-row">
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🌡️</div>
-          <div class="weather-stat-value">{{ weather.temperature }}°</div>
-          <div class="weather-stat-label">Extérieur</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;font-size:13px;color:var(--text-secondary);line-height:1.5;">
+          Voir l'évolution des températures, humidité et précipitations sur 24h, 7j ou 30j.
         </div>
-        {% if temp_serre_c is not none %}
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🏠</div>
-          <div class="weather-stat-value">{{ temp_serre_c }}°</div>
-          <div class="weather-stat-label">Serre</div>
-        </div>
-        {% endif %}
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🌧️</div>
-          <div class="weather-stat-value">{{ weather.precip_mm_6h }}mm</div>
-          <div class="weather-stat-label">Pluie 6h</div>
-        </div>
-        <div class="weather-stat">
-          <div class="weather-stat-icon">💧</div>
-          <div class="weather-stat-value">{{ weather.precip_prob_pct | int }}%</div>
-          <div class="weather-stat-label">Prob. pluie</div>
-        </div>
-        <div class="weather-stat">
-          <div class="weather-stat-icon">💨</div>
-          <div class="weather-stat-value">{{ weather.wind_kmh }}km/h</div>
-          <div class="weather-stat-label">Vent prévu</div>
-        </div>
-        <div class="weather-stat">
-          <div class="weather-stat-icon">🌬️</div>
-          <div class="weather-stat-value" id="dash-wind-arduino">—</div>
-          <div class="weather-stat-label">Vent mesuré</div>
-        </div>
+        <a href="/history" class="btn btn-primary btn-sm">
+          <i class="bi bi-graph-up"></i> Ouvrir Graphiques
+        </a>
       </div>
-
-      {% if weather.frost_risk %}
-      <div class="greenhouse-note" style="margin:12px 0 8px;">
-        <i class="bi bi-snow" style="color:var(--blue);"></i>
-        <div>
-          <div class="gn-title" style="color:var(--blue);">Risque de gel</div>
-          <div class="gn-body">Vannes et lucarne seront fermées automatiquement.</div>
-        </div>
-      </div>
-      {% endif %}
-
-      <div class="forecast-strip" id="forecastStrip"></div>
     </div>
+
   </div>
 
   <!-- ── TAB PROCHAINES RÉCOLTES ── -->
@@ -344,18 +572,69 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/controls.js') }}?v={{ static_v }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v={{ static_v }}"></script>
 <script>
+  // Démarre le polling temps réel (cartes zones + lucarne)
+  if (typeof initDashboard === 'function') initDashboard();
   loadForecast();
+
+  // ── Tâches du mois : valider / annuler (persisté localStorage) ──
+  const _MONTH_KEY = 'tasks-' + new Date().getFullYear() + '-' + (new Date().getMonth() + 1);
+  function _getTaskState() {
+    try { return JSON.parse(localStorage.getItem(_MONTH_KEY) || '{}'); } catch { return {}; }
+  }
+  function _setTaskState(s) {
+    try { localStorage.setItem(_MONTH_KEY, JSON.stringify(s)); } catch {}
+  }
+  function _applyTaskStates() {
+    const state = _getTaskState();
+    document.querySelectorAll('#monthly-tasks-list .task-row').forEach(row => {
+      const id = row.dataset.taskId;
+      const st = state[id];
+      if (st === 'validated') {
+        row.classList.add('task-done');
+        const actions = row.querySelector('.task-actions');
+        if (actions) actions.innerHTML = '<span class="task-check" title="Validée"><i class="bi bi-check-circle-fill"></i></span>';
+      } else if (st === 'dismissed') {
+        row.style.display = 'none';
+      }
+    });
+  }
+  function validateTask(btn) {
+    const row = btn.closest('.task-row');
+    if (!row) return;
+    const state = _getTaskState();
+    state[row.dataset.taskId] = 'validated';
+    _setTaskState(state);
+    _applyTaskStates();
+  }
+  function dismissTask(btn) {
+    const row = btn.closest('.task-row');
+    if (!row) return;
+    const state = _getTaskState();
+    state[row.dataset.taskId] = 'dismissed';
+    _setTaskState(state);
+    row.style.transition = 'opacity .2s, transform .2s';
+    row.style.opacity = '0'; row.style.transform = 'translateX(20px)';
+    setTimeout(() => { row.style.display = 'none'; }, 220);
+  }
+  function resetTasks() {
+    try { localStorage.removeItem(_MONTH_KEY); } catch {}
+    location.reload();
+  }
+  document.addEventListener('DOMContentLoaded', _applyTaskStates);
+  // Si DOM déjà prêt (script chargé après)
+  if (document.readyState !== 'loading') _applyTaskStates();
 
   function switchDashTab(btn, tab) {
     document.querySelectorAll('#dash-tabs .time-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    ['zones','meteo','recoltes'].forEach(t => {
+    ['zones','taches','meteo','recoltes'].forEach(t => {
       const el = document.getElementById('tab-' + t);
       if (el) el.style.display = (t === tab) ? '' : 'none';
     });
   }
+
 </script>
 {% endblock %}

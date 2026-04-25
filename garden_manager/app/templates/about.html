@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <h1 class="page-title">À propos</h1>
-      <div class="page-subtitle">MonJardin · Version 2.0 · Avril 2026</div>
+      <div class="page-subtitle">MonJardin · Version 3.0 · Avril 2026</div>
     </div>
   </div>
 </div>
@@ -30,7 +30,7 @@
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
       <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:4px;">Version</div>
-        <div style="font-size:13px;font-weight:600;">2.0</div>
+        <div style="font-size:13px;font-weight:600;">3.0</div>
       </div>
       <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:4px;">Créateur</div>
@@ -43,9 +43,137 @@
     </div>
   </div>
 
-  <!-- Nouveautés v2.0 -->
+  <!-- Nouveautés v3.0 -->
   <div class="card">
-    <div class="card-title"><i class="bi bi-stars"></i> Nouveautés version 2.0</div>
+    <div class="card-title"><i class="bi bi-stars" style="color:var(--green);"></i> Nouveautés version 3.0</div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-sun-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Hero "Aujourd'hui" — résumé contextuel</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Greeting personnalisé selon l'heure et phrases auto-générées : pluie prévue, récoltes prêtes, lucarne ouverte trop longtemps, sol sec. Tout l'essentiel en 1 coup d'œil sans cliquer.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-speedometer2"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Pulse Score — état global du jardin</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Score 0-100 avec cercle SVG animé, 4 composantes pondérées : humidité (40), alertes (30), plants en bonne santé (20), météo favorable (10). Indicateur visuel signature.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(10,132,255,.12);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-cloud-sun-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Bandeau météo riche & forecast 24h</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Météo actuelle plein écran en tête + forecast 24h scrollable horizontal. Tab Météo refondu avec comparaison vent prévu vs mesuré (anémomètre Arduino).</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-grid-1x2-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Plan visuel grille emoji partagé</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Grille soil-brown style App Store, proportionnelle à la taille réelle de la zone. Chaque cellule = une espèce avec emoji, nom, quantité et délai de récolte. Identique sur la zone détail et les cartes du dashboard.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,159,10,.12);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-flower3"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Modal Quick-Plant intelligent</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Ajout d'une plantation en 3 clics depuis une cellule vide. Recherche live + filtres catégorie. Compagnonnage en temps réel : ⚠️ incompatibilités détectées, ✅ bonnes associations, 💡 suggestions à associer. Recommandations affichées (espacement, profondeur, eau, soleil).</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,69,58,.12);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-bell-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Bandeau d'actions concrètes</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Le dashboard détecte automatiquement les actions à faire : 💧 zones à arroser, 🪟 lucarne ouverte trop longtemps, 🧺 récoltes prêtes. Bouton d'action direct (Arroser / Fermer / Voir) en 1 clic.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-calendar3-event-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Calendrier de tâches du mois</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Onglet dédié dans le dashboard avec suggestions de plantation et récoltes à venir, calculées depuis les mois optimaux suisses. Boutons valider ✓ / annuler ✕ par tâche, persistance localStorage.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,159,10,.12);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Arrosage manuel sécurisé</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Arrêt automatique après la durée maximale configurée par zone (évite l'inondation en cas d'oubli). Job APScheduler annulé si l'utilisateur stoppe manuellement avant.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(10,132,255,.12);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Plage horaire d'arrosage recommandée</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Calcul automatique selon la saison et les besoins en eau des plants (matin tôt, soir, soir tard en canicule, milieu de matinée en hiver). Affichage dans la config de chaque zone.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,159,10,.12);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-graph-up"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Graphique unifié dans la zone</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Un seul graphique multi-axes : humidité du sol, températures extérieure et serre, bandes de vannes ouvertes en arrière-plan. Sélecteur unique 24h / 7j / 30j synchronisé.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-lightbulb-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Conseils en 4 onglets</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Page Conseils refondue avec 4 onglets : Bonnes pratiques (carrousel), Associations (compagnonnage), Calendrier saisonnier, Plantations du mois. Page Plantation séparée supprimée (regroupée ici).</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(191,90,242,.12);color:#BF5AF2;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-rulers"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Espacement réaliste pour semis en ligne</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Champ <code>space_row_cm</code> ajouté pour 22 espèces semées en ligne (carotte, radis, oignon, etc.). Capacité de zone calculée plus fidèlement (Carotte 2m × 1m → 160 plants au lieu de 800).</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Nouveautés v2.0 (historique) -->
+  <div class="card">
+    <div class="card-title"><i class="bi bi-clock-history"></i> Nouveautés version 2.0</div>
     <div style="display:flex;flex-direction:column;gap:0;">
 
       <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">

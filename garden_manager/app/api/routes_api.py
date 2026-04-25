@@ -79,6 +79,7 @@ def current_data():
         "temp_serre_c": sensor_data.get("temp_serre_c") if sensor_data else None,
         "wind_speed_kmh": wind,
         "roof_state": actuator_status.get("roof_state", "close"),
+        "roof_target": actuator_status.get("roof_target"),
         "arduino_reachable": sensor_data is not None,
         "timestamp": _utcnow().isoformat(),
     })
@@ -130,7 +131,8 @@ def irrigation_events():
 @api_bp.post("/control/valve/<int:zone_id>")
 def control_valve(zone_id: int):
     """Commande manuelle d'une vanne."""
-    if Zone.query.get(zone_id) is None:
+    zone = Zone.query.get(zone_id)
+    if zone is None:
         return jsonify({"ok": False, "error": f"Zone {zone_id} inexistante"}), 404
 
     body = request.get_json(silent=True) or {}
@@ -142,6 +144,7 @@ def control_valve(zone_id: int):
     success = arduino.set_valve(zone_id, state)
 
     persist_warning = None
+    auto_stop_min = None
     if success:
         try:
             db.session.add(IrrigationLog(
@@ -160,14 +163,71 @@ def control_valve(zone_id: int):
             # M7 : informer le client que la commande a réussi mais le log a échoué
             persist_warning = "Commande exécutée, persistance en base échouée"
 
-    action_fr = "ouverte" if state == "open" else "fermée"
+        # ── Sécurité : arrêt automatique après irrigation_duration_min ──
+        scheduler = current_app.extensions.get("scheduler")
+        job_id = f"auto_stop_valve_{zone_id}"
+        if scheduler:
+            # Toujours annuler un éventuel auto-stop précédent (replace_existing)
+            try:
+                scheduler.remove_job(job_id)
+            except Exception:
+                pass
+            if state == "open":
+                duration_min = max(1, int(zone.irrigation_duration_min or 15))
+                auto_stop_min = duration_min
+                from datetime import datetime, timezone, timedelta
+                run_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=duration_min)
+                _app = current_app._get_current_object()
+                scheduler.add_job(
+                    _auto_stop_valve,
+                    "date",
+                    run_date=run_at,
+                    args=[_app, zone_id, duration_min],
+                    id=job_id,
+                    replace_existing=True,
+                )
+
+    action_label = "Ouverture" if state == "open" else "Fermeture"
+    msg = f"{action_label} de la vanne d'arrosage {zone_id}" if success else "Échec commande Arduino"
+    if success and state == "open" and auto_stop_min:
+        msg += f" — arrêt automatique dans {auto_stop_min} min"
     resp = {
         "ok": success,
-        "message": f"Vanne zone {zone_id} {action_fr}" if success else "Échec commande Arduino",
+        "message": msg,
     }
     if persist_warning:
         resp["warning"] = persist_warning
     return jsonify(resp)
+
+
+def _auto_stop_valve(app, zone_id: int, duration_min: int) -> None:
+    """Job APScheduler : ferme la vanne après la durée max d'arrosage manuel."""
+    with app.app_context():
+        try:
+            arduino = app.extensions["arduino_client"]
+            # Vérifier que la vanne est encore ouverte (sinon rien à faire)
+            status = arduino.get_actuator_status() or {"valves": []}
+            still_open = any(
+                v.get("zone_id") == zone_id and v.get("state") == "open"
+                for v in status.get("valves", [])
+            )
+            if not still_open:
+                log.info("Auto-stop zone %d : vanne déjà fermée, skip", zone_id)
+                return
+            arduino.set_valve(zone_id, "close")
+            db.session.add(IrrigationLog(
+                zone_id=zone_id, action="close",
+                trigger_type="auto",
+                reason=f"Arrêt automatique sécurité — durée max {duration_min} min atteinte",
+            ))
+            db.session.add(JournalEntry(
+                level="warning",
+                message=f"Zone {zone_id} — fermeture automatique vanne (sécurité, {duration_min} min)",
+            ))
+            db.session.commit()
+            log.info("Auto-stop zone %d : vanne fermée après %d min", zone_id, duration_min)
+        except Exception as e:
+            log.error("Auto-stop zone %d échoué : %s", zone_id, e)
 
 
 @api_bp.post("/control/roof")
@@ -191,10 +251,10 @@ def control_roof():
             db.session.rollback()
             log.error("Erreur persistance commande lucarne : %s", e)
 
-    action_fr = "ouvert" if state == "open" else "fermé"
+    action_label = "Ouverture" if state == "open" else "Fermeture"
     return jsonify({
         "ok": success,
-        "message": f"Lucarne {action_fr}" if success else "Échec commande Arduino",
+        "message": f"{action_label} de la lucarne en cours…" if success else "Échec commande Arduino",
     })
 
 

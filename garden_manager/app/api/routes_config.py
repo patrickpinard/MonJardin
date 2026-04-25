@@ -152,14 +152,17 @@ def planting_page():
         for zone in zones
     }
 
-    # Capacités restantes par zone/légume pour le hint quantité
+    # Capacités restantes par zone/légume pour le hint quantité.
+    # Utilise space_row_cm pour les semis en ligne (carotte, radis, etc.) ;
+    # retombe sur space_cm pour les plants individuels (grille carrée).
     zone_capacity: dict = {}
     for zone in zones:
         zone_capacity[zone.zone_id] = {}
         for v in all_vegetables:
-            sp   = v.get("space_cm", 30)
+            sp     = v.get("space_cm", 30)
+            sp_row = v.get("space_row_cm", sp)
             cols = max(1, int((getattr(zone, "length_m", 2.0) or 2.0) * 100 / sp))
-            rows = max(1, int((getattr(zone, "width_m",  1.0) or 1.0) * 100 / sp))
+            rows = max(1, int((getattr(zone, "width_m",  1.0) or 1.0) * 100 / sp_row))
             active_count = sum(
                 1 for p in plantings_by_zone.get(zone.zone_id, [])
                 if p.status == "active" and p.vegetable_name == v["name"]
@@ -226,6 +229,10 @@ def add_planting():
     except Exception as e:
         flash(f"Erreur lors de l'ajout : {e}", "danger")
 
+    # Redirige vers la zone si demandé (modal Quick-Plant), sinon Plantation
+    redirect_to = form.get("redirect_to", "")
+    if redirect_to == "zone" and zone_id:
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
     return redirect(url_for("config.planting_page"))
 
 
@@ -256,6 +263,46 @@ def edit_planting(planting_id: int):
     if water_need in ("low", "medium", "high"):
         p.water_need = water_need
 
+    # Ajustement du nombre total de plants de cette espèce dans cette zone
+    # (en s'assurant qu'au moins le plant édité reste)
+    quantity_str = form.get("quantity", "").strip()
+    if quantity_str:
+        try:
+            new_qty = int(quantity_str)
+        except ValueError:
+            new_qty = None
+        if new_qty is not None and new_qty >= 1:
+            actives = (Planting.query
+                       .filter_by(zone_id=p.zone_id,
+                                  vegetable_name=p.vegetable_name,
+                                  status="active")
+                       .order_by(Planting.id.desc()).all())
+            current_count = len(actives)
+            diff = new_qty - current_count
+            if diff > 0:
+                # Créer N copies du planting édité
+                for _ in range(diff):
+                    db.session.add(Planting(
+                        zone_id=p.zone_id,
+                        vegetable_name=p.vegetable_name,
+                        variety=p.variety,
+                        planted_date=p.planted_date,
+                        expected_harvest_date=p.expected_harvest_date,
+                        water_need=p.water_need,
+                        status="active",
+                        notes=p.notes,
+                    ))
+            elif diff < 0:
+                # Supprimer les plus récents en épargnant celui édité
+                removed = 0
+                for other in actives:
+                    if other.id == p.id:
+                        continue
+                    db.session.delete(other)
+                    removed += 1
+                    if removed >= -diff:
+                        break
+
     db.session.commit()
     redirect_to = request.form.get("redirect_to", "planting")
     if redirect_to == "zone":
@@ -281,6 +328,25 @@ def delete_planting(planting_id: int):
     db.session.delete(p)
     db.session.commit()
     redirect_to = request.form.get("redirect_to", "planting")
+    if redirect_to == "zone":
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+    return redirect(url_for("config.planting_page"))
+
+
+@config_bp.post("/planting/zone/<int:zone_id>/species/<vegetable_name>/delete")
+def delete_species_from_zone(zone_id: int, vegetable_name: str):
+    """Supprime TOUTES les plantations actives d'une espèce dans une zone."""
+    plantings = Planting.query.filter_by(
+        zone_id=zone_id,
+        vegetable_name=vegetable_name,
+        status="active",
+    ).all()
+    count = len(plantings)
+    for p in plantings:
+        db.session.delete(p)
+    db.session.commit()
+    flash(f"{count} plantation(s) de {vegetable_name} supprimée(s).", "success")
+    redirect_to = request.form.get("redirect_to", "zone")
     if redirect_to == "zone":
         return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
     return redirect(url_for("config.planting_page"))

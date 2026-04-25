@@ -1,4 +1,4 @@
-# 🌱 MonJardin — Version 2.0
+# 🌱 MonJardin — Version 3.0
 
 Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite
 
@@ -46,7 +46,7 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 ![À propos](docs/screenshot_about.png)
 
-*Présentation du projet, fonctionnalités v2.0, matériel et stack technique.*
+*Présentation du projet, fonctionnalités v3.0, matériel et stack technique.*
 
 ### Interface mobile iPhone (PWA) — 4 écrans
 
@@ -79,6 +79,54 @@ MonJardin gère automatiquement l'arrosage et l'ouverture du toit de serre de 4 
 | 2 | Potager | Exposition plein sud |
 | 3 | Potager | Exposition partielle |
 | 4 | Fleurs | Seuils d'arrosage réduits |
+
+---
+
+## Nouveautés version 3.0
+
+### Dashboard transformé en vue contextuelle
+- **Hero "Aujourd'hui"** : greeting personnalisé + phrases auto-générées (météo, récoltes prêtes, lucarne ouverte, sol sec) — toute l'info en 1 coup d'œil sans cliquer
+- **Pulse Score 0-100** : cercle SVG animé, état global du jardin (humidité 40 + alertes 30 + plants 20 + météo 10)
+- **Bandeau météo riche** : météo actuelle + forecast 24h scrollable horizontal en pleine largeur
+- **Bandeau d'actions concrètes** : 💧 zones à arroser, 🪟 lucarne ouverte, 🧺 récoltes prêtes — avec boutons d'action directs
+- **Onglet Tâches** : suggestions du mois (semis + récoltes ≤14j) avec boutons valider ✓ / annuler ✕
+
+### Plan visuel partagé (zones + dashboard)
+- Grille soil-brown style App Store, **proportionnelle aux dimensions réelles** de la zone
+- 1 cellule = 1 espèce avec emoji + quantité + délai de récolte
+- **Modal Quick-Plant** : ajout en 3 clics depuis cellule vide, recherche live, filtres catégorie
+- **Compagnonnage en temps réel** : ⚠️ incompatibilités, ✅ bonnes associations, 💡 suggestions
+- Recommandations affichées (espacement, profondeur, eau, soleil, conseil)
+- Suppression d'une espèce entière depuis le modal Edit
+
+### Conseils refondu en 4 onglets
+- 💡 **Bonnes pratiques** (carrousel 12 conseils)
+- ❤️ **Associations** (compagnonnages bons/mauvais)
+- 📅 **Calendrier saisonnier** (4 cartes saisons)
+- 🌸 **Plantations du mois** (page Plantation supprimée et fusionnée ici)
+
+### Sécurité & automatisation
+- **Arrêt automatique d'arrosage manuel** après la durée max configurée par zone (anti-inondation)
+- **Plage horaire d'arrosage recommandée** par zone (calculée selon saison + besoins en eau)
+- **Graphique unifié zone** : un seul graph multi-axes (humidité + températures + bandes vannes ouvertes)
+- **Statut lucarne en temps réel** : "En cours d'ouverture/fermeture" pendant le mouvement (~30s)
+
+### Données plantes
+- **Espacement réaliste** pour 22 espèces semées en ligne (`space_row_cm` : Carotte 5×25cm, Maïs 30×70cm, etc.) — capacité de zone 4× plus précise
+- Suppression de la catégorie "Fruits" (arbres et arbustes pas en potager) → 55 espèces (légumes, herbes, fleurs)
+
+### UX & navigation
+- Cartes zones du dashboard sur **2 colonnes** (au lieu de 4) pour plus d'espace
+- Sous-menus mobile **fermés par défaut** (Zones, Système & Admin) — menu plus compact
+- Cache-buster global pour CSS + JS (plus de problème de cache navigateur)
+- Tab Météo refondu : pas de doublon avec le bandeau du haut, comparaison vent prévu vs mesuré
+
+### Bug fixes notables
+- Tabs zone cassés (variables Jinja inter-blocks)
+- Statut lucarne figé sur "En cours…" (refresh dashboard non déclenché)
+- Légumes invisibles sur le plan visuel (zone "pleine")
+- Sens lucarne inversé dans certains cas (fallback `getRoofMovingTarget`)
+- Modal Quick-Plant non scrollable (boutons inaccessibles)
 
 ---
 
@@ -209,7 +257,7 @@ bash ~/MonJardin/update_pi.sh --restart
 Le script :
 1. Détecte automatiquement le repo MonJardin
 2. Sauvegarde la base de données (5 derniers backups conservés)
-3. `git pull origin v2.0`
+3. `git pull origin v3.0`
 4. Met à jour les dépendances Python (compatible Bookworm / PEP 668)
 5. Redémarre l'application (systemd ou manuel)
 
@@ -296,4 +344,4 @@ Micro-ordinateur exécutant le serveur Flask, le moteur de décision et l'interf
 
 ---
 
-*Version 2.0 · Avril 2026 · Patrick Pinard*
+*Version 3.0 · Avril 2026 · Patrick Pinard*
