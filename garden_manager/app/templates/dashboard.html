@@ -244,6 +244,34 @@
       </div>
       {% endfor %}
     </div>
+
+    <!-- ── Carte Tâches du mois (calendrier saisonnier) ── -->
+    {% if monthly_tasks %}
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-calendar3-event-fill" style="color:var(--green);"></i>
+        Tâches du mois — {{ current_month_name }}
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
+          {{ monthly_tasks | length }} suggestion{{ 's' if monthly_tasks | length > 1 else '' }}
+        </span>
+      </div>
+      <div class="monthly-tasks">
+        {% for t in monthly_tasks %}
+        <div class="task-row task-{{ t.kind }} {% if t.done %}task-done{% endif %}">
+          <span class="task-icon">{{ t.icon }}</span>
+          <div class="task-body">
+            <div class="task-label">{{ t.label }}</div>
+            <div class="task-detail">{{ t.detail }}</div>
+          </div>
+          {% if t.done %}
+          <span class="task-check"><i class="bi bi-check-circle-fill"></i></span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 
   <!-- ── TAB MÉTÉO ── -->

@@ -137,6 +137,43 @@ def dashboard():
                 })
     harvest_list.sort(key=lambda x: x["days_left"])
 
+    # ── Calendrier de tâches saisonnier (mois courant) ─────
+    advisor = current_app.extensions["planting_advisor"]
+    current_month = today.month
+    seasonal_vegs = advisor.get_seasonal_advice(current_month, limit=5)
+    monthly_tasks = []
+    # Tâches "à semer/planter ce mois"
+    for v in seasonal_vegs:
+        already_in = any(p.vegetable_name == v["name"] for p in all_plantings)
+        monthly_tasks.append({
+            "kind": "plant",
+            "icon": v.get("emoji", "🌱"),
+            "label": f"Planter / semer {v['name']}",
+            "detail": f"Mois optimal en Suisse" + (" · déjà dans une zone" if already_in else ""),
+            "done": already_in,
+        })
+    # Tâches "à récolter bientôt" (plantings active, récolte ≤ 14j)
+    for p in all_plantings:
+        if not p.expected_harvest_date:
+            continue
+        d_left = (p.expected_harvest_date - today).days
+        if 0 <= d_left <= 14:
+            monthly_tasks.append({
+                "kind": "harvest",
+                "icon": "🧺",
+                "label": f"Récolter {p.vegetable_name}",
+                "detail": (
+                    "Prêt aujourd'hui !" if d_left == 0
+                    else f"Dans {d_left} jour{'s' if d_left > 1 else ''}"
+                ) + f" · {zone_name_map.get(p.zone_id, 'Zone ' + str(p.zone_id))}",
+                "done": False,
+            })
+    # Limiter à 8 tâches max pour ne pas surcharger
+    monthly_tasks = monthly_tasks[:8]
+    MONTH_NAMES_FR = ["", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+    current_month_name = MONTH_NAMES_FR[current_month]
+
     # ── Bandeau d'actions concrètes (à faire maintenant) ──
     actions = []
     # 1. Zones à arroser (sol sec + mode auto/manual + vanne fermée)
@@ -206,6 +243,8 @@ def dashboard():
         today_date=today,
         alerting_zones=alerting_zones,
         actions=actions,
+        monthly_tasks=monthly_tasks,
+        current_month_name=current_month_name,
     )
 
 

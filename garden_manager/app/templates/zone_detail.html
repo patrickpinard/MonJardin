@@ -320,10 +320,12 @@
       <div class="card-title">
         <i class="bi bi-grid-1x2-fill"></i> Plan visuel
         <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
-          Tap pour modifier · cellule + pour planter
+          {{ _zone_length }} m × {{ _zone_width }} m · tap pour modifier
         </span>
       </div>
-      <div class="plant-grid">
+      <!-- Container avec ratio = proportions réelles de la zone -->
+      <div class="plant-grid-wrap" style="aspect-ratio: {{ _zone_length }} / {{ _zone_width }};">
+      <div class="plant-grid plant-grid-fill">
         {% for s in plant_species_summary %}
         <div class="plant-cell"
              onclick="openEditModal({{ s.rep_id }}, '{{ s.name|e }}', '{{ s.variety|e }}', '{{ s.harvest }}', '{{ s.status }}', '{{ s.water_need }}', '{{ s.notes|e }}', 'zone', {{ s.count }})">
@@ -347,6 +349,7 @@
         </div>
         {% endfor %}
       </div>
+      </div><!-- /.plant-grid-wrap -->
       {% if not active_plantings %}
       <div style="text-align:center;padding:12px 16px;font-size:12px;color:var(--text-tertiary);">
         Aucune plantation active. Cliquez sur une cellule <strong>+</strong> pour planter.
@@ -891,6 +894,10 @@
       </div>
       <div class="modal-actions" style="margin:16px -20px -20px;border-radius:0 0 16px 16px;overflow:hidden;">
         <button type="button" class="modal-btn cancel" onclick="closeEditModal()">Annuler</button>
+        <button type="button" class="modal-btn" style="color:var(--red);"
+                onclick="deleteSpeciesFromZone()" title="Supprimer toutes les plantations de cette espèce dans la zone">
+          <i class="bi bi-trash3"></i> Supprimer
+        </button>
         <button type="submit" class="modal-btn" style="color:var(--green);">Enregistrer</button>
       </div>
     </form>
@@ -940,6 +947,8 @@
                 data-qp-name="{{ v.name|e }}"
                 data-qp-cat="{{ v.get('category','légume') }}"
                 data-qp-emoji="{{ v.get('emoji','🌱') }}"
+                data-qp-companions="{{ v.get('companions', []) | join(',') }}"
+                data-qp-bad="{{ v.get('bad_companions', []) | join(',') }}"
                 onclick="qpSelectVeg(this)">
           <span class="qp-veg-emoji">{{ v.get('emoji','🌱') }}</span>
           <span class="qp-veg-name">{{ v.name }}</span>
@@ -947,13 +956,29 @@
         {% endfor %}
       </div>
 
-      <!-- Sélection actuelle + quantité -->
+      <!-- Sélection actuelle + compagnonnage + quantité -->
       <div id="qp-selection" style="display:none;margin-top:14px;padding:12px;background:var(--bg-secondary);border:1px solid var(--green);border-radius:var(--r-md);">
         <div style="display:flex;align-items:center;gap:12px;">
           <span id="qp-sel-emoji" style="font-size:32px;line-height:1;"></span>
           <div style="flex:1;">
             <div style="font-weight:700;font-size:14px;" id="qp-sel-name">—</div>
             <div style="font-size:11px;color:var(--text-tertiary);" id="qp-sel-cat"></div>
+          </div>
+        </div>
+
+        <!-- Compagnonnage live -->
+        <div id="qp-companion-info" style="margin-top:10px;display:none;font-size:12px;line-height:1.5;">
+          <div id="qp-bad-row" style="display:none;padding:6px 10px;background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.3);border-radius:var(--r-sm);color:var(--red);margin-bottom:6px;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Incompatible</strong> avec : <span id="qp-bad-list"></span>
+          </div>
+          <div id="qp-good-row" style="display:none;padding:6px 10px;background:rgba(48,209,88,.1);border:1px solid rgba(48,209,88,.3);border-radius:var(--r-sm);color:var(--green);">
+            <i class="bi bi-check-circle-fill"></i>
+            <strong>Bonne association</strong> avec : <span id="qp-good-list"></span>
+          </div>
+          <div id="qp-suggest-row" style="display:none;padding:6px 10px;background:rgba(48,209,88,.04);border:1px dashed rgba(48,209,88,.3);border-radius:var(--r-sm);color:var(--text-secondary);margin-top:6px;">
+            <i class="bi bi-lightbulb-fill" style="color:var(--green);"></i>
+            Suggestions à associer : <span id="qp-suggest-list" style="color:var(--green);font-weight:600;"></span>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
@@ -1135,6 +1160,8 @@ document.getElementById('delete-overlay').addEventListener('click', e => {
 
 // ── Edit modal ──────────────────────────────────────────
 const _editForm = document.getElementById('edit-planting-form');
+let _editCurrentSpecies = '';   // mémorise l'espèce pour le bouton Supprimer
+let _editCurrentCount   = 1;
 function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo, currentCount) {
   document.getElementById('ep-name').textContent = name;
   document.getElementById('ep-variety').value    = variety;
@@ -1145,6 +1172,8 @@ function openEditModal(id, name, variety, harvest, status, waterNeed, notes, red
   document.getElementById('ep-redirect').value   = redirectTo || 'zone';
   // Quantité totale de cette espèce dans la zone
   const cnt = (currentCount === undefined || currentCount === null) ? 1 : Number(currentCount) || 1;
+  _editCurrentSpecies = name;
+  _editCurrentCount   = cnt;
   const qInput = document.getElementById('ep-quantity');
   const qHint  = document.getElementById('ep-quantity-hint');
   if (qInput) {
@@ -1156,6 +1185,28 @@ function openEditModal(id, name, variety, harvest, status, waterNeed, notes, red
   }
   _editForm.action = `/planting/${id}/edit`;
   document.getElementById('edit-overlay').classList.add('visible');
+}
+
+// Suppression de TOUTES les plantations d'une espèce dans la zone
+function deleteSpeciesFromZone() {
+  const name  = _editCurrentSpecies;
+  const cnt   = _editCurrentCount;
+  if (!name) return;
+  showConfirm({
+    title:    'Supprimer toute l\'espèce',
+    body:     `Supprimer définitivement les ${cnt} plantation${cnt > 1 ? 's' : ''} de ${name} de cette zone ?`,
+    okLabel:  'Supprimer',
+    okClass:  'confirm-danger',
+    icon:     'bi-trash3-fill',
+  }, () => {
+    // POST avec form pour bénéficier du flash
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = `/planting/zone/{{ zone.zone_id }}/species/${encodeURIComponent(name)}/delete`;
+    form.style.display = 'none';
+    document.body.appendChild(form);
+    form.submit();
+  });
 }
 function closeEditModal() {
   document.getElementById('edit-overlay').classList.remove('visible');
@@ -1273,16 +1324,53 @@ function qpFilterList() {
     el.style.display = (matchSearch && matchCat) ? '' : 'none';
   });
 }
+// Liste des espèces actives dans cette zone (côté serveur, sans doublons)
+const _activeSpeciesInZone = [
+  {% for s in plant_species_summary %}{{ s.name | tojson }}{% if not loop.last %}, {% endif %}{% endfor %}
+];
+
 function qpSelectVeg(btn) {
   document.querySelectorAll('.qp-veg-item').forEach(el => el.classList.remove('selected'));
   btn.classList.add('selected');
   const name  = btn.dataset.qpName;
   const emoji = btn.dataset.qpEmoji;
   const cat   = btn.dataset.qpCat;
+  const companions = (btn.dataset.qpCompanions || '').split(',').filter(Boolean);
+  const bad        = (btn.dataset.qpBad || '').split(',').filter(Boolean);
+
   document.getElementById('qp-veg-name').value = name;
   document.getElementById('qp-sel-name').textContent = name;
   document.getElementById('qp-sel-emoji').textContent = emoji;
   document.getElementById('qp-sel-cat').textContent = cat;
+
+  // ── Compagnonnage live ──
+  const goodInZone = companions.filter(c => _activeSpeciesInZone.includes(c));
+  const badInZone  = bad.filter(c => _activeSpeciesInZone.includes(c));
+  const suggest    = companions.filter(c => !_activeSpeciesInZone.includes(c) && c !== name);
+
+  const info  = document.getElementById('qp-companion-info');
+  const goodR = document.getElementById('qp-good-row');
+  const badR  = document.getElementById('qp-bad-row');
+  const sugR  = document.getElementById('qp-suggest-row');
+
+  if (goodInZone.length || badInZone.length || suggest.length) info.style.display = '';
+  else info.style.display = 'none';
+
+  if (goodInZone.length) {
+    goodR.style.display = '';
+    document.getElementById('qp-good-list').textContent = goodInZone.join(', ');
+  } else { goodR.style.display = 'none'; }
+
+  if (badInZone.length) {
+    badR.style.display = '';
+    document.getElementById('qp-bad-list').textContent = badInZone.join(', ');
+  } else { badR.style.display = 'none'; }
+
+  if (suggest.length) {
+    sugR.style.display = '';
+    document.getElementById('qp-suggest-list').textContent = suggest.slice(0, 5).join(', ');
+  } else { sugR.style.display = 'none'; }
+
   document.getElementById('qp-selection').style.display = '';
   document.getElementById('qp-submit').disabled = false;
 }

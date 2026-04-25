@@ -370,6 +370,13 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zone-goto-btn:hover { transform: scale(1.15); opacity: .85; }
 
 /* ── Plan visuel grille emoji (zone detail / Plants tab) ─────── */
+/* Wrapper avec ratio = proportions réelles de la zone (length / width) */
+.plant-grid-wrap {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+}
 .plant-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
@@ -381,6 +388,12 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   padding: 14px;
   border: 2px solid rgba(255,255,255,.08);
   box-shadow: inset 0 2px 14px rgba(0,0,0,.45);
+}
+/* Mode "fill" : le grid remplit son wrapper proportionnel */
+.plant-grid.plant-grid-fill {
+  width: 100%; height: 100%;
+  align-content: start;
+  overflow-y: auto;
 }
 .plant-cell {
   aspect-ratio: 1;
@@ -932,6 +945,45 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 @keyframes alert-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,0); }
   50%      { box-shadow: 0 0 0 4px rgba(255,69,58,.08); }
+}
+
+/* ── Calendrier tâches du mois (dashboard) ────────────────── */
+.monthly-tasks {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.task-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  transition: border-color var(--t);
+}
+.task-row:hover { border-color: var(--green); }
+.task-icon {
+  font-size: 22px; line-height: 1; flex-shrink: 0;
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+}
+.task-body { flex: 1; min-width: 0; }
+.task-label {
+  font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.2;
+}
+.task-detail {
+  font-size: 11px; color: var(--text-tertiary); margin-top: 2px;
+}
+.task-check {
+  flex-shrink: 0; color: var(--green); font-size: 18px;
+}
+.task-row.task-done {
+  opacity: .5;
+}
+.task-row.task-done .task-label { text-decoration: line-through; }
+.task-row.task-harvest {
+  border-left: 3px solid var(--orange);
+  background: rgba(255,159,10,.04);
+}
+.task-row.task-plant {
+  border-left: 3px solid var(--green);
 }
 
 /* ── Bandeau d'actions concrètes (dashboard) ──────────────── */

@@ -333,6 +333,25 @@ def delete_planting(planting_id: int):
     return redirect(url_for("config.planting_page"))
 
 
+@config_bp.post("/planting/zone/<int:zone_id>/species/<vegetable_name>/delete")
+def delete_species_from_zone(zone_id: int, vegetable_name: str):
+    """Supprime TOUTES les plantations actives d'une espèce dans une zone."""
+    plantings = Planting.query.filter_by(
+        zone_id=zone_id,
+        vegetable_name=vegetable_name,
+        status="active",
+    ).all()
+    count = len(plantings)
+    for p in plantings:
+        db.session.delete(p)
+    db.session.commit()
+    flash(f"{count} plantation(s) de {vegetable_name} supprimée(s).", "success")
+    redirect_to = request.form.get("redirect_to", "zone")
+    if redirect_to == "zone":
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+    return redirect(url_for("config.planting_page"))
+
+
 @config_bp.get("/api/planting/compatibility/<int:zone_id>")
 def zone_compatibility(zone_id: int):
     """API JSON pour vérification compatibilité en temps réel."""
