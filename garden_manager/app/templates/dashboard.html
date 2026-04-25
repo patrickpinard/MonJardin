@@ -6,6 +6,14 @@
 {% set today_date = today_date if today_date is defined else none %}
 {% set alerting_zones = alerting_zones if alerting_zones is defined else [] %}
 {% set actions = actions if actions is defined else [] %}
+{% set hero_lines = hero_lines if hero_lines is defined else [] %}
+{% set hero_greeting = hero_greeting if hero_greeting is defined else 'Bonjour' %}
+{% set hero_today_label = hero_today_label if hero_today_label is defined else '' %}
+{% set pulse_score = pulse_score if pulse_score is defined else 75 %}
+{% set pulse_label = pulse_label if pulse_label is defined else 'Bon' %}
+{% set pulse_color = pulse_color if pulse_color is defined else 'green' %}
+{% set pulse_components = pulse_components if pulse_components is defined else {} %}
+{% set forecast_24h = forecast_24h if forecast_24h is defined else [] %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
@@ -21,6 +29,99 @@
 </div>
 
 <div class="page-body">
+
+  <!-- ══════════════════════════════════════════════════════
+       HERO — "Aujourd'hui" + Pulse Score
+       ══════════════════════════════════════════════════════ -->
+  <div class="hero-grid mb-3">
+
+    <!-- Hero "Aujourd'hui" -->
+    <div class="card hero-today">
+      <div class="hero-today-head">
+        <div class="hero-greet">{{ hero_greeting }} <span class="hero-owner">{{ garden_owner.split(' ')[0] }}</span></div>
+        <div class="hero-date">{{ hero_today_label }}</div>
+      </div>
+      <div class="hero-lines">
+        {% for ln in hero_lines %}
+        <div class="hero-line">
+          <span class="hero-line-icon">{{ ln.icon }}</span>
+          <span class="hero-line-text">{{ ln.text }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Pulse Score -->
+    <div class="card pulse-card">
+      <svg class="pulse-svg" viewBox="0 0 120 120">
+        <circle class="pulse-bg" cx="60" cy="60" r="52"/>
+        <circle class="pulse-fill pulse-{{ pulse_color }}"
+                cx="60" cy="60" r="52"
+                stroke-dasharray="{{ (pulse_score / 100 * 326.7) | round(1) }} 326.7"
+                stroke-dashoffset="0"
+                transform="rotate(-90 60 60)"/>
+      </svg>
+      <div class="pulse-center">
+        <div class="pulse-value pulse-{{ pulse_color }}">{{ pulse_score }}</div>
+        <div class="pulse-max">/ 100</div>
+      </div>
+      <div class="pulse-info">
+        <div class="pulse-title">État du jardin</div>
+        <div class="pulse-label pulse-{{ pulse_color }}">{{ pulse_label }}</div>
+        {% if pulse_components %}
+        <div class="pulse-components">
+          <div title="Humidité dans seuils">💧 {{ pulse_components.moisture }}/40</div>
+          <div title="Aucune alerte">⚠️ {{ pulse_components.alerts }}/30</div>
+          <div title="Plants en bonne santé">🌱 {{ pulse_components.plants }}/20</div>
+          <div title="Météo favorable">☀️ {{ pulse_components.weather }}/10</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       BANDEAU MÉTÉO RICHE 24h
+       ══════════════════════════════════════════════════════ -->
+  <div class="card weather-strip-card mb-3">
+    <div class="weather-strip-head">
+      <div class="weather-strip-now">
+        <div class="weather-now-icon">
+          {% if weather.frost_risk %}❄️
+          {% elif (weather.precip_mm_6h or 0) > 0 %}🌧
+          {% elif (weather.precip_prob_pct or 0) > 40 %}🌦
+          {% else %}☀️{% endif %}
+        </div>
+        <div class="weather-now-temp">{{ weather.temperature }}°</div>
+        <div class="weather-now-meta">
+          <div>{{ garden_location }}</div>
+          <div class="weather-now-sub">
+            <span title="Probabilité de pluie sur 6h">💧 {{ weather.precip_prob_pct | int }}%</span>
+            <span title="Vent">💨 {{ weather.wind_kmh }} km/h</span>
+            {% if temp_serre_c is not none %}<span title="Serre">🏠 {{ temp_serre_c }}°</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="weather-strip-source">
+        <span class="badge" style="font-size:10px;">{{ weather.source }}</span>
+      </div>
+    </div>
+    {% if forecast_24h %}
+    <div class="weather-strip-scroll" id="weather-forecast-strip">
+      {% for f in forecast_24h %}
+      <div class="forecast-pill">
+        <div class="forecast-hour">{{ f.hour }}</div>
+        <div class="forecast-icon">{{ f.icon }}</div>
+        <div class="forecast-temp">{{ f.temperature | round(0) | int }}°</div>
+        {% if f.precip_pct > 20 %}
+        <div class="forecast-rain">{{ f.precip_pct }}%</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
 
   <!-- ── Bandeau d'actions concrètes (arrosage, lucarne, récolte) ── -->
   {% if actions %}

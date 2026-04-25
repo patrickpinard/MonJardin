@@ -255,6 +255,101 @@ def dashboard():
                 "color": "green",
             })
 
+    # ── Hero "Aujourd'hui" : greeting + phrases contextuelles ──
+    now_h = datetime.now().hour
+    if   now_h < 6:  greeting = "Bonne soirée"
+    elif now_h < 12: greeting = "Bonjour"
+    elif now_h < 18: greeting = "Bel après-midi"
+    else:            greeting = "Bonsoir"
+    DAY_NAMES_FR = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+    today_label = f"{DAY_NAMES_FR[today.weekday()]} {today.day} {current_month_name.lower()}"
+
+    hero_lines = []
+    # Météo : si pluie ou risque gel
+    try:
+        precip_prob = weather.get("precip_prob_pct", 0) or 0
+        precip_mm   = weather.get("precip_mm_6h", 0) or 0
+        if weather.get("frost_risk"):
+            hero_lines.append({"icon":"❄️", "text": "Risque de gel — vannes et lucarne fermées préventivement."})
+        elif precip_mm > 5 or precip_prob > 70:
+            hero_lines.append({"icon":"🌧", "text": f"Pluie prévue ({precip_prob:.0f}%) — pas besoin d'arroser aujourd'hui."})
+        elif weather.get("temperature", 0) > 30:
+            hero_lines.append({"icon":"🌡", "text": f"Forte chaleur ({weather['temperature']}°C) — arrosage en soirée recommandé."})
+    except Exception:
+        pass
+    # Récoltes prêtes ce jour
+    harvests_today = [h for h in harvest_list if h.get("days_left", 99) <= 1]
+    if harvests_today:
+        names = ", ".join(set(h["vegetable_name"] for h in harvests_today[:3]))
+        hero_lines.append({"icon":"🧺", "text": f"À récolter : {names} ({len(harvests_today)} prêt(s))."})
+    # Lucarne ouverte longtemps
+    if actuator_status.get("roof_state") == "open":
+        last_open_log = (RoofLog.query.filter_by(action="open")
+                         .order_by(RoofLog.timestamp.desc()).first())
+        if last_open_log:
+            hours_open = (datetime.now(timezone.utc).replace(tzinfo=None) - last_open_log.timestamp).total_seconds() / 3600
+            if hours_open > 4:
+                hero_lines.append({"icon":"🪟", "text": f"Lucarne ouverte depuis {int(hours_open)}h — pense à la fermer ce soir."})
+    # Sol sec
+    if alerting_zones:
+        zone_names = ", ".join(zd["zone"].name for zd in alerting_zones[:2])
+        hero_lines.append({"icon":"💧", "text": f"Sol sec dans : {zone_names} — arrosage automatique au prochain cycle."})
+    # Aucune alerte → message positif
+    if not hero_lines:
+        hero_lines.append({"icon":"✨", "text": "Tout va bien — ton jardin n'a besoin de rien aujourd'hui."})
+
+    # ── Pulse Score : santé globale du jardin (0-100) ──────
+    # 40% humidité dans seuils, 30% pas d'alerte, 20% plants en bonne santé,
+    # 10% météo favorable
+    pulse_components = {}
+    # Humidité : % de zones dans les seuils (mc=ok)
+    n_zones = len(zones_data) or 1
+    n_ok    = sum(1 for zd in zones_data if zd["mc"] == "ok")
+    pulse_components["moisture"] = round(n_ok / n_zones * 40)
+    # Alertes : plein si zéro alerte
+    pulse_components["alerts"] = 30 if not alerting_zones else max(0, 30 - 10 * len(alerting_zones))
+    # Plants : pourcentage de plants sans retard de récolte
+    n_plants = len(all_plantings) or 1
+    n_late = sum(1 for p in all_plantings if p.expected_harvest_date and (p.expected_harvest_date - today).days < -7)
+    pulse_components["plants"] = round(max(0, (n_plants - n_late) / n_plants) * 20)
+    # Météo : pleine si pas de gel, canicule, ni vent fort
+    weather_score = 10
+    if weather.get("frost_risk"): weather_score -= 5
+    if (weather.get("temperature") or 0) > 32: weather_score -= 3
+    if (weather.get("wind_kmh") or 0) > 40: weather_score -= 2
+    pulse_components["weather"] = max(0, weather_score)
+    pulse_score = sum(pulse_components.values())
+    if   pulse_score >= 85: pulse_label, pulse_color = "Excellent", "green"
+    elif pulse_score >= 65: pulse_label, pulse_color = "Bon",       "green"
+    elif pulse_score >= 45: pulse_label, pulse_color = "Moyen",     "orange"
+    else:                   pulse_label, pulse_color = "À surveiller", "red"
+
+    # ── Forecast 24h structuré pour bandeau météo riche ────
+    weather_service = current_app.extensions["weather_service"]
+    forecast_24h = []
+    try:
+        full_forecast = weather_service.get_forecast_48h() or []
+        for f in full_forecast[:24]:
+            ts = f.get("hour") or f.get("timestamp")
+            if isinstance(ts, str):
+                try:
+                    dt_h = datetime.fromisoformat(ts.replace("Z","+00:00")).hour
+                except Exception:
+                    dt_h = 0
+            else:
+                dt_h = getattr(ts, "hour", 0)
+            forecast_24h.append({
+                "hour":        f"{dt_h:02d}h",
+                "temperature": f.get("temperature"),
+                "precip_pct":  int(f.get("precip_prob_pct", 0) or 0),
+                "precip_mm":   round(f.get("precip_mm", 0) or 0, 1),
+                "icon":        ("🌧" if (f.get("precip_mm", 0) or 0) > 0
+                                else "🌦" if (f.get("precip_prob_pct", 0) or 0) > 40
+                                else "☀️"),
+            })
+    except Exception:
+        forecast_24h = []
+
     return render_template(
         "dashboard.html",
         zones_data=zones_data,
@@ -270,6 +365,17 @@ def dashboard():
         actions=actions,
         monthly_tasks=monthly_tasks,
         current_month_name=current_month_name,
+        # Hero
+        hero_greeting=greeting,
+        hero_today_label=today_label,
+        hero_lines=hero_lines,
+        # Pulse
+        pulse_score=pulse_score,
+        pulse_label=pulse_label,
+        pulse_color=pulse_color,
+        pulse_components=pulse_components,
+        # Forecast
+        forecast_24h=forecast_24h,
     )
 
 

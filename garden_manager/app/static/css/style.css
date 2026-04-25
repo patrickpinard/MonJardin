@@ -1077,6 +1077,178 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   border-left: 3px solid var(--green);
 }
 
+/* ══════════════════════════════════════════════════════
+   HERO + PULSE SCORE (dashboard)
+   ══════════════════════════════════════════════════════ */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Hero "Aujourd'hui" ── */
+.hero-today {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(48,209,88,.04) 100%);
+  border-left: 3px solid var(--green);
+}
+.hero-today-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.hero-greet {
+  font-size: 22px; font-weight: 700; letter-spacing: -.4px;
+  color: var(--text-primary);
+}
+.hero-owner { color: var(--green); }
+.hero-date {
+  font-size: 12px; color: var(--text-tertiary); font-weight: 500;
+  text-transform: capitalize;
+}
+.hero-lines { display: flex; flex-direction: column; gap: 6px; }
+.hero-line {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.4;
+}
+.hero-line-icon {
+  font-size: 18px; line-height: 1; flex-shrink: 0;
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+}
+.hero-line-text { color: var(--text-primary); }
+
+/* ── Pulse Score ── */
+.pulse-card {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  position: relative;
+}
+.pulse-svg { width: 100px; height: 100px; grid-row: 1; grid-column: 1; }
+.pulse-bg {
+  fill: none; stroke: var(--bg-tertiary); stroke-width: 8;
+}
+.pulse-fill {
+  fill: none; stroke-width: 9; stroke-linecap: round;
+  transition: stroke-dasharray .8s var(--ease);
+}
+.pulse-fill.pulse-green  { stroke: var(--green);  filter: drop-shadow(0 0 4px rgba(48,209,88,.4)); }
+.pulse-fill.pulse-orange { stroke: var(--orange); filter: drop-shadow(0 0 4px rgba(255,159,10,.4)); }
+.pulse-fill.pulse-red    { stroke: var(--red);    filter: drop-shadow(0 0 4px rgba(255,69,58,.4)); }
+.pulse-center {
+  position: absolute; left: 14px; top: 14px;
+  width: 100px; height: 100px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.pulse-value {
+  font-size: 28px; font-weight: 800; letter-spacing: -1px;
+  line-height: 1;
+}
+.pulse-value.pulse-green  { color: var(--green); }
+.pulse-value.pulse-orange { color: var(--orange); }
+.pulse-value.pulse-red    { color: var(--red); }
+.pulse-max {
+  font-size: 9px; color: var(--text-tertiary); font-weight: 600;
+  margin-top: 2px;
+}
+.pulse-info { min-width: 0; }
+.pulse-title {
+  font-size: 10px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.pulse-label {
+  font-size: 17px; font-weight: 700; margin-top: 2px;
+}
+.pulse-label.pulse-green  { color: var(--green); }
+.pulse-label.pulse-orange { color: var(--orange); }
+.pulse-label.pulse-red    { color: var(--red); }
+.pulse-components {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px;
+  margin-top: 8px; font-size: 11px; color: var(--text-tertiary);
+}
+@media (max-width: 480px) {
+  .pulse-card { grid-template-columns: 80px 1fr; padding: 12px; }
+  .pulse-svg { width: 80px; height: 80px; }
+  .pulse-center { left: 12px; top: 12px; width: 80px; height: 80px; }
+  .pulse-value { font-size: 24px; }
+}
+
+/* ══════════════════════════════════════════════════════
+   BANDEAU MÉTÉO RICHE 24h
+   ══════════════════════════════════════════════════════ */
+.weather-strip-card {
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(10,132,255,.04) 100%);
+}
+.weather-strip-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; margin-bottom: 10px;
+}
+.weather-strip-now {
+  display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;
+}
+.weather-now-icon {
+  font-size: 42px; line-height: 1; flex-shrink: 0;
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+}
+.weather-now-temp {
+  font-size: 36px; font-weight: 700; letter-spacing: -1px;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.weather-now-meta {
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: 13px; color: var(--text-secondary); min-width: 0;
+}
+.weather-now-sub {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  font-size: 11px; color: var(--text-tertiary);
+}
+.weather-strip-source { flex-shrink: 0; }
+.weather-strip-scroll {
+  display: flex; gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0;
+  scroll-snap-type: x proximity;
+}
+.weather-strip-scroll::-webkit-scrollbar { height: 4px; }
+.weather-strip-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-md); border-radius: 2px;
+}
+.forecast-pill {
+  flex-shrink: 0;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  min-width: 56px;
+  scroll-snap-align: start;
+  transition: border-color var(--t);
+}
+.forecast-pill:hover { border-color: var(--blue); }
+.forecast-hour {
+  font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+  letter-spacing: .3px;
+}
+.forecast-icon { font-size: 18px; line-height: 1; }
+.forecast-temp {
+  font-size: 13px; font-weight: 700; color: var(--text-primary);
+}
+.forecast-rain {
+  font-size: 9px; color: var(--blue); font-weight: 700;
+}
+
 /* ── Bandeau d'actions concrètes (dashboard) ──────────────── */
 .actions-banner {
   display: flex; flex-direction: column; gap: 6px;
