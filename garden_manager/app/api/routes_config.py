@@ -229,6 +229,10 @@ def add_planting():
     except Exception as e:
         flash(f"Erreur lors de l'ajout : {e}", "danger")
 
+    # Redirige vers la zone si demandé (modal Quick-Plant), sinon Plantation
+    redirect_to = form.get("redirect_to", "")
+    if redirect_to == "zone" and zone_id:
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
     return redirect(url_for("config.planting_page"))
 
 
