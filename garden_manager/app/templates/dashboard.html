@@ -5,6 +5,7 @@
 {% set harvest_list = harvest_list if harvest_list is defined else [] %}
 {% set today_date = today_date if today_date is defined else none %}
 {% set alerting_zones = alerting_zones if alerting_zones is defined else [] %}
+{% set actions = actions if actions is defined else [] %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
@@ -20,6 +21,25 @@
 </div>
 
 <div class="page-body">
+
+  <!-- ── Bandeau d'actions concrètes (arrosage, lucarne, récolte) ── -->
+  {% if actions %}
+  <div class="actions-banner mb-3">
+    {% for a in actions %}
+    <div class="action-row action-{{ a.color }}">
+      <div class="action-icon">{{ a.icon }}</div>
+      <div class="action-body">
+        <div class="action-label">{{ a.label }}</div>
+        <div class="action-detail">{{ a.detail }}</div>
+      </div>
+      <button type="button" class="action-btn action-btn-{{ a.color }}"
+              onclick="{{ a.btn_action }}">
+        {{ a.btn_label }}
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- ── Bandeau d'alerte sticky (zones sèches) ── -->
   {% if alerting_zones %}

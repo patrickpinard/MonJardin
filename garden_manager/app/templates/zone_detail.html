@@ -313,72 +313,46 @@
     </div>
     {% endif %}
 
-    <!-- Cartes plantations (style visuel) -->
+    <!-- Plan visuel des plantations — grille emoji style App Store -->
     {% set active_plantings = plantings | selectattr('status','eq','active') | list %}
     {% set other_plantings = plantings | rejectattr('status','eq','active') | list %}
-    {% if active_plantings %}
     <div class="card mb-3">
       <div class="card-title">
-        <i class="bi bi-flower2"></i> Plants actifs
-        <a href="/planting" class="btn btn-secondary btn-sm" style="margin-left:auto;"><i class="bi bi-plus"></i> Ajouter</a>
+        <i class="bi bi-grid-1x2-fill"></i> Plan visuel
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
+          Tap pour modifier · cellule + pour planter
+        </span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;">
-        {% for p in active_plantings %}
-        {% set info = plant_info.get(p.vegetable_name, {}) %}
-        {% set space = info.get('space_cm', 30) %}
-        {% set space_row = info.get('space_row_cm', space) %}
-        {% set depth = info.get('depth_cm') %}
-        {% set count_l = (_zone_length * 100 / space) | int %}
-        {% set count_w = (_zone_width  * 100 / space_row) | int %}
-        {% set total = count_l * count_w %}
-        {% if p.planted_date and p.expected_harvest_date %}
-          {% set total_days = (p.expected_harvest_date - p.planted_date).days %}
-          {% set elapsed_days = (today_date - p.planted_date).days %}
-          {% set days_left = (p.expected_harvest_date - today_date).days %}
-          {% if total_days > 0 %}
-            {% set pct = [[((elapsed_days / total_days) * 100) | int, 0] | max, 100] | min %}
-          {% else %}{% set pct = 100 %}{% set days_left = 0 %}{% endif %}
-        {% else %}{% set pct = 0 %}{% set days_left = none %}{% endif %}
-        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;display:flex;flex-direction:column;gap:6px;">
-          <div style="font-size:32px;text-align:center;line-height:1.2;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;">{{ info.get('emoji','🌱') }}</div>
-          <div style="font-weight:700;font-size:13px;text-align:center;">{{ p.vegetable_name }}</div>
-          {% if p.variety %}<div style="font-size:11px;color:var(--text-tertiary);text-align:center;">{{ p.variety }}</div>{% endif %}
-          <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;">
-            <span class="badge" style="background:rgba(10,132,255,.1);color:var(--blue);font-size:10px;" title="Espacement entre plants{% if space_row != space %} · inter-rang {{ space_row }}cm{% endif %}">↔ {{ space }}{% if space_row != space %}×{{ space_row }}{% endif %} cm</span>
-            {% if depth %}<span class="badge" style="background:rgba(139,99,20,.15);color:var(--orange);font-size:10px;">↓ {{ depth }}cm</span>{% endif %}
-            <span class="attr {% if info.get('water_need') == 'high' %}water-high{% elif info.get('water_need') == 'low' %}water-low{% else %}water-medium{% endif %}" style="font-size:10px;">{{ {'high':'💧💧💧','medium':'💧💧','low':'💧'}.get(info.get('water_need','medium'), '💧💧') }}</span>
-          </div>
-          <div style="font-size:11px;color:var(--text-tertiary);text-align:center;">~{{ total }} plants ({{ count_l }}×{{ count_w }})</div>
-          {% if pct > 0 %}
-          <div>
-            <div style="height:4px;border-radius:2px;background:var(--bg-tertiary);overflow:hidden;">
-              <div style="height:100%;width:{{ pct }}%;background:{% if days_left is not none and days_left < 0 %}var(--red){% elif days_left is not none and days_left <= 7 %}var(--orange){% else %}var(--green){% endif %};"></div>
-            </div>
-            <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;text-align:center;">
-              {% if days_left is not none %}
-                {% if days_left < 0 %}⚠️ {{ -days_left }}j de retard
-                {% elif days_left == 0 %}🎉 Récolte aujourd'hui
-                {% else %}{{ days_left }}j avant récolte{% endif %}
-              {% endif %}
-            </div>
-          </div>
+      <div class="plant-grid">
+        {% for s in plant_species_summary %}
+        <div class="plant-cell"
+             onclick="openEditModal({{ s.rep_id }}, '{{ s.name|e }}', '{{ s.variety|e }}', '{{ s.harvest }}', '{{ s.status }}', '{{ s.water_need }}', '{{ s.notes|e }}', 'zone', {{ s.count }})">
+          <span class="plant-cell-emoji">{{ s.emoji }}</span>
+          <span class="plant-cell-name">{{ s.name }}</span>
+          {% if s.count > 1 %}<span class="plant-cell-count">{{ s.count }}×</span>{% endif %}
+          {% if s.days_left is not none and s.days_left <= 14 %}
+          <span class="plant-cell-harvest {% if s.days_left < 0 %}late{% elif s.days_left <= 3 %}soon{% endif %}">
+            {% if s.days_left < 0 %}⚠️ {{ -s.days_left }}j
+            {% elif s.days_left == 0 %}🎉
+            {% else %}{{ s.days_left }}j{% endif %}
+          </span>
           {% endif %}
-          {% set _veg_active_count = active_plantings | selectattr('vegetable_name','eq', p.vegetable_name) | list | length %}
-          <div style="display:flex;gap:6px;margin-top:auto;">
-            <button type="button" class="btn btn-ghost btn-xs" style="flex:1;"
-              onclick="openEditModal({{ p.id }},'{{ p.vegetable_name|e }}','{{ (p.variety or '')|e }}','{{ p.expected_harvest_date.strftime('%Y-%m-%d') if p.expected_harvest_date else '' }}','{{ p.status }}','{{ p.water_need }}','{{ (p.notes or '')|e }}','zone',{{ _veg_active_count }})">
-              <i class="bi bi-pencil"></i> Modifier
-            </button>
-            <button type="button" class="btn btn-xs" style="background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.25);" title="Supprimer ce plant"
-              onclick="openDeleteModal({{ p.id }}, '{{ p.vegetable_name|e }}', '{{ (p.variety or '')|e }}', '{{ info.get('emoji','🌱') }}')">
-              <i class="bi bi-trash3"></i>
-            </button>
-          </div>
+        </div>
+        {% endfor %}
+        <!-- Cellules vides "+ planter" -->
+        {% for _ in range(6) %}
+        <div class="plant-cell plant-cell-empty" onclick="openQuickPlant({{ zone.zone_id }})" title="Ajouter une plantation">
+          <span class="plant-cell-emoji">+</span>
+          <span class="plant-cell-name">Planter</span>
         </div>
         {% endfor %}
       </div>
+      {% if not active_plantings %}
+      <div style="text-align:center;padding:12px 16px;font-size:12px;color:var(--text-tertiary);">
+        Aucune plantation active. Cliquez sur une cellule <strong>+</strong> pour planter.
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
 
     <!-- Tableau espacement -->
     {% if active_plantings %}
@@ -922,6 +896,93 @@
     </form>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL QUICK-PLANT — ajout rapide depuis cellule vide
+     ══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="qp-overlay">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-icon" style="background:rgba(48,209,88,.15);color:var(--green);">
+        <i class="bi bi-flower3"></i>
+      </div>
+      <div class="modal-title">Planter dans <span style="color:var(--green);">{{ zone.name }}</span></div>
+      <div class="modal-body" style="font-size:13px;color:var(--text-secondary);margin-top:4px;">
+        Choisissez un légume puis sa quantité.
+      </div>
+    </div>
+    <form id="qp-form" method="post" action="{{ url_for('config.add_planting') }}" style="padding:0 20px 20px;">
+      <input type="hidden" name="zone_id"        id="qp-zone-id" value="{{ zone.zone_id }}">
+      <input type="hidden" name="vegetable_name" id="qp-veg-name">
+      <input type="hidden" name="redirect_to"    value="zone">
+
+      <!-- Recherche -->
+      <div style="margin-bottom:10px;">
+        <input type="text" id="qp-search" placeholder="Rechercher un légume…" autocomplete="off"
+          style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);"
+          oninput="qpFilterList()">
+      </div>
+
+      <!-- Filtres catégorie -->
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">
+        <button type="button" class="filter-chip active" data-qp-cat="all"     onclick="qpSetCat(this,'all')">Tous</button>
+        <button type="button" class="filter-chip"        data-qp-cat="légume"  onclick="qpSetCat(this,'légume')">🥬 Légumes</button>
+        <button type="button" class="filter-chip"        data-qp-cat="herbe"   onclick="qpSetCat(this,'herbe')">🌿 Herbes</button>
+        <button type="button" class="filter-chip"        data-qp-cat="fruit"   onclick="qpSetCat(this,'fruit')">🍓 Fruits</button>
+        <button type="button" class="filter-chip"        data-qp-cat="fleur"   onclick="qpSetCat(this,'fleur')">🌸 Fleurs</button>
+      </div>
+
+      <!-- Liste légumes -->
+      <div id="qp-veg-list" style="max-height:320px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;padding:4px;border:1px solid var(--border);border-radius:var(--r-md);">
+        {% set _all_vegs = plant_info.values() | list %}
+        {% for v in _all_vegs %}
+        <button type="button" class="qp-veg-item"
+                data-qp-name="{{ v.name|e }}"
+                data-qp-cat="{{ v.get('category','légume') }}"
+                data-qp-emoji="{{ v.get('emoji','🌱') }}"
+                onclick="qpSelectVeg(this)">
+          <span class="qp-veg-emoji">{{ v.get('emoji','🌱') }}</span>
+          <span class="qp-veg-name">{{ v.name }}</span>
+        </button>
+        {% endfor %}
+      </div>
+
+      <!-- Sélection actuelle + quantité -->
+      <div id="qp-selection" style="display:none;margin-top:14px;padding:12px;background:var(--bg-secondary);border:1px solid var(--green);border-radius:var(--r-md);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span id="qp-sel-emoji" style="font-size:32px;line-height:1;"></span>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:14px;" id="qp-sel-name">—</div>
+            <div style="font-size:11px;color:var(--text-tertiary);" id="qp-sel-cat"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:3px;">Variété (optionnel)</label>
+            <input type="text" name="variety" placeholder="ex. Cœur de bœuf"
+              style="width:100%;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);padding:7px 10px;font-size:13px;font-family:var(--font);">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:3px;">Quantité</label>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button type="button" onclick="qpAdjustQty(-1)" style="width:30px;height:32px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);cursor:pointer;font-size:16px;">−</button>
+              <input type="number" name="quantity" id="qp-qty" value="1" min="1" max="50"
+                style="flex:1;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);padding:7px 10px;font-size:13px;text-align:center;font-family:var(--font);">
+              <button type="button" onclick="qpAdjustQty(1)" style="width:30px;height:32px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);cursor:pointer;font-size:16px;">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin:14px -20px -20px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <button type="button" class="modal-btn cancel" onclick="closeQuickPlant()">Annuler</button>
+        <button type="submit" class="modal-btn" id="qp-submit" style="color:var(--green);" disabled>
+          <i class="bi bi-flower3"></i> Planter
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -1170,5 +1231,65 @@ window.addEventListener('beforeunload', () => {
 });
 // Refresh immédiat après commande manuelle (controls.js appelle loadCurrentData())
 window.loadCurrentData = refreshZoneStatus;
+
+// ── Modal Quick-Plant : ajout rapide depuis cellule vide ─
+function openQuickPlant(zoneId) {
+  document.getElementById('qp-zone-id').value = zoneId;
+  document.getElementById('qp-veg-name').value = '';
+  document.getElementById('qp-search').value = '';
+  document.getElementById('qp-selection').style.display = 'none';
+  document.getElementById('qp-submit').disabled = true;
+  document.getElementById('qp-qty').value = 1;
+  // Reset filtres
+  document.querySelectorAll('[data-qp-cat]').forEach(b => b.classList.remove('active'));
+  const allBtn = document.querySelector('[data-qp-cat="all"]');
+  if (allBtn) allBtn.classList.add('active');
+  document.querySelectorAll('.qp-veg-item').forEach(el => el.style.display = '');
+  document.querySelectorAll('.qp-veg-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('qp-overlay').classList.add('visible');
+  setTimeout(() => document.getElementById('qp-search').focus(), 150);
+}
+function closeQuickPlant() {
+  document.getElementById('qp-overlay').classList.remove('visible');
+}
+document.getElementById('qp-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeQuickPlant();
+});
+
+let _qpCat = 'all';
+function qpSetCat(btn, cat) {
+  document.querySelectorAll('[data-qp-cat]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _qpCat = cat;
+  qpFilterList();
+}
+function qpFilterList() {
+  const q = (document.getElementById('qp-search').value || '').trim().toLowerCase();
+  document.querySelectorAll('.qp-veg-item').forEach(el => {
+    const name = (el.dataset.qpName || '').toLowerCase();
+    const cat  = el.dataset.qpCat || 'légume';
+    const matchSearch = !q || name.includes(q);
+    const matchCat    = (_qpCat === 'all') || (cat === _qpCat);
+    el.style.display = (matchSearch && matchCat) ? '' : 'none';
+  });
+}
+function qpSelectVeg(btn) {
+  document.querySelectorAll('.qp-veg-item').forEach(el => el.classList.remove('selected'));
+  btn.classList.add('selected');
+  const name  = btn.dataset.qpName;
+  const emoji = btn.dataset.qpEmoji;
+  const cat   = btn.dataset.qpCat;
+  document.getElementById('qp-veg-name').value = name;
+  document.getElementById('qp-sel-name').textContent = name;
+  document.getElementById('qp-sel-emoji').textContent = emoji;
+  document.getElementById('qp-sel-cat').textContent = cat;
+  document.getElementById('qp-selection').style.display = '';
+  document.getElementById('qp-submit').disabled = false;
+}
+function qpAdjustQty(delta) {
+  const inp = document.getElementById('qp-qty');
+  const v = Math.max(1, Math.min(50, (parseInt(inp.value) || 1) + delta));
+  inp.value = v;
+}
 </script>
 {% endblock %}

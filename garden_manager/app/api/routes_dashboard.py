@@ -137,6 +137,62 @@ def dashboard():
                 })
     harvest_list.sort(key=lambda x: x["days_left"])
 
+    # ── Bandeau d'actions concrètes (à faire maintenant) ──
+    actions = []
+    # 1. Zones à arroser (sol sec + mode auto/manual + vanne fermée)
+    for zd in zones_data:
+        if zd["mc"] == "low" and zd["zone"].irrigation_mode != "disabled" and zd["valve_state"] == "close":
+            actions.append({
+                "kind": "water",
+                "icon": "💧",
+                "label": f"Arroser {zd['zone'].name}",
+                "detail": f"Sol sec ({zd['moisture']}%)",
+                "zone_id": zd["zone"].zone_id,
+                "btn_label": "Arroser",
+                "btn_action": f"setValve({zd['zone'].zone_id}, 'open')",
+                "color": "red",
+            })
+    # 2. Lucarne ouverte depuis longtemps (>3h)
+    if actuator_status.get("roof_state") == "open":
+        last_open = (RoofLog.query
+                     .filter_by(action="open")
+                     .order_by(RoofLog.timestamp.desc())
+                     .first())
+        if last_open:
+            hours_open = (datetime.now(timezone.utc).replace(tzinfo=None) - last_open.timestamp).total_seconds() / 3600
+            if hours_open > 3:
+                actions.append({
+                    "kind": "roof",
+                    "icon": "🪟",
+                    "label": "Lucarne serre ouverte",
+                    "detail": f"Depuis {int(hours_open)}h — pensez à fermer",
+                    "zone_id": 1,
+                    "btn_label": "Fermer",
+                    "btn_action": "setRoof('close')",
+                    "color": "orange",
+                })
+    # 3. Récoltes à faire dans les 3 prochains jours
+    soon_harvest = [p for p in all_plantings
+                    if p.expected_harvest_date and 0 <= (p.expected_harvest_date - today).days <= 3]
+    if soon_harvest:
+        from collections import defaultdict as _dd
+        by_zone = _dd(list)
+        for p in soon_harvest:
+            by_zone[p.zone_id].append(p)
+        for zid, plist in by_zone.items():
+            zname = zone_name_map.get(zid, f"Zone {zid}")
+            names = ", ".join(set(p.vegetable_name for p in plist))
+            actions.append({
+                "kind": "harvest",
+                "icon": "🧺",
+                "label": f"Récolte {zname}",
+                "detail": f"{len(plist)} plant(s) prêt(s) : {names}",
+                "zone_id": zid,
+                "btn_label": "Voir",
+                "btn_action": f"location.href='/zones/{zid}'",
+                "color": "green",
+            })
+
     return render_template(
         "dashboard.html",
         zones_data=zones_data,
@@ -149,6 +205,7 @@ def dashboard():
         harvest_list=harvest_list,
         today_date=today,
         alerting_zones=alerting_zones,
+        actions=actions,
     )
 
 
@@ -308,6 +365,14 @@ def zone_detail(zone_id: int):
         rows_fit = max(1, int(zone_width  * 100 / space_row))
         capacity = cols_fit * rows_fit
         used_area_cm2 += space * space_row * count
+
+        # Représentant : la plantation la plus récente du groupe (pour openEditModal)
+        rep = max(plist, key=lambda p: p.id)
+        # Date de récolte la plus tôt et progression
+        harvest_dates = [p.expected_harvest_date for p in plist if p.expected_harvest_date]
+        next_harvest  = min(harvest_dates) if harvest_dates else None
+        days_left = (next_harvest - date.today()).days if next_harvest else None
+
         plant_species_summary.append({
             "name":      vname,
             "count":     count,
@@ -317,6 +382,13 @@ def zone_detail(zone_id: int):
             "color":     info.get("color_primary", "#4CAF50"),
             "water_need": info.get("water_need", "medium"),
             "capacity":  capacity,
+            # Champs pour le clic dans la grille visuelle
+            "rep_id":    rep.id,
+            "variety":   rep.variety or "",
+            "harvest":   next_harvest.isoformat() if next_harvest else "",
+            "days_left": days_left,
+            "status":    rep.status,
+            "notes":     rep.notes or "",
         })
 
     total_area_cm2 = zone_length * 100 * zone_width * 100
