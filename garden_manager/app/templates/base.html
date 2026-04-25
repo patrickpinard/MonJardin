@@ -54,11 +54,8 @@
       <a href="/plants" class="nav-item {% if '/plants' in request.path %}active{% endif %}">
         <i class="bi bi-flower1"></i> Encyclopédie
       </a>
-      <a href="/planting" class="nav-item {% if '/planting' in request.path %}active{% endif %}">
-        <i class="bi bi-calendar3"></i> Plantation
-      </a>
-      <a href="/conseils" class="nav-item {% if '/conseils' in request.path %}active{% endif %}">
-        <i class="bi bi-lightbulb-fill"></i> Conseils
+      <a href="/conseils" class="nav-item {% if '/conseils' in request.path or '/planting' in request.path %}active{% endif %}">
+        <i class="bi bi-lightbulb-fill"></i> Conseils & plantations
       </a>
       <a href="/history" class="nav-item {% if '/history' in request.path %}active{% endif %}">
         <i class="bi bi-graph-up"></i> Graphiques
@@ -244,11 +241,8 @@
   <a href="/plants" class="mobile-menu-item {% if '/plants' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-flower1"></i> Encyclopédie
   </a>
-  <a href="/planting" class="mobile-menu-item {% if '/planting' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-calendar3"></i> Plantation
-  </a>
-  <a href="/conseils" class="mobile-menu-item {% if '/conseils' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
-    <i class="bi bi-lightbulb-fill"></i> Conseils
+  <a href="/conseils" class="mobile-menu-item {% if '/conseils' in request.path or '/planting' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-lightbulb-fill"></i> Conseils &amp; plantations
   </a>
   <a href="/history" class="mobile-menu-item {% if '/history' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-graph-up"></i> Graphiques
@@ -300,8 +294,8 @@
     <a href="/conseils" class="mobile-nav-item {% if '/conseils' in request.path %}active{% endif %}">
       <i class="bi bi-lightbulb-fill"></i><span>Conseils</span>
     </a>
-    <a href="/planting" class="mobile-nav-item {% if '/planting' in request.path %}active{% endif %}">
-      <i class="bi bi-calendar3"></i><span>Plants</span>
+    <a href="/plants" class="mobile-nav-item {% if request.path.startswith('/plants') %}active{% endif %}">
+      <i class="bi bi-flower1"></i><span>Plantes</span>
     </a>
     <a href="/journal" class="mobile-nav-item {% if '/journal' in request.path or '/history' in request.path %}active{% endif %}">
       <i class="bi bi-journal-text"></i><span>Journal</span>

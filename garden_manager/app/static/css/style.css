@@ -494,6 +494,36 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .plant-grid-mini .plant-cell-empty .plant-cell-emoji { font-size: 18px; }
 
+/* ── Cards plantes saisonnières (page Conseils) ────────── */
+.seasonal-plant-card {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  padding: 12px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  text-align: center;
+  transition: all .15s var(--ease);
+}
+.seasonal-plant-card:hover {
+  border-color: var(--green);
+  background: rgba(48,209,88,.05);
+  transform: translateY(-2px);
+}
+.seasonal-plant-emoji {
+  font-size: 32px; line-height: 1;
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+}
+.seasonal-plant-name {
+  font-size: 13px; font-weight: 700; color: var(--text-primary);
+}
+.seasonal-plant-meta {
+  font-size: 10px; color: var(--text-tertiary);
+  display: flex; gap: 4px; align-items: center; justify-content: center;
+  flex-wrap: wrap;
+}
+
 /* ── Modal Quick-Plant : recommandations légume ────────── */
 .qp-reco {
   display: inline-flex; align-items: center; gap: 4px;
@@ -1008,6 +1038,33 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .task-check {
   flex-shrink: 0; color: var(--green); font-size: 18px;
 }
+.task-actions {
+  flex-shrink: 0; display: flex; gap: 4px; align-items: center;
+}
+.task-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--bg-primary);
+  color: var(--text-secondary); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all .15s var(--ease);
+  font-size: 14px;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.task-btn:hover { transform: scale(1.08); }
+.task-btn:active { transform: scale(0.94); }
+.task-btn-validate {
+  background: rgba(48,209,88,.1);
+  border-color: rgba(48,209,88,.35);
+  color: var(--green);
+}
+.task-btn-validate:hover { background: var(--green); color: #fff; }
+.task-btn-dismiss {
+  background: rgba(255,69,58,.06);
+  border-color: rgba(255,69,58,.25);
+  color: var(--red);
+}
+.task-btn-dismiss:hover { background: var(--red); color: #fff; }
 .task-row.task-done {
   opacity: .5;
 }
@@ -2117,10 +2174,21 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   background: var(--bg-primary); border-radius: 16px;
   border: 1px solid var(--border-md);
   width: 100%; max-width: 340px;
+  max-height: calc(100vh - 40px);
   box-shadow: 0 24px 60px rgba(0,0,0,.5);
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   transform: scale(.93) translateY(8px);
   transition: transform .2s;
+  /* Footer (modal-actions) sticky pour rester visible pendant le scroll */
+  display: flex; flex-direction: column;
+}
+.modal-box .modal-actions {
+  position: sticky; bottom: 0;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  z-index: 1;
 }
 .modal-overlay.visible .modal-box { transform: scale(1) translateY(0); }
 .modal-header {

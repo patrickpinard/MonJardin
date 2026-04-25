@@ -263,23 +263,38 @@
         {% endif %}
       </div>
       {% if monthly_tasks %}
-      <div class="monthly-tasks">
+      <div class="monthly-tasks" id="monthly-tasks-list">
         {% for t in monthly_tasks %}
-        <div class="task-row task-{{ t.kind }} {% if t.done %}task-done{% endif %}">
+        {% set _task_id = (t.kind ~ '-' ~ (t.label | replace(' ', '_'))) %}
+        <div class="task-row task-{{ t.kind }} {% if t.done %}task-done{% endif %}"
+             data-task-id="{{ _task_id }}">
           <span class="task-icon">{{ t.icon }}</span>
           <div class="task-body">
             <div class="task-label">{{ t.label }}</div>
             <div class="task-detail">{{ t.detail }}</div>
           </div>
-          {% if t.done %}
-          <span class="task-check" title="Déjà planté"><i class="bi bi-check-circle-fill"></i></span>
-          {% endif %}
+          <div class="task-actions">
+            {% if t.done %}
+            <span class="task-check" title="Déjà fait"><i class="bi bi-check-circle-fill"></i></span>
+            {% else %}
+            <button type="button" class="task-btn task-btn-validate"
+                    onclick="validateTask(this)" title="Marquer comme fait">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button type="button" class="task-btn task-btn-dismiss"
+                    onclick="dismissTask(this)" title="Pas intéressé / déjà fait ailleurs">
+              <i class="bi bi-x-lg"></i>
+            </button>
+            {% endif %}
+          </div>
         </div>
         {% endfor %}
       </div>
-      <div style="margin-top:14px;padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:12px;color:var(--text-tertiary);line-height:1.5;">
-        <i class="bi bi-info-circle"></i>
-        Tâches générées automatiquement depuis les mois optimaux (région suisse) et vos plantations actives.
+      <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:12px;color:var(--text-tertiary);line-height:1.5;flex-wrap:wrap;gap:8px;">
+        <span><i class="bi bi-info-circle"></i> Mois optimaux (région suisse) et plantations actives.</span>
+        <button type="button" class="btn btn-ghost btn-xs" onclick="resetTasks()" title="Réafficher les tâches masquées">
+          <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+        </button>
       </div>
       {% else %}
       <div class="empty-state" style="padding:30px 20px;text-align:center;">
@@ -418,6 +433,54 @@
   // Démarre le polling temps réel (cartes zones + lucarne)
   if (typeof initDashboard === 'function') initDashboard();
   loadForecast();
+
+  // ── Tâches du mois : valider / annuler (persisté localStorage) ──
+  const _MONTH_KEY = 'tasks-' + new Date().getFullYear() + '-' + (new Date().getMonth() + 1);
+  function _getTaskState() {
+    try { return JSON.parse(localStorage.getItem(_MONTH_KEY) || '{}'); } catch { return {}; }
+  }
+  function _setTaskState(s) {
+    try { localStorage.setItem(_MONTH_KEY, JSON.stringify(s)); } catch {}
+  }
+  function _applyTaskStates() {
+    const state = _getTaskState();
+    document.querySelectorAll('#monthly-tasks-list .task-row').forEach(row => {
+      const id = row.dataset.taskId;
+      const st = state[id];
+      if (st === 'validated') {
+        row.classList.add('task-done');
+        const actions = row.querySelector('.task-actions');
+        if (actions) actions.innerHTML = '<span class="task-check" title="Validée"><i class="bi bi-check-circle-fill"></i></span>';
+      } else if (st === 'dismissed') {
+        row.style.display = 'none';
+      }
+    });
+  }
+  function validateTask(btn) {
+    const row = btn.closest('.task-row');
+    if (!row) return;
+    const state = _getTaskState();
+    state[row.dataset.taskId] = 'validated';
+    _setTaskState(state);
+    _applyTaskStates();
+  }
+  function dismissTask(btn) {
+    const row = btn.closest('.task-row');
+    if (!row) return;
+    const state = _getTaskState();
+    state[row.dataset.taskId] = 'dismissed';
+    _setTaskState(state);
+    row.style.transition = 'opacity .2s, transform .2s';
+    row.style.opacity = '0'; row.style.transform = 'translateX(20px)';
+    setTimeout(() => { row.style.display = 'none'; }, 220);
+  }
+  function resetTasks() {
+    try { localStorage.removeItem(_MONTH_KEY); } catch {}
+    location.reload();
+  }
+  document.addEventListener('DOMContentLoaded', _applyTaskStates);
+  // Si DOM déjà prêt (script chargé après)
+  if (document.readyState !== 'loading') _applyTaskStates();
 
   function switchDashTab(btn, tab) {
     document.querySelectorAll('#dash-tabs .time-tab').forEach(b => b.classList.remove('active'));

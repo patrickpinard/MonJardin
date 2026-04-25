@@ -885,7 +885,25 @@ def admin_delete_user(uid):
 
 @dashboard_bp.get("/conseils")
 def conseils():
-    return render_template("conseils.html")
+    advisor = current_app.extensions["planting_advisor"]
+    current_month = date.today().month
+    MONTH_NAMES_FR = ["", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+    seasonal_plants = advisor.get_seasonal_advice(current_month, limit=20)
+    # Enrichir chaque légume avec son emoji depuis la DB plants
+    plants_db = _load_plants_db()
+    info_map = {p["name"]: p for p in plants_db}
+    for v in seasonal_plants:
+        if v["name"] in info_map:
+            v["emoji"]    = info_map[v["name"]].get("emoji", "🌱")
+            v["category"] = info_map[v["name"]].get("category", "légume")
+            v["difficulty"] = info_map[v["name"]].get("difficulty", "medium")
+    return render_template(
+        "conseils.html",
+        seasonal_plants=seasonal_plants,
+        current_month=current_month,
+        current_month_name=MONTH_NAMES_FR[current_month],
+    )
 
 
 @dashboard_bp.get("/about")

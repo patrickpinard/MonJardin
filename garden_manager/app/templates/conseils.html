@@ -129,16 +129,47 @@
 {% endblock %}
 
 {% block content %}
+{% set seasonal_plants = seasonal_plants if seasonal_plants is defined else [] %}
+{% set current_month_name = current_month_name if current_month_name is defined else 'Ce mois' %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
-      <h1 class="page-title">💡 Conseils</h1>
-      <div class="page-subtitle">Bonnes pratiques · Astuces · Calendrier saisonnier</div>
+      <h1 class="page-title">💡 Conseils &amp; plantations</h1>
+      <div class="page-subtitle">Légumes du mois · Compagnonnage · Bonnes pratiques</div>
     </div>
   </div>
 </div>
 
 <div class="page-body" style="display:flex;flex-direction:column;gap:24px;padding-top:20px;">
+
+  <!-- ── À planter ce mois (déplacé depuis Plantation) ── -->
+  {% if seasonal_plants %}
+  <div class="card">
+    <div class="card-title">
+      <i class="bi bi-calendar3-event-fill" style="color:var(--green);"></i>
+      À planter en {{ current_month_name }} — {{ seasonal_plants | length }} suggestions
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">
+      {% for v in seasonal_plants %}
+      <a href="/plants/{{ v.name }}" class="seasonal-plant-card">
+        <div class="seasonal-plant-emoji">{{ v.get('emoji','🌱') }}</div>
+        <div class="seasonal-plant-name">{{ v.name }}</div>
+        <div class="seasonal-plant-meta">
+          {% if v.water_need == 'high' %}💧💧💧{% elif v.water_need == 'medium' %}💧💧{% else %}💧{% endif %}
+          {% if v.sun_need == 'full' %}☀️{% elif v.sun_need == 'partial' %}⛅{% else %}🌫{% endif %}
+          {% if v.difficulty == 'easy' %}<span style="color:var(--green);">★ Facile</span>
+          {% elif v.difficulty == 'medium' %}<span style="color:var(--orange);">★★ Moyen</span>
+          {% else %}<span style="color:var(--red);">★★★ Difficile</span>{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:12px;color:var(--text-tertiary);line-height:1.5;">
+      <i class="bi bi-info-circle"></i>
+      Pour planter dans une zone : ouvrez la zone → onglet <strong>Plants</strong> → cliquez sur une cellule <strong>+</strong> du plan visuel.
+    </div>
+  </div>
+  {% endif %}
 
   <!-- ── CARROUSEL ── -->
   <div class="card">

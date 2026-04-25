@@ -1293,8 +1293,8 @@ const _activeSpeciesInZone = [
 ];
 
 // Dimensions de la zone (pour calculer la capacité dans le modal)
-const _ZONE_LENGTH_M = {{ _zone_length }};
-const _ZONE_WIDTH_M  = {{ _zone_width }};
+const _ZONE_LENGTH_M = {{ zone.length_m | default(2.0) }};
+const _ZONE_WIDTH_M  = {{ zone.width_m  | default(1.0) }};
 
 function qpSelectVeg(btn) {
   document.querySelectorAll('.qp-veg-item').forEach(el => el.classList.remove('selected'));
