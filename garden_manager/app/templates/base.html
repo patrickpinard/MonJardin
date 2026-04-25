@@ -707,15 +707,9 @@ function toggleMobileZonesMenu(e) {
   const open = sub.classList.toggle('open');
   if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
 }
-(function() {
-  // Auto-déploiement sur page zone, sinon ouvert par défaut
-  const sub  = document.getElementById('mobile-menu-zones');
-  const chev = document.getElementById('mzones-chevron');
-  if (!sub) return;
-  // Toujours ouvert par défaut sur mobile (les zones sont les accès rapides)
-  sub.classList.add('open');
-  if (chev) chev.style.transform = 'rotate(180deg)';
-})();
+// Sous-menus mobile : fermés par défaut (menu plus compact à l'ouverture).
+// L'utilisateur les déploie d'un tap. Pas d'auto-déploiement, pour
+// préserver la lisibilité du menu mobile.
 
 // ── Sous-menu Système & Admin (mobile) ───────────────────
 function toggleMobileSysMenu(e) {
@@ -726,17 +720,6 @@ function toggleMobileSysMenu(e) {
   const open = sub.classList.toggle('open');
   if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
 }
-(function() {
-  const sub  = document.getElementById('mobile-menu-sys');
-  const chev = document.getElementById('msys-chevron');
-  if (!sub) return;
-  const path = window.location.pathname;
-  const onSysPage = path.startsWith('/system/') || path.startsWith('/settings') || path.startsWith('/admin');
-  if (onSysPage) {
-    sub.classList.add('open');
-    if (chev) chev.style.transform = 'rotate(180deg)';
-  }
-})();
 
 // Init
 checkArduino();
