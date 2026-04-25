@@ -281,7 +281,6 @@
       "companions": [
         "Carotte",
         "Radis",
-        "Fraise",
         "Chou",
         "Tomate"
       ],
@@ -616,7 +615,6 @@
       ],
       "bad_companions": [
         "Courgette",
-        "Melon",
         "Pomme de terre",
         "Sauge",
         "Tomate"
@@ -878,7 +876,6 @@
         "Betterave",
         "Carotte",
         "Courgette",
-        "Fraise",
         "Salade",
         "Tomate"
       ],
@@ -1047,7 +1044,6 @@
       "bad_companions": [
         "Tomate",
         "Poivron",
-        "Fraise",
         "Ail"
       ],
       "fertilizer": "Riche en azote et en calcium",
@@ -1201,7 +1197,6 @@
       "companions": [
         "Poireau",
         "Radis",
-        "Fraise",
         "Haricot"
       ],
       "bad_companions": [
@@ -1275,7 +1270,6 @@
       "companions": [
         "Tomate",
         "Carotte",
-        "Fraise",
         "Rose"
       ],
       "bad_companions": [
@@ -1435,7 +1429,6 @@
         "Épinard"
       ],
       "bad_companions": [
-        "Fraise",
         "Haricot",
         "Poivron",
         "Tomate"
@@ -1588,7 +1581,6 @@
       ],
       "bad_companions": [
         "Tomate",
-        "Fraise",
         "Poivron"
       ],
       "fertilizer": "Très riche en azote, calcium et bore",
@@ -1601,91 +1593,6 @@
       "notes_fr": "Culture délicate nécessitant un sol riche et une humidité constante. Un seul stress hydrique peut provoquer le buttoning ou la montée en fleurs prématurée.",
       "depth_cm": 0.5,
       "category": "légume",
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Fraise",
-      "scientific_name": "Fragaria × ananassa",
-      "family": "Rosacées",
-      "emoji": "🍓",
-      "color_primary": "#ef5350",
-      "bg_gradient": "linear-gradient(135deg, #b71c1c 0%, #c62828 40%, #f44336 100%)",
-      "description": "La fraise est le fruit le plus cultivé au jardin familial suisse. Facile à entretenir, elle donne des fruits dès la première année et peut produire pendant 3–4 ans.",
-      "water_need": "medium",
-      "water_frequency": "2–3×/semaine",
-      "soil_moisture_ideal_pct": 60,
-      "soil_moisture_min_pct": 45,
-      "soil_moisture_max_pct": 75,
-      "sun_need": "full",
-      "min_soil_temp_c": 5,
-      "space_cm": 30,
-      "height_cm": 20,
-      "difficulty": "easy",
-      "planting_months_ch": [
-        3,
-        4,
-        8,
-        9
-      ],
-      "indoor_start_months": [],
-      "harvest_months_ch": [
-        5,
-        6,
-        7
-      ],
-      "days_to_harvest": 60,
-      "frost_sensitive": false,
-      "ph_min": 5.5,
-      "ph_max": 6.5,
-      "greenhouse_suitable": true,
-      "greenhouse_recommended": false,
-      "greenhouse_notes": "La serre avance la récolte de 2–3 semaines au printemps. En été, peut être trop chaud. Excellente option pour une mini-serre froide.",
-      "greenhouse_months": [
-        3,
-        4,
-        5
-      ],
-      "zone_recommendations": [
-        {
-          "zone_id": 2,
-          "suitability": "excellent",
-          "label": "Soleil",
-          "notes": "Plein soleil pour des fruits sucrés"
-        },
-        {
-          "zone_id": 3,
-          "suitability": "good",
-          "label": "Mi-ombre",
-          "notes": "Fruits moins sucrés mais plus juteux"
-        },
-        {
-          "zone_id": 4,
-          "suitability": "good",
-          "label": "Aromates",
-          "notes": "Bon compagnon des herbes aromatiques"
-        }
-      ],
-      "companions": [
-        "Oignon",
-        "Ail",
-        "Épinard",
-        "Salade"
-      ],
-      "bad_companions": [
-        "Chou",
-        "Brocoli",
-        "Chou-fleur"
-      ],
-      "fertilizer": "Potasse avant floraison pour de beaux fruits",
-      "pests": [
-        "Botrytis (pourriture grise)",
-        "Otiorhynque",
-        "Pucerons"
-      ],
-      "harvest_tips": "Récoltez quand le fruit est uniformément rouge jusqu'au calice. Récoltez par temps sec pour une meilleure conservation.",
-      "notes_fr": "Renouvelez les plants tous les 3–4 ans. Supprimez les stolons pour concentrer l'énergie sur les fruits. Paillez avec de la paille pour éviter les éclaboussures de terre.",
-      "depth_cm": 2,
-      "category": "fruit",
       "sowing_type": "plant"
     },
     {
@@ -1991,7 +1898,6 @@
       ],
       "bad_companions": [
         "Tomate",
-        "Fraise",
         "Poivron"
       ],
       "fertilizer": "Riche en azote, calcium",
@@ -2621,8 +2527,7 @@
       ],
       "companions": [
         "Carotte",
-        "Tomate",
-        "Fraise"
+        "Tomate"
       ],
       "bad_companions": [
         "Haricot",
@@ -2700,7 +2605,6 @@
       "companions": [
         "Chou",
         "Tomate",
-        "Fraise",
         "Aubergine"
       ],
       "bad_companions": [
@@ -3251,85 +3155,6 @@
       "sowing_type": "plant"
     },
     {
-      "name": "Melon",
-      "scientific_name": "Cucumis melo",
-      "family": "Cucurbitacées",
-      "emoji": "🍈",
-      "color_primary": "#ffcc80",
-      "bg_gradient": "linear-gradient(135deg, #e65100 0%, #f57c00 50%, #ffcc80 100%)",
-      "description": "Le melon est un luxe du jardin suisse — en plein air, la récolte est aléatoire. En serre vitrée, il donne des fruits sucrés et parfumés qui rivalisent avec les productions provençales. Un défi gratifiant.",
-      "water_need": "high",
-      "water_frequency": "Quotidienne en pleine saison",
-      "soil_moisture_ideal_pct": 65,
-      "soil_moisture_min_pct": 50,
-      "soil_moisture_max_pct": 80,
-      "sun_need": "full",
-      "min_soil_temp_c": 20,
-      "space_cm": 100,
-      "height_cm": 30,
-      "difficulty": "hard",
-      "planting_months_ch": [
-        5,
-        6
-      ],
-      "indoor_start_months": [
-        4
-      ],
-      "harvest_months_ch": [
-        8,
-        9
-      ],
-      "days_to_harvest": 100,
-      "frost_sensitive": true,
-      "ph_min": 6.0,
-      "ph_max": 7.0,
-      "greenhouse_suitable": true,
-      "greenhouse_recommended": true,
-      "greenhouse_notes": "Serre indispensable en Suisse pour mûrir correctement. Palissez les tiges verticalement pour économiser l'espace. Pollinisez à la main. Réduisez l'arrosage avant maturité pour concentrer les sucres.",
-      "greenhouse_months": [
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
-      ],
-      "zone_recommendations": [
-        {
-          "zone_id": 1,
-          "suitability": "excellent",
-          "label": "Serre",
-          "notes": "Seule option viable en Suisse pour une bonne récolte"
-        },
-        {
-          "zone_id": 2,
-          "suitability": "poor",
-          "label": "Soleil",
-          "notes": "Risque élevé d'échec sans été exceptionnel"
-        }
-      ],
-      "companions": [
-        "Maïs",
-        "Tournesol",
-        "Haricot"
-      ],
-      "bad_companions": [
-        "Pomme de terre",
-        "Concombre"
-      ],
-      "fertilizer": "Très gourmand — potasse avant fructification",
-      "pests": [
-        "Oïdium",
-        "Pucerons",
-        "Araignées rouges"
-      ],
-      "harvest_tips": "Mûr quand le fruit se détache facilement, exhale un parfum intense et sonne creux. Réduisez l'eau 10 jours avant récolte.",
-      "notes_fr": "Pollinisez manuellement le matin avec un pinceau. Limitez à 3–4 fruits par plant pour des melons de taille optimale. Palissez avec des filets.",
-      "depth_cm": 2,
-      "category": "fruit",
-      "sowing_type": "plant"
-    },
-    {
       "name": "Maïs",
       "scientific_name": "Zea mays",
       "family": "Poacées",
@@ -3652,7 +3477,6 @@
       "companions": [
         "Tomate",
         "Courgette",
-        "Fraise",
         "Concombre"
       ],
       "bad_companions": [],
@@ -3800,7 +3624,6 @@
         "Tomate",
         "Chou",
         "Carotte",
-        "Fraise",
         "Romarin"
       ],
       "bad_companions": [
@@ -3871,8 +3694,7 @@
       ],
       "companions": [
         "Concombre",
-        "Maïs",
-        "Melon"
+        "Maïs"
       ],
       "bad_companions": [
         "Pomme de terre"
@@ -4506,8 +4328,7 @@
       "companions": [
         "Chou",
         "Chou-fleur",
-        "Vigne",
-        "Fraise"
+        "Vigne"
       ],
       "bad_companions": [
         "Radis"
@@ -4526,577 +4347,6 @@
           "suitability": "good",
           "label": "Aromates",
           "notes": "Convient bien"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Framboise",
-      "scientific_name": "Rubus idaeus",
-      "family": "Rosacées",
-      "emoji": "🍇",
-      "category": "fruit",
-      "color_primary": "#be185d",
-      "bg_gradient": "linear-gradient(135deg, #9d174d 0%, #be185d 60%, #db2777 100%)",
-      "description": "La framboise est l'un des fruits indigènes les plus appréciés de Suisse. Ses fruits délicats et parfumés sont récoltés deux fois par an pour les variétés remontantes. Rustique, elle prospère dans les jardins alpins jusqu'à 1200m d'altitude.",
-      "water_need": "medium",
-      "water_frequency": "Régulière",
-      "soil_moisture_ideal_pct": 55,
-      "soil_moisture_min_pct": 40,
-      "soil_moisture_max_pct": 70,
-      "sun_need": "partial",
-      "min_soil_temp_c": 5,
-      "space_cm": 50,
-      "height_cm": 150,
-      "difficulty": "easy",
-      "depth_cm": 5,
-      "planting_months_ch": [
-        3,
-        4,
-        10,
-        11
-      ],
-      "indoor_start_months": [],
-      "harvest_months_ch": [
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
-      "days_to_harvest": 365,
-      "frost_sensitive": false,
-      "ph_min": 5.5,
-      "ph_max": 6.5,
-      "greenhouse_suitable": false,
-      "greenhouse_recommended": false,
-      "companions": [
-        "Ail",
-        "Ciboulette",
-        "Souci",
-        "Lavande"
-      ],
-      "bad_companions": [
-        "Pomme de terre",
-        "Tomate",
-        "Fenouil"
-      ],
-      "notes_fr": "Planter les cannes en automne ou tôt au printemps. Tuteurage indispensable. Tailler les tiges ayant fructifié après la récolte. Variétés remontantes : 2 récoltes/an (juillet + septembre-octobre).",
-      "planting_tip_fr": "Planter dans un sol acide, riche en humus. Mulcher généreusement pour conserver l'humidité. Éviter les zones de stagnation d'eau.",
-      "zone_recommendations": [
-        {
-          "zone_id": 2,
-          "suitability": "excellent",
-          "label": "Soleil",
-          "notes": "Idéal en plein soleil"
-        },
-        {
-          "zone_id": 3,
-          "suitability": "good",
-          "label": "Mi-ombre",
-          "notes": "Très bien en mi-ombre"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Cassis",
-      "scientific_name": "Ribes nigrum",
-      "family": "Grossulariacées",
-      "emoji": "🫐",
-      "category": "fruit",
-      "color_primary": "#4c1d95",
-      "bg_gradient": "linear-gradient(135deg, #3b0764 0%, #4c1d95 60%, #6d28d9 100%)",
-      "description": "Le cassis est un arbuste fruitier robuste cultivé en Suisse depuis le Moyen Âge. Ses baies noires intenses, riches en vitamine C et antioxydants, sont récoltées en juillet. Parfaitement adapté au climat romand.",
-      "water_need": "medium",
-      "water_frequency": "Régulière",
-      "soil_moisture_ideal_pct": 60,
-      "soil_moisture_min_pct": 45,
-      "soil_moisture_max_pct": 75,
-      "sun_need": "partial",
-      "min_soil_temp_c": 3,
-      "space_cm": 150,
-      "height_cm": 150,
-      "difficulty": "easy",
-      "depth_cm": 10,
-      "planting_months_ch": [
-        10,
-        11,
-        3
-      ],
-      "indoor_start_months": [],
-      "harvest_months_ch": [
-        7,
-        8
-      ],
-      "days_to_harvest": 365,
-      "frost_sensitive": false,
-      "ph_min": 6.0,
-      "ph_max": 7.0,
-      "greenhouse_suitable": false,
-      "companions": [
-        "Ail",
-        "Bourrache",
-        "Capucine",
-        "Ciboulette"
-      ],
-      "bad_companions": [
-        "Tomate",
-        "Fenouil"
-      ],
-      "notes_fr": "Arbuste vivace productif pendant 15 ans. Tailler les vieilles tiges après 3 ans. Floraison précoce — attention aux gelées tardives. Excellente pollinisation croisée avec d'autres variétés.",
-      "planting_tip_fr": "Planter à l'automne de préférence. Sol frais, riche et légèrement acide. Mulching obligatoire. Associer 2 variétés pour meilleure production.",
-      "zone_recommendations": [
-        {
-          "zone_id": 3,
-          "suitability": "excellent",
-          "label": "Mi-ombre",
-          "notes": "Idéal à mi-ombre"
-        },
-        {
-          "zone_id": 2,
-          "suitability": "good",
-          "label": "Soleil",
-          "notes": "Bien en plein soleil avec arrosage suffisant"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Groseille",
-      "scientific_name": "Ribes rubrum",
-      "family": "Grossulariacées",
-      "emoji": "🍒",
-      "category": "fruit",
-      "color_primary": "#dc2626",
-      "bg_gradient": "linear-gradient(135deg, #991b1b 0%, #dc2626 60%, #ef4444 100%)",
-      "description": "La groseille rouge est un incontournable des jardins suisses. Ses grappes de baies translucides et acidulées sont récoltées en juillet. L'arbuste, très résistant, peut produire abondamment pendant 20 ans avec peu d'entretien.",
-      "water_need": "medium",
-      "water_frequency": "Régulière",
-      "soil_moisture_ideal_pct": 55,
-      "soil_moisture_min_pct": 40,
-      "soil_moisture_max_pct": 70,
-      "sun_need": "partial",
-      "min_soil_temp_c": 3,
-      "space_cm": 120,
-      "height_cm": 120,
-      "difficulty": "easy",
-      "depth_cm": 10,
-      "planting_months_ch": [
-        10,
-        11,
-        3
-      ],
-      "harvest_months_ch": [
-        7,
-        8
-      ],
-      "days_to_harvest": 365,
-      "frost_sensitive": false,
-      "ph_min": 6.0,
-      "ph_max": 7.0,
-      "greenhouse_suitable": false,
-      "companions": [
-        "Cassis",
-        "Ail",
-        "Bourrache"
-      ],
-      "bad_companions": [
-        "Tomate",
-        "Fenouil"
-      ],
-      "notes_fr": "Très rustique et longévif. Supporte l'ombre partielle mieux que la groseille à maquereau. Grappes faciles à récolter. Excellente pour confitures et sirops.",
-      "planting_tip_fr": "Planter à l'automne. Sol meuble et fertile. Arroser régulièrement lors de la fructification. Tailler pour aérer le centre du buisson.",
-      "zone_recommendations": [
-        {
-          "zone_id": 3,
-          "suitability": "excellent",
-          "label": "Mi-ombre",
-          "notes": "Zone idéale"
-        },
-        {
-          "zone_id": 2,
-          "suitability": "good",
-          "label": "Soleil",
-          "notes": "Bien mais arrosage plus fréquent"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Groseille à maquereau",
-      "scientific_name": "Ribes uva-crispa",
-      "family": "Grossulariacées",
-      "emoji": "🍈",
-      "category": "fruit",
-      "color_primary": "#15803d",
-      "bg_gradient": "linear-gradient(135deg, #166534 0%, #15803d 60%, #16a34a 100%)",
-      "description": "La groseille à maquereau est un arbuste épineux robuste, très courant dans les jardins ruraux suisses. Ses grosses baies vertes ou rouges, sucrées-acidulées, se dégustent fraîches ou en desserts. Très résistante aux hivers rigoureux.",
-      "water_need": "low",
-      "water_frequency": "Espacée",
-      "soil_moisture_ideal_pct": 45,
-      "soil_moisture_min_pct": 30,
-      "soil_moisture_max_pct": 65,
-      "sun_need": "partial",
-      "min_soil_temp_c": 3,
-      "space_cm": 120,
-      "height_cm": 100,
-      "difficulty": "easy",
-      "depth_cm": 10,
-      "planting_months_ch": [
-        10,
-        11,
-        3
-      ],
-      "harvest_months_ch": [
-        6,
-        7,
-        8
-      ],
-      "days_to_harvest": 365,
-      "frost_sensitive": false,
-      "ph_min": 6.0,
-      "ph_max": 7.0,
-      "greenhouse_suitable": false,
-      "companions": [
-        "Cassis",
-        "Groseille",
-        "Ail"
-      ],
-      "bad_companions": [
-        "Tomate",
-        "Fenouil"
-      ],
-      "notes_fr": "Attention aux épines lors de la récolte — utiliser des gants. Résistant à l'oïdium avec des variétés modernes. Supporte la taille en gobelet pour faciliter la cueillette.",
-      "planting_tip_fr": "Planter en automne. Sol bien drainé, légèrement acide. Très résistant à la sécheresse une fois établi. Tailler les branches trop denses chaque hiver.",
-      "zone_recommendations": [
-        {
-          "zone_id": 2,
-          "suitability": "good",
-          "label": "Soleil",
-          "notes": "Convient bien"
-        },
-        {
-          "zone_id": 3,
-          "suitability": "excellent",
-          "label": "Mi-ombre",
-          "notes": "Zone idéale"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Myrtille",
-      "scientific_name": "Vaccinium myrtillus",
-      "family": "Éricacées",
-      "emoji": "🫐",
-      "category": "fruit",
-      "color_primary": "#1d4ed8",
-      "bg_gradient": "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #3b82f6 100%)",
-      "description": "La myrtille est un fruit des forêts suisses par excellence, poussant naturellement dans les sous-bois et prairies alpines. En culture jardinière, les variétés sélectionnées (bleuets) sont très productives dans les sols acides. Riche en antioxydants.",
-      "water_need": "medium",
-      "water_frequency": "Régulière",
-      "soil_moisture_ideal_pct": 65,
-      "soil_moisture_min_pct": 50,
-      "soil_moisture_max_pct": 80,
-      "sun_need": "partial",
-      "min_soil_temp_c": 3,
-      "space_cm": 100,
-      "height_cm": 80,
-      "difficulty": "medium",
-      "depth_cm": 10,
-      "planting_months_ch": [
-        3,
-        4,
-        10,
-        11
-      ],
-      "harvest_months_ch": [
-        7,
-        8,
-        9
-      ],
-      "days_to_harvest": 730,
-      "frost_sensitive": false,
-      "ph_min": 4.0,
-      "ph_max": 5.5,
-      "greenhouse_suitable": false,
-      "companions": [
-        "Rhubarbe",
-        "Bourrache"
-      ],
-      "bad_companions": [
-        "Tomate",
-        "Oignon",
-        "Ail"
-      ],
-      "notes_fr": "Exige impérativement un sol très acide (pH 4-5.5). Utiliser de la terre de bruyère ou de la tourbe. Planter 2-3 variétés pour pollinisation croisée. Production à partir de la 3e année.",
-      "planting_tip_fr": "Préparer le sol avec 50% tourbe + 50% sable. Arroser à l'eau de pluie si possible (eau douce). Mulcher avec de l'écorce de pin. Éviter l'eau calcaire.",
-      "zone_recommendations": [
-        {
-          "zone_id": 3,
-          "suitability": "excellent",
-          "label": "Mi-ombre",
-          "notes": "Zone idéale — sol acide nécessaire"
-        },
-        {
-          "zone_id": 2,
-          "suitability": "acceptable",
-          "label": "Soleil",
-          "notes": "Possible mais arrosage plus important"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Raisin",
-      "scientific_name": "Vitis vinifera",
-      "family": "Vitacées",
-      "emoji": "🍇",
-      "category": "fruit",
-      "color_primary": "#7c3aed",
-      "bg_gradient": "linear-gradient(135deg, #5b21b6 0%, #7c3aed 60%, #a78bfa 100%)",
-      "description": "La vigne est cultivée en Suisse depuis l'époque romaine, principalement en Valais, Vaud et Genève. Dans un jardin, une vigne en espalier ou en pergola peut produire de belles grappes tout en constituant une belle plante ornementale. Vullierens est en zone viticole favorable.",
-      "water_need": "low",
-      "water_frequency": "Espacée",
-      "soil_moisture_ideal_pct": 40,
-      "soil_moisture_min_pct": 25,
-      "soil_moisture_max_pct": 60,
-      "sun_need": "full",
-      "min_soil_temp_c": 10,
-      "space_cm": 200,
-      "height_cm": 300,
-      "difficulty": "hard",
-      "depth_cm": 30,
-      "planting_months_ch": [
-        3,
-        4
-      ],
-      "harvest_months_ch": [
-        9,
-        10
-      ],
-      "days_to_harvest": 730,
-      "frost_sensitive": true,
-      "ph_min": 6.0,
-      "ph_max": 7.5,
-      "greenhouse_suitable": true,
-      "greenhouse_recommended": false,
-      "companions": [
-        "Hysope",
-        "Basilic",
-        "Mélisse",
-        "Souci"
-      ],
-      "bad_companions": [
-        "Chou",
-        "Ail"
-      ],
-      "notes_fr": "Taille en guyot ou cordon nécessite un apprentissage. Plein soleil et mur exposé sud idéal. Traitement contre mildiou et oïdium en Suisse. Magnifique en pergola ou treille murale.",
-      "planting_tip_fr": "Planter contre un mur exposé sud. Sol calcaire et bien drainé. Taille annuelle en janvier-février. En Suisse romande, variétés Chasselas, Gamay ou Pinot Noir.",
-      "zone_recommendations": [
-        {
-          "zone_id": 2,
-          "suitability": "excellent",
-          "label": "Soleil",
-          "notes": "Mur exposé sud idéal"
-        },
-        {
-          "zone_id": 1,
-          "suitability": "good",
-          "label": "Serre",
-          "notes": "Possible en serre chaude"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Cerise",
-      "scientific_name": "Prunus avium",
-      "family": "Rosacées",
-      "emoji": "🍒",
-      "category": "fruit",
-      "color_primary": "#b91c1c",
-      "bg_gradient": "linear-gradient(135deg, #7f1d1d 0%, #b91c1c 60%, #ef4444 100%)",
-      "description": "Le cerisier est un arbre emblématique des campagnes vaudoises et fribourgoises. En version naine ou sur porte-greffe réducteur (Gisela 5), il s'adapte parfaitement aux jardins. Les cerises douces de juin sont parmi les fruits les plus savoureux du potager.",
-      "water_need": "medium",
-      "water_frequency": "Modérée",
-      "soil_moisture_ideal_pct": 50,
-      "soil_moisture_min_pct": 35,
-      "soil_moisture_max_pct": 65,
-      "sun_need": "full",
-      "min_soil_temp_c": 5,
-      "space_cm": 300,
-      "height_cm": 400,
-      "difficulty": "medium",
-      "depth_cm": 40,
-      "planting_months_ch": [
-        3,
-        4,
-        10,
-        11
-      ],
-      "harvest_months_ch": [
-        6,
-        7
-      ],
-      "days_to_harvest": 1095,
-      "frost_sensitive": false,
-      "ph_min": 6.0,
-      "ph_max": 7.5,
-      "greenhouse_suitable": false,
-      "companions": [
-        "Ail",
-        "Ciboulette",
-        "Capucine",
-        "Bourrache"
-      ],
-      "bad_companions": [
-        "Pomme de terre"
-      ],
-      "notes_fr": "Préférer les variétés autofertiles ou planter 2 variétés compatibles. Protection filet indispensable contre les oiseaux. Variétés pour Suisse romande : Bigarreau, Regina, Kordia. Filet anti-pluie réduit les craquelures.",
-      "planting_tip_fr": "Planter en sol profond, bien drainé. Éviter les zones de gel tardif. Sur porte-greffe nain (Gisela 5) pour les petits jardins.",
-      "zone_recommendations": [
-        {
-          "zone_id": 2,
-          "suitability": "excellent",
-          "label": "Soleil",
-          "notes": "Zone idéale — plein soleil"
-        },
-        {
-          "zone_id": 3,
-          "suitability": "good",
-          "label": "Mi-ombre",
-          "notes": "Acceptable"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Pomme",
-      "scientific_name": "Malus domestica",
-      "family": "Rosacées",
-      "emoji": "🍎",
-      "category": "fruit",
-      "color_primary": "#dc2626",
-      "bg_gradient": "linear-gradient(135deg, #991b1b 0%, #dc2626 60%, #f87171 100%)",
-      "description": "Le pommier est l'arbre fruitier roi de la Suisse. Cultivé de la plaine valaisanne aux vergers vaudois, il offre une production abondante d'août à novembre. En jardins, les variétés naines sur M9 permettent une récolte sur un espace réduit.",
-      "water_need": "low",
-      "water_frequency": "Modérée",
-      "soil_moisture_ideal_pct": 45,
-      "soil_moisture_min_pct": 30,
-      "soil_moisture_max_pct": 65,
-      "sun_need": "full",
-      "min_soil_temp_c": 5,
-      "space_cm": 250,
-      "height_cm": 350,
-      "difficulty": "medium",
-      "depth_cm": 40,
-      "planting_months_ch": [
-        3,
-        4,
-        10,
-        11
-      ],
-      "harvest_months_ch": [
-        8,
-        9,
-        10,
-        11
-      ],
-      "days_to_harvest": 1095,
-      "frost_sensitive": false,
-      "ph_min": 6.0,
-      "ph_max": 7.0,
-      "greenhouse_suitable": false,
-      "companions": [
-        "Ail",
-        "Ciboulette",
-        "Capucine",
-        "Bourrache",
-        "Phacélie"
-      ],
-      "bad_companions": [
-        "Pomme de terre",
-        "Noyer"
-      ],
-      "notes_fr": "Nécessite pollinisateur compatible. Traitement cuivre contre la tavelure au printemps. Éclaircissage des fruits en juin pour améliorer la qualité. Variétés résistantes (Topaz, Ariane) pour moins de traitements.",
-      "planting_tip_fr": "Planter 2 variétés pour pollinisation croisée. Sol profond et bien drainé. Porte-greffe M9 pour jardins (hauteur 2.5m). Tuteurer les 3 premières années.",
-      "zone_recommendations": [
-        {
-          "zone_id": 2,
-          "suitability": "excellent",
-          "label": "Soleil",
-          "notes": "Zone idéale"
-        },
-        {
-          "zone_id": 3,
-          "suitability": "good",
-          "label": "Mi-ombre",
-          "notes": "Convient bien"
-        }
-      ],
-      "sowing_type": "plant"
-    },
-    {
-      "name": "Poire",
-      "scientific_name": "Pyrus communis",
-      "family": "Rosacées",
-      "emoji": "🍐",
-      "category": "fruit",
-      "color_primary": "#65a30d",
-      "bg_gradient": "linear-gradient(135deg, #3f6212 0%, #65a30d 60%, #a3e635 100%)",
-      "description": "Le poirier est un arbre fruitier majestueux, cultivé dans les vergers vaudois depuis des siècles. La William, la Conference et la Comice sont les variétés phares de la région. En espalier sur un mur ensoleillé, il donne d'excellents résultats.",
-      "water_need": "low",
-      "water_frequency": "Modérée",
-      "soil_moisture_ideal_pct": 45,
-      "soil_moisture_min_pct": 30,
-      "soil_moisture_max_pct": 65,
-      "sun_need": "full",
-      "min_soil_temp_c": 5,
-      "space_cm": 300,
-      "height_cm": 400,
-      "difficulty": "medium",
-      "depth_cm": 40,
-      "planting_months_ch": [
-        3,
-        4,
-        10,
-        11
-      ],
-      "harvest_months_ch": [
-        8,
-        9,
-        10
-      ],
-      "days_to_harvest": 1095,
-      "frost_sensitive": false,
-      "ph_min": 6.0,
-      "ph_max": 7.5,
-      "greenhouse_suitable": false,
-      "companions": [
-        "Ail",
-        "Ciboulette",
-        "Bourrache"
-      ],
-      "bad_companions": [
-        "Pomme de terre",
-        "Noyer"
-      ],
-      "notes_fr": "Floraison précoce — exposé aux gelées printanières en Suisse. Variétés pollinisatrices nécessaires. En espalier sur mur sud = récolte de qualité supérieure. Variétés William, Conference recommandées.",
-      "planting_tip_fr": "Planter à l'automne de préférence. Sol profond, frais et fertile. Espalier sur mur exposé sud pour les régions plus fraîches.",
-      "zone_recommendations": [
-        {
-          "zone_id": 2,
-          "suitability": "excellent",
-          "label": "Soleil",
-          "notes": "Zone idéale"
-        },
-        {
-          "zone_id": 3,
-          "suitability": "good",
-          "label": "Mi-ombre",
-          "notes": "Convient en espalier"
         }
       ],
       "sowing_type": "plant"
