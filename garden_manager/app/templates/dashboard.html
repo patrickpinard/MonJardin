@@ -14,6 +14,7 @@
 {% set pulse_color = pulse_color if pulse_color is defined else 'green' %}
 {% set pulse_components = pulse_components if pulse_components is defined else {} %}
 {% set forecast_24h = forecast_24h if forecast_24h is defined else [] %}
+{% set disease_alerts = disease_alerts if disease_alerts is defined else [] %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
@@ -169,8 +170,9 @@
     </button>
     <button class="time-tab" onclick="switchDashTab(this,'taches')">
       <i class="bi bi-calendar3-event-fill"></i> Tâches
-      {% if monthly_tasks %}
-      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ monthly_tasks | length }}</span>
+      {% set _badge_count = (monthly_tasks | length) + (disease_alerts | length) %}
+      {% if _badge_count %}
+      <span class="badge" style="margin-left:4px;font-size:10px;background:{% if disease_alerts | selectattr('level','eq','danger') | list %}rgba(255,69,58,.25);color:var(--red){% elif disease_alerts %}rgba(255,159,10,.25);color:var(--orange){% else %}rgba(48,209,88,.2);color:var(--green){% endif %};">{{ _badge_count }}</span>
       {% endif %}
     </button>
     <button class="time-tab" onclick="switchDashTab(this,'meteo')">
@@ -353,6 +355,52 @@
 
   <!-- ── TAB TÂCHES ── -->
   <div id="tab-taches" style="display:none;">
+
+    <!-- Risques sanitaires (alertes contextuelles maladies/parasites) -->
+    {% if disease_alerts %}
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-shield-exclamation" style="color:var(--orange);"></i>
+        Vigilance sanitaire
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
+          {{ disease_alerts | length }} alerte{{ 's' if disease_alerts | length > 1 else '' }}
+        </span>
+      </div>
+      <div class="disease-list">
+        {% for d in disease_alerts %}
+        <div class="disease-card disease-{{ d.level }}">
+          <div class="disease-head">
+            <div class="disease-icon">{{ d.icon }}</div>
+            <div class="disease-meta">
+              <div class="disease-name">{{ d.name }}</div>
+              <div class="disease-affected">{{ d.affected }}</div>
+            </div>
+            <span class="disease-level disease-level-{{ d.level }}">
+              {% if d.level == 'danger' %}Critique{% elif d.level == 'warning' %}Attention{% else %}Info{% endif %}
+            </span>
+          </div>
+          <div class="disease-msg">{{ d.message }}</div>
+          {% if d.actions %}
+          <div class="disease-actions">
+            <div class="disease-actions-label">Actions préventives :</div>
+            <ul>
+              {% for a in d.actions %}
+              <li>{{ a }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Alertes calculées à partir des conditions météo + de vos plantations actives.
+        Ne remplace pas l'observation visuelle au jardin.
+      </div>
+    </div>
+    {% endif %}
+
     <div class="card">
       <div class="card-title">
         <i class="bi bi-calendar3-event-fill" style="color:var(--green);"></i>

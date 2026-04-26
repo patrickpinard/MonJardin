@@ -82,7 +82,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "53",
+            "static_v": "54",
         }
 
     log.info(
@@ -145,6 +145,7 @@ def _init_services(app: Flask) -> None:
     from .services.weather_service import WeatherService
     from .services.planting_advisor import PlantingAdvisor
     from .services.rotation_advisor import RotationAdvisor
+    from .services.disease_advisor import DiseaseAdvisor
 
     sim_mode = app.config.get("SIMULATION_MODE", False)
     weather_sim = None
@@ -189,6 +190,7 @@ def _init_services(app: Flask) -> None:
     except Exception:
         _plants_list = []
     app.extensions["rotation_advisor"] = RotationAdvisor(plants_db=_plants_list)
+    app.extensions["disease_advisor"]  = DiseaseAdvisor(plants_db=_plants_list)
 
 
 def _start_scheduler(app: Flask) -> None:

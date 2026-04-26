@@ -388,6 +388,21 @@ def dashboard():
     except Exception:
         pass
 
+    # ── Détection précoce maladies / risques sanitaires ────
+    disease_advisor = current_app.extensions.get("disease_advisor")
+    disease_alerts = []
+    if disease_advisor:
+        try:
+            full_forecast_for_disease = weather_service.get_forecast_48h() or []
+            disease_alerts = disease_advisor.analyze(
+                weather=weather,
+                forecast_24h=full_forecast_for_disease[:24],
+                active_plantings=all_plantings,
+            )
+        except Exception as e:
+            log.warning("Disease advisor échec : %s", e)
+            disease_alerts = []
+
     return render_template(
         "dashboard.html",
         zones_data=zones_data,
@@ -415,6 +430,8 @@ def dashboard():
         # Forecast
         forecast_24h=forecast_24h,
         forecast_by_day=forecast_by_day,
+        # Détection maladies
+        disease_alerts=disease_alerts,
     )
 
 
