@@ -3,47 +3,147 @@
 
 {% block head %}
 <style>
+.gloss-search-wrap {
+  position: relative; margin-bottom: 16px;
+}
 .gloss-search {
   width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-md);
-  border-radius: var(--r-md); color: var(--text-primary); padding: 11px 14px;
+  border-radius: var(--r-md); color: var(--text-primary); padding: 12px 14px 12px 42px;
   font-size: 14px; font-family: var(--font);
-  margin-bottom: 16px;
 }
-.cat-section { margin-bottom: 22px; }
-.cat-header {
+.gloss-search-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-tertiary); font-size: 16px; pointer-events: none;
+}
+
+/* ── Sections par catégorie (style carrousel) ── */
+.gloss-section { margin-bottom: 28px; }
+.gloss-section-head {
+  display: flex; align-items: center; margin-bottom: 14px; gap: 10px;
+}
+.gloss-section-title {
   display: flex; align-items: center; gap: 10px;
-  font-size: 13px; font-weight: 700; color: var(--text-tertiary);
-  text-transform: uppercase; letter-spacing: .5px;
-  margin-bottom: 10px;
+  font-size: 16px; font-weight: 700; color: var(--text-primary); flex: 1;
 }
-.cat-count {
+.gloss-cat-emoji {
+  font-size: 22px; line-height: 1;
+}
+.gloss-cat-count {
   background: var(--bg-secondary); color: var(--text-secondary);
-  font-size: 11px; padding: 2px 8px; border-radius: var(--r-pill);
+  font-size: 11px; padding: 3px 9px; border-radius: var(--r-pill);
   font-weight: 600;
 }
-.term-card {
+.gloss-nav { display: flex; gap: 6px; }
+.gloss-nav-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  color: var(--text-primary); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--t), transform .1s;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.gloss-nav-btn:hover { background: var(--bg-tertiary); }
+.gloss-nav-btn:active { transform: scale(.92); }
+.gloss-nav-btn:disabled { opacity: .3; cursor: default; }
+
+.gloss-track-wrap { overflow: hidden; }
+.gloss-track {
+  display: flex; gap: 14px;
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Carte terme ── */
+.gloss-card {
+  flex: 0 0 320px;
   background: var(--bg-primary); border: 1px solid var(--border);
-  border-left: 3px solid var(--green);
-  border-radius: var(--r-md); padding: 14px 16px; margin-bottom: 8px;
+  border-radius: var(--r-lg); overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: box-shadow var(--t), transform var(--t);
 }
-.term-name {
-  font-size: 16px; font-weight: 700; color: var(--text-primary);
-  margin-bottom: 6px;
+.gloss-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  transform: translateY(-2px);
 }
-.term-def {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
-  margin-bottom: 8px;
+.gloss-card-hero {
+  height: 100px;
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 56px; line-height: 1;
+  position: relative; overflow: hidden;
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
 }
-.term-tip {
+.gloss-card-hero::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at center, transparent 50%, rgba(0,0,0,.15) 100%);
+}
+.gloss-card-cat {
+  position: absolute; top: 8px; left: 10px;
+  font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: var(--r-pill);
+  background: rgba(255,255,255,.15); color: #fff;
+  text-transform: uppercase; letter-spacing: .5px;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.gloss-card-body {
+  padding: 14px 16px 16px;
+  flex: 1; display: flex; flex-direction: column; gap: 8px;
+}
+.gloss-card-title {
+  font-size: 17px; font-weight: 700; color: var(--text-primary);
+  line-height: 1.2; letter-spacing: -.2px;
+}
+.gloss-card-def {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.55;
+}
+.gloss-card-details {
+  font-size: 12px; color: var(--text-tertiary); line-height: 1.55;
+  padding: 8px 11px; background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  border-left: 2px solid var(--border-md);
+  max-height: 0; overflow: hidden;
+  transition: max-height .3s var(--ease), padding .2s, margin .2s;
+  margin: 0;
+}
+.gloss-card.expanded .gloss-card-details {
+  max-height: 400px;
+  padding: 8px 11px;
+  margin-top: 4px;
+}
+.gloss-card-details-toggle {
+  align-self: flex-start;
+  background: none; border: none; color: var(--green);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  padding: 4px 0; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.gloss-card-details-toggle:hover { text-decoration: underline; }
+.gloss-card-tip {
   font-size: 12px; color: var(--text-tertiary); line-height: 1.5;
-  padding: 7px 11px; background: rgba(48,209,88,.06);
+  padding: 8px 11px; background: rgba(48,209,88,.06);
   border-left: 2px solid var(--green); border-radius: var(--r-sm);
   display: flex; align-items: flex-start; gap: 6px;
+  margin-top: auto;
 }
-.term-tip i { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+.gloss-card-tip i { color: var(--green); flex-shrink: 0; margin-top: 2px; }
 
-.term-card.hidden { display: none; }
-.cat-section.hidden { display: none; }
+/* Couleurs par catégorie (hero) */
+.cat-météo .gloss-card-hero        { background: linear-gradient(135deg, #60a5fa33, #2563eb22); }
+.cat-plantation .gloss-card-hero   { background: linear-gradient(135deg, #4ade8033, #16a34a22); }
+.cat-maladies .gloss-card-hero     { background: linear-gradient(135deg, #f8717133, #dc262622); }
+.cat-traitements .gloss-card-hero  { background: linear-gradient(135deg, #c084fc33, #9333ea22); }
+.cat-sol .gloss-card-hero          { background: linear-gradient(135deg, #ca8a0433, #92400e22); }
+.cat-entretien .gloss-card-hero    { background: linear-gradient(135deg, #fbbf2433, #d9770622); }
+.cat-calendrier-lunaire .gloss-card-hero { background: linear-gradient(135deg, #94a3b833, #64748b22); }
+.cat-climat .gloss-card-hero       { background: linear-gradient(135deg, #38bdf833, #0284c722); }
+
+.gloss-empty {
+  padding: 40px; text-align: center; color: var(--text-tertiary);
+}
+
+@media (max-width: 768px) {
+  .gloss-card { flex: 0 0 280px; }
+  .gloss-card-hero { height: 80px; font-size: 44px; }
+}
 </style>
 {% endblock %}
 
@@ -52,38 +152,85 @@
   <div class="page-header-row">
     <div>
       <h1 class="page-title">📚 Glossaire</h1>
-      <div class="page-subtitle">{{ total_terms }} termes horticoles · de Saints de Glace à Mycorhizes</div>
+      <div class="page-subtitle">{{ total_terms }} termes horticoles · de Saints de Glace à pH du sol</div>
     </div>
   </div>
 </div>
 
-<div class="page-body" style="max-width:880px;">
+<div class="page-body">
 
-  <input type="text" id="gloss-search" class="gloss-search"
-    placeholder="🔍 Rechercher un terme (ex. mildiou, paillage, rotation...)"
-    oninput="filterGlossary()">
+  <div class="gloss-search-wrap">
+    <i class="bi bi-search gloss-search-icon"></i>
+    <input type="text" id="gloss-search" class="gloss-search"
+      placeholder="Rechercher un terme (ex. mildiou, paillage, rotation...)"
+      oninput="filterGlossary()">
+  </div>
 
-  <div id="gloss-empty" style="display:none;text-align:center;padding:30px;color:var(--text-tertiary);">
-    <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+  <div id="gloss-empty" class="gloss-empty" style="display:none;">
+    <div style="font-size:36px;margin-bottom:8px;">🔍</div>
     Aucun terme ne correspond à votre recherche.
   </div>
 
   <div id="gloss-content">
+    {% set CAT_EMOJIS = {
+      'Météo': '🌤️',
+      'Plantation': '🌱',
+      'Maladies': '🦠',
+      'Traitements': '💊',
+      'Sol': '🟫',
+      'Entretien': '✂️',
+      'Calendrier lunaire': '🌙',
+      'Climat': '🌡️',
+    } %}
     {% for category, terms in glossary_by_category.items() %}
-    <div class="cat-section" data-category="{{ category }}">
-      <div class="cat-header">
-        <span>{{ category }}</span>
-        <span class="cat-count">{{ terms | length }}</span>
+    {% set cat_slug = category | lower | replace(' ', '-') | replace('é','e') | replace('è','e') | replace('â','a') %}
+    <div class="gloss-section" data-category="{{ category }}">
+      <div class="gloss-section-head">
+        <div class="gloss-section-title">
+          <span class="gloss-cat-emoji">{{ CAT_EMOJIS.get(category, '📖') }}</span>
+          {{ category }}
+          <span class="gloss-cat-count">{{ terms | length }}</span>
+        </div>
+        <div class="gloss-nav">
+          <button class="gloss-nav-btn" onclick="glossPrev('{{ cat_slug }}')" aria-label="Précédent">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <button class="gloss-nav-btn" onclick="glossNext('{{ cat_slug }}')" aria-label="Suivant">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
       </div>
-      {% for t in terms %}
-      <div class="term-card" data-term="{{ t.term | lower }}" data-def="{{ t.definition | lower }}">
-        <div class="term-name">{{ t.term }}</div>
-        <div class="term-def">{{ t.definition }}</div>
-        {% if t.tip %}
-        <div class="term-tip"><i class="bi bi-lightbulb-fill"></i> <span>{{ t.tip }}</span></div>
-        {% endif %}
+      <div class="gloss-track-wrap">
+        <div class="gloss-track" id="gloss-track-{{ cat_slug }}">
+          {% for t in terms %}
+          <div class="gloss-card cat-{{ cat_slug }}"
+               data-term="{{ t.term | lower }}"
+               data-def="{{ t.definition | lower }}"
+               data-details="{{ (t.get('details') or '') | lower }}">
+            <div class="gloss-card-hero">
+              <span class="gloss-card-cat">{{ category }}</span>
+              {{ t.get('icon') or '📖' }}
+            </div>
+            <div class="gloss-card-body">
+              <div class="gloss-card-title">{{ t.term }}</div>
+              <div class="gloss-card-def">{{ t.definition }}</div>
+              {% if t.get('details') %}
+              <div class="gloss-card-details">{{ t.details }}</div>
+              <button class="gloss-card-details-toggle" onclick="toggleDetails(this)">
+                <i class="bi bi-plus-circle"></i> En savoir plus
+              </button>
+              {% endif %}
+              {% if t.get('tip') %}
+              <div class="gloss-card-tip">
+                <i class="bi bi-lightbulb-fill"></i>
+                <span>{{ t.tip }}</span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
       </div>
-      {% endfor %}
     </div>
     {% endfor %}
   </div>
@@ -91,22 +238,71 @@
 </div>
 
 <script>
+const GLOSS_CARD_W = 320 + 14;  // largeur + gap
+const GLOSS_STATE = {};  // { catSlug: idx }
+
+function _glossGetMaxIdx(track) {
+  const cards = track.querySelectorAll('.gloss-card:not(.hidden)').length;
+  const visible = Math.max(1, Math.floor(track.parentElement.offsetWidth / GLOSS_CARD_W));
+  return Math.max(0, cards - visible);
+}
+function glossGoTo(catSlug, idx) {
+  const track = document.getElementById('gloss-track-' + catSlug);
+  if (!track) return;
+  const maxIdx = _glossGetMaxIdx(track);
+  idx = Math.max(0, Math.min(idx, maxIdx));
+  GLOSS_STATE[catSlug] = idx;
+  track.style.transform = `translateX(-${idx * GLOSS_CARD_W}px)`;
+}
+function glossNext(catSlug) {
+  glossGoTo(catSlug, (GLOSS_STATE[catSlug] || 0) + 1);
+}
+function glossPrev(catSlug) {
+  glossGoTo(catSlug, (GLOSS_STATE[catSlug] || 0) - 1);
+}
+
+// Toggle "En savoir plus" sur une carte
+function toggleDetails(btn) {
+  const card = btn.closest('.gloss-card');
+  if (!card) return;
+  const expanded = card.classList.toggle('expanded');
+  btn.innerHTML = expanded
+    ? '<i class="bi bi-dash-circle"></i> Moins de détails'
+    : '<i class="bi bi-plus-circle"></i> En savoir plus';
+}
+
+// Filtre recherche
 function filterGlossary() {
   const q = (document.getElementById('gloss-search').value || '').toLowerCase().trim();
   let visible = 0;
-  document.querySelectorAll('.term-card').forEach(card => {
+  document.querySelectorAll('.gloss-card').forEach(card => {
     const t = card.dataset.term || '';
     const d = card.dataset.def  || '';
-    const match = !q || t.includes(q) || d.includes(q);
+    const e = card.dataset.details || '';
+    const match = !q || t.includes(q) || d.includes(q) || e.includes(q);
     card.classList.toggle('hidden', !match);
+    card.style.display = match ? '' : 'none';
     if (match) visible++;
   });
-  // Cacher les sections vides
-  document.querySelectorAll('.cat-section').forEach(sec => {
-    const has = sec.querySelectorAll('.term-card:not(.hidden)').length > 0;
-    sec.classList.toggle('hidden', !has);
+  document.querySelectorAll('.gloss-section').forEach(sec => {
+    const has = sec.querySelectorAll('.gloss-card:not(.hidden)').length > 0;
+    sec.style.display = has ? '' : 'none';
   });
   document.getElementById('gloss-empty').style.display = visible === 0 ? '' : 'none';
+  // Reset position carrousel
+  document.querySelectorAll('.gloss-track').forEach(t => t.style.transform = '');
+  Object.keys(GLOSS_STATE).forEach(k => GLOSS_STATE[k] = 0);
 }
+
+// Touch swipe sur les carousels
+document.querySelectorAll('.gloss-track').forEach(track => {
+  let startX = 0;
+  const catSlug = track.id.replace('gloss-track-', '');
+  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) (dx < 0 ? glossNext : glossPrev)(catSlug);
+  });
+});
 </script>
 {% endblock %}
