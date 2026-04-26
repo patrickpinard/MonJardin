@@ -82,7 +82,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "52",
+            "static_v": "53",
         }
 
     log.info(
@@ -144,6 +144,7 @@ def _init_services(app: Flask) -> None:
     from .services.arduino_client import ArduinoClient
     from .services.weather_service import WeatherService
     from .services.planting_advisor import PlantingAdvisor
+    from .services.rotation_advisor import RotationAdvisor
 
     sim_mode = app.config.get("SIMULATION_MODE", False)
     weather_sim = None
@@ -175,6 +176,19 @@ def _init_services(app: Flask) -> None:
     app.extensions["planting_advisor"] = PlantingAdvisor(
         plants_db_path=app.config.get("PLANTS_DB_PATH"),
     )
+
+    # Charger plants_db pour le RotationAdvisor (réutilise le contenu déjà lu)
+    import json as _json
+    from pathlib import Path as _Path
+    _plants_db_path = (app.config.get("PLANTS_DB_PATH")
+                       or _Path(__file__).parent.parent / "data" / "plants_database.json")
+    try:
+        with open(_plants_db_path, encoding="utf-8") as f:
+            _data = _json.load(f)
+            _plants_list = _data if isinstance(_data, list) else _data.get("vegetables", [])
+    except Exception:
+        _plants_list = []
+    app.extensions["rotation_advisor"] = RotationAdvisor(plants_db=_plants_list)
 
 
 def _start_scheduler(app: Flask) -> None:
