@@ -69,7 +69,7 @@ def create_app(config: type = Config) -> Flask:
     def inject_globals():
         from .models import Zone
         try:
-            zones_nav = Zone.query.order_by(Zone.zone_id).all()
+            zones_nav = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
         except Exception as e:
             log.warning("Context processor : échec lecture zones_nav : %s", e)
             zones_nav = []
@@ -82,7 +82,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "64",
+            "static_v": "66",
         }
 
     log.info(
@@ -137,6 +137,12 @@ def _migrate_db(app: Flask) -> None:
                 conn.execute(text("ALTER TABLE zones ADD COLUMN width_m REAL DEFAULT 1.0"))
                 conn.commit()
                 log.info("Migration DB : colonne width_m ajoutée à zones")
+            if "display_order" not in z_cols:
+                conn.execute(text("ALTER TABLE zones ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0"))
+                # Initialise l'ordre par zone_id pour préserver l'affichage actuel
+                conn.execute(text("UPDATE zones SET display_order = zone_id WHERE display_order = 0"))
+                conn.commit()
+                log.info("Migration DB : colonne display_order ajoutée à zones (init = zone_id)")
 
 
 def _init_services(app: Flask) -> None:

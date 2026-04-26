@@ -16,6 +16,7 @@ class Zone(db.Model):
     irrigation_duration_min = db.Column(db.Integer, default=15)
     length_m = db.Column(db.Float, default=2.0)
     width_m  = db.Column(db.Float, default=1.0)
+    display_order = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     @property
@@ -34,6 +35,7 @@ class Zone(db.Model):
             "irrigation_duration_min": self.irrigation_duration_min,
             "length_m": self.length_m or 2.0,
             "width_m": self.width_m or 1.0,
+            "display_order": self.display_order or 0,
         }
 
     def __repr__(self) -> str:

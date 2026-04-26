@@ -32,7 +32,7 @@ def current_data():
         for z in sensor_data.get("zones", []):
             zones_map[z["zone_id"]] = z
 
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     alert_since = _utcnow() - timedelta(hours=2)
     result = []
     for zone in zones:
@@ -277,6 +277,29 @@ def set_zone_mode(zone_id: int):
     zone.irrigation_mode = mode
     db.session.commit()
     return jsonify({"ok": True, "zone_id": zone_id, "mode": mode})
+
+
+@api_bp.post("/zones/reorder")
+def zones_reorder():
+    """Réordonne les zones d'après une liste de zone_id (drag & drop dashboard)."""
+    body = request.get_json(silent=True) or {}
+    order = body.get("order", [])
+    if not isinstance(order, list) or not all(isinstance(x, int) for x in order):
+        return jsonify({"ok": False, "error": "Format invalide : order doit être une liste d'entiers"}), 400
+
+    zones = {z.zone_id: z for z in Zone.query.all()}
+    if set(order) != set(zones.keys()):
+        return jsonify({
+            "ok": False,
+            "error": "Liste incomplète ou contient des zones inconnues",
+            "expected": sorted(zones.keys()),
+            "received": order,
+        }), 400
+
+    for idx, zid in enumerate(order):
+        zones[zid].display_order = idx + 1
+    db.session.commit()
+    return jsonify({"ok": True, "order": order})
 
 
 @api_bp.get("/weather/current")
@@ -836,7 +859,7 @@ def rotation_check(zone_id: int, vegetable_name: str):
 
     best = None
     if conflict and conflict.get("level") == "danger":
-        zones = Zone.query.order_by(Zone.zone_id).all()
+        zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
         best = advisor.suggest_best_zone(plantings, zones, vegetable_name)
         # N'afficher que si la suggestion est différente et meilleure
         if best and (best["zone_id"] == zone_id or not best.get("is_safe")):
