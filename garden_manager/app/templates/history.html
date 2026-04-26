@@ -58,18 +58,15 @@
       <button class="hist-chip active" data-zone="all" onclick="setHistZone(this,'all')">
         <i class="bi bi-stars"></i> Toutes
       </button>
-      <button class="hist-chip" data-zone="1" onclick="setHistZone(this,1)">
-        <i class="bi bi-house-door-fill"></i> Serre
+      {% for z in zones %}
+      <button class="hist-chip" data-zone="{{ z.zone_id }}" onclick="setHistZone(this,{{ z.zone_id }})">
+        {% if z.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+        {% elif z.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+        {% elif z.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+        {% else %}<i class="bi bi-flower3"></i>{% endif %}
+        {{ z.name }}
       </button>
-      <button class="hist-chip" data-zone="2" onclick="setHistZone(this,2)">
-        <i class="bi bi-sun-fill"></i> Soleil
-      </button>
-      <button class="hist-chip" data-zone="3" onclick="setHistZone(this,3)">
-        <i class="bi bi-cloud-sun-fill"></i> Mi-ombre
-      </button>
-      <button class="hist-chip" data-zone="4" onclick="setHistZone(this,4)">
-        <i class="bi bi-flower3"></i> Aromates
-      </button>
+      {% endfor %}
     </div>
     <div class="hist-control-row">
       <span class="hist-control-label">Période</span>
@@ -100,7 +97,10 @@
 {% block scripts %}
 <script>
 const ZONE_COLORS = {1:'#30d158', 2:'#8BC34A', 3:'#0a84ff', 4:'#bf5af2'};
-const ZONE_NAMES  = {1:'Serre', 2:'Soleil', 3:'Mi-ombre', 4:'Aromates'};
+// Noms des zones lus depuis la base (paramétrage utilisateur)
+const ZONE_NAMES  = {
+  {% for z in zones %}{{ z.zone_id }}: {{ z.name | tojson }}{% if not loop.last %}, {% endif %}{% endfor %}
+};
 
 let _histHours = 24;
 let _histZone  = 'all';   // 'all' ou 1/2/3/4
