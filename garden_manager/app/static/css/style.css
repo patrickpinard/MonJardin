@@ -2655,50 +2655,6 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
 }
 
-/* ── Bandeau "Mes zones" compact (au-dessus des onglets) ── */
-.zones-strip {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
-  gap: 8px;
-  margin-bottom: 14px;
-  padding: 8px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  cursor: pointer;
-  transition: border-color var(--t), background var(--t);
-}
-.zones-strip:hover {
-  border-color: var(--border-md);
-  background: var(--bg-secondary);
-}
-.zones-strip-cell {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 10px; border-radius: var(--r-sm);
-  background: var(--bg-secondary);
-  border-left: 3px solid var(--green);
-  transition: transform .12s var(--ease);
-}
-.zones-strip:hover .zones-strip-cell { transform: translateY(-1px); }
-.zones-strip-low  { border-left-color: var(--red); }
-.zones-strip-ok   { border-left-color: var(--green); }
-.zones-strip-high { border-left-color: var(--blue, #0a84ff); }
-.zones-strip-icon {
-  font-size: 18px; line-height: 1;
-  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
-}
-.zones-strip-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
-.zones-strip-name {
-  font-size: 12px; font-weight: 600; color: var(--text-primary);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.zones-strip-mois {
-  font-size: 11px; color: var(--text-tertiary); font-weight: 500;
-}
-
-@media (max-width: 768px) {
-  .zones-strip { grid-template-columns: repeat(2, 1fr); }
-}
 
 /* ── Drag & drop des cartes zones ─────────────────────── */
 .zones-reorder-bar {

@@ -189,29 +189,6 @@
   </div>
   {% endif %}
 
-  <!-- Bandeau "Mes zones" compact (vu d'un coup d'œil, clic = bascule onglet Zones) -->
-  {% if zones_data %}
-  <div class="zones-strip" onclick="switchDashTab(document.querySelector('#dash-tabs .time-tab[data-tab=\\'zones\\']'),'zones')"
-       title="Cliquer pour voir le détail des zones">
-    {% for zd in zones_data %}
-    {% set _zsc = 'low' if zd.moisture < zd.zone.moisture_threshold_low
-                  else ('high' if zd.moisture > zd.zone.moisture_threshold_high else 'ok') %}
-    <div class="zones-strip-cell zones-strip-{{ _zsc }}">
-      <div class="zones-strip-icon">
-        {% if zd.zone.zone_id == 1 %}🏠
-        {% elif zd.zone.zone_id == 2 %}☀️
-        {% elif zd.zone.zone_id == 3 %}⛅
-        {% else %}🌿{% endif %}
-      </div>
-      <div class="zones-strip-meta">
-        <div class="zones-strip-name">{{ zd.zone.name }}</div>
-        <div class="zones-strip-mois">{{ zd.moisture | int }}% · {{ zd.valve_state == 'open' and '💧' or '·' }}</div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
   <!-- Tab bar — Option A : Vue d'ensemble (défaut) | Mes zones -->
   <div class="time-tabs mb-3" id="dash-tabs">
     <button class="time-tab active" data-tab="apercu" onclick="switchDashTab(this,'apercu')">
