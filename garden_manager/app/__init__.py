@@ -64,6 +64,35 @@ def create_app(config: type = Config) -> Flask:
     # Démarrage du planificateur
     _start_scheduler(app)
 
+    # ── Filtre Jinja : conversion UTC (DB) → heure locale Europe/Zurich ──
+    # Toutes les colonnes timestamp/created_at sont stockées en UTC naïf
+    # (datetime.now(timezone.utc).replace(tzinfo=None)). Pour l'affichage
+    # on les rebascule vers le fuseau local du jardin (Vullierens = Europe/Zurich).
+    from datetime import timezone as _tz
+    try:
+        from zoneinfo import ZoneInfo
+        _LOCAL_TZ = ZoneInfo("Europe/Zurich")
+    except Exception:
+        _LOCAL_TZ = _tz.utc  # fallback
+    def _to_local(dt):
+        if dt is None:
+            return None
+        if getattr(dt, "tzinfo", None) is None:
+            dt = dt.replace(tzinfo=_tz.utc)
+        return dt.astimezone(_LOCAL_TZ)
+    @app.template_filter("localtime")
+    def _filter_localtime(dt, fmt="%d.%m.%Y %H:%M"):
+        d = _to_local(dt)
+        return d.strftime(fmt) if d else ""
+    @app.template_filter("localdate")
+    def _filter_localdate(dt, fmt="%d.%m.%Y"):
+        d = _to_local(dt)
+        return d.strftime(fmt) if d else ""
+    @app.template_filter("localhour")
+    def _filter_localhour(dt, fmt="%H:%M"):
+        d = _to_local(dt)
+        return d.strftime(fmt) if d else ""
+
     # Contexte global pour les templates
     @app.context_processor
     def inject_globals():
@@ -82,7 +111,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "68",
+            "static_v": "69",
         }
 
     log.info(

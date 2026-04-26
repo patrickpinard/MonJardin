@@ -136,7 +136,7 @@
           <span class="char-icon">⏱️</span>
           <div class="char-label">Dernier arrosage</div>
           <div class="char-value" style="font-size:13px;">
-            {% if last_irrigation %}{{ last_irrigation.timestamp.strftime('%d.%m à %H:%M') }}{% else %}—{% endif %}
+            {% if last_irrigation %}{{ last_irrigation.timestamp | localtime('%d.%m à %H:%M') }}{% else %}—{% endif %}
           </div>
         </div>
         <div class="char-item">
@@ -517,8 +517,8 @@
           <div class="ev-row1">
             <i class="bi {{ kicon }}" style="color:{{ kcolor }};font-size:13px;flex-shrink:0;"></i>
             <span class="ev-time">
-              <span class="ev-date">{{ ev.timestamp.strftime('%d.%m.%y') }}</span>
-              <span class="ev-hour">{{ ev.timestamp.strftime('%H:%M') }}</span>
+              <span class="ev-date">{{ ev.timestamp | localdate('%d.%m.%y') }}</span>
+              <span class="ev-hour">{{ ev.timestamp | localhour }}</span>
             </span>
             <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
               <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
@@ -584,7 +584,7 @@
           <span class="char-icon">⏰</span>
           <div class="char-label">Dernier arrosage</div>
           <div class="char-value" style="font-size:12px;">
-            {% if last_irrigation %}{{ last_irrigation.timestamp.strftime('%d.%m à %H:%M') }}{% else %}—{% endif %}
+            {% if last_irrigation %}{{ last_irrigation.timestamp | localtime('%d.%m à %H:%M') }}{% else %}—{% endif %}
           </div>
         </div>
       </div>

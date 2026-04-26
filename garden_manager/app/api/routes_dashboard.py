@@ -405,13 +405,15 @@ def dashboard():
             log.warning("Disease advisor échec : %s", e)
             disease_alerts = []
 
-    # Détection : configuration initiale faite ?
+    # Détection : configuration initiale faite ? Bannière masquée par l'utilisateur ?
     setup_done = _setup_done_path().exists()
+    setup_skipped = _setup_skipped_path().exists()
 
     return render_template(
         "dashboard.html",
         zones_data=zones_data,
         setup_done=setup_done,
+        setup_skipped=setup_skipped,
         temperature_c=round(temp, 1),
         temp_serre_c=round(temp_serre, 1) if temp_serre is not None else None,
         roof_state=actuator_status.get("roof_state", "close"),
@@ -1214,6 +1216,22 @@ def _setup_done_path():
     """Fichier flag pour savoir si l'onboarding est terminé."""
     from pathlib import Path
     return Path(current_app.root_path).parent / "data" / ".setup_done"
+
+
+def _setup_skipped_path():
+    """Fichier flag : l'utilisateur a explicitement masqué la bannière de bienvenue."""
+    from pathlib import Path
+    return Path(current_app.root_path).parent / "data" / ".setup_skipped"
+
+
+@dashboard_bp.post("/setup/skip")
+def setup_skip():
+    """L'utilisateur masque la bannière de bienvenue (réversible via /admin)."""
+    try:
+        _setup_skipped_path().touch()
+    except Exception as e:
+        log.warning("Impossible de créer .setup_skipped : %s", e)
+    return ("", 204)
 
 
 @dashboard_bp.get("/setup")

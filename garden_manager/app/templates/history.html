@@ -1,6 +1,45 @@
 {% extends "base.html" %}
 {% block title %}Graphiques{% endblock %}
 
+{% block head %}
+<style>
+.hist-controls {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 18px;
+}
+.hist-control-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.hist-control-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  color: var(--text-tertiary); letter-spacing: .5px;
+  flex-shrink: 0;
+}
+.hist-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 13px; border-radius: var(--r-pill);
+  background: var(--bg-secondary); color: var(--text-secondary);
+  border: 1px solid var(--border);
+  font-size: 12.5px; font-weight: 600;
+  font-family: inherit; cursor: pointer;
+  transition: background var(--t), color var(--t), border-color var(--t), transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.hist-chip:hover  { background: var(--bg-tertiary); color: var(--text-primary); }
+.hist-chip:active { transform: scale(.96); }
+.hist-chip.active {
+  background: var(--green); color: #fff; border-color: var(--green);
+}
+.hist-chip.active:hover { background: var(--green); color: #fff; }
+
+/* Couleur subtile des puces zone (visible quand non actives) */
+.hist-chip[data-zone="1"]:not(.active) { color: #30d158; }
+.hist-chip[data-zone="2"]:not(.active) { color: #8BC34A; }
+.hist-chip[data-zone="3"]:not(.active) { color: #0a84ff; }
+.hist-chip[data-zone="4"]:not(.active) { color: #bf5af2; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <div class="page-header-row">
@@ -8,23 +47,52 @@
       <div class="page-title">Graphiques</div>
       <div class="page-subtitle">Évolution des capteurs dans le temps</div>
     </div>
-    <div class="time-tabs">
-      <button class="time-tab active" onclick="switchHistTab(this, 24)">24h</button>
-      <button class="time-tab" onclick="switchHistTab(this, 168)">7j</button>
-      <button class="time-tab" onclick="switchHistTab(this, 720)">30j</button>
-    </div>
   </div>
 </div>
 
 <div class="page-body">
+  <!-- ── Contrôles : filtres zone + période ── -->
+  <div class="hist-controls">
+    <div class="hist-control-row">
+      <span class="hist-control-label">Zones</span>
+      <button class="hist-chip active" data-zone="all" onclick="setHistZone(this,'all')">
+        <i class="bi bi-stars"></i> Toutes
+      </button>
+      <button class="hist-chip" data-zone="1" onclick="setHistZone(this,1)">
+        <i class="bi bi-house-door-fill"></i> Serre
+      </button>
+      <button class="hist-chip" data-zone="2" onclick="setHistZone(this,2)">
+        <i class="bi bi-sun-fill"></i> Soleil
+      </button>
+      <button class="hist-chip" data-zone="3" onclick="setHistZone(this,3)">
+        <i class="bi bi-cloud-sun-fill"></i> Mi-ombre
+      </button>
+      <button class="hist-chip" data-zone="4" onclick="setHistZone(this,4)">
+        <i class="bi bi-flower3"></i> Aromates
+      </button>
+    </div>
+    <div class="hist-control-row">
+      <span class="hist-control-label">Période</span>
+      <button class="hist-chip active" data-period="24"  onclick="setHistPeriod(this, 24)">24 h</button>
+      <button class="hist-chip"        data-period="168" onclick="setHistPeriod(this, 168)">7 jours</button>
+      <button class="hist-chip"        data-period="720" onclick="setHistPeriod(this, 720)">30 jours</button>
+    </div>
+  </div>
+
+  <!-- ── 3 graphiques séparés, même base de temps ── -->
   <div class="card mb-3">
-    <div class="card-title"><i class="bi bi-droplet-half"></i> Humidité sol — 4 zones</div>
-    <div id="historyChart" style="height:330px;"></div>
+    <div class="card-title"><i class="bi bi-droplet-half" style="color:var(--blue);"></i> Humidité du sol</div>
+    <div id="moistureChart" style="height:300px;"></div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-title"><i class="bi bi-thermometer-half" style="color:var(--orange);"></i> Températures</div>
+    <div id="tempChart" style="height:240px;"></div>
   </div>
 
   <div class="card">
-    <div class="card-title"><i class="bi bi-thermometer-half" style="color:var(--orange);"></i> Températures — extérieure &amp; serre</div>
-    <div id="tempChart" style="height:200px;"></div>
+    <div class="card-title"><i class="bi bi-droplet-fill" style="color:var(--green);"></i> Événements d'arrosage</div>
+    <div id="irrigChart" style="height:200px;"></div>
   </div>
 </div>
 {% endblock %}
@@ -33,6 +101,9 @@
 <script>
 const ZONE_COLORS = {1:'#30d158', 2:'#8BC34A', 3:'#0a84ff', 4:'#bf5af2'};
 const ZONE_NAMES  = {1:'Serre', 2:'Soleil', 3:'Mi-ombre', 4:'Aromates'};
+
+let _histHours = 24;
+let _histZone  = 'all';   // 'all' ou 1/2/3/4
 
 function plotlyTheme(extra) {
   const dark = (document.documentElement.getAttribute('data-theme') || 'dark') !== 'light';
@@ -49,63 +120,105 @@ function plotlyTheme(extra) {
   };
 }
 
-let _histHours = 24;
-
-function switchHistTab(btn, h) {
-  document.querySelectorAll('.time-tabs .time-tab').forEach(b => b.classList.remove('active'));
+function setHistPeriod(btn, h) {
+  document.querySelectorAll('.hist-chip[data-period]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  loadHistory(h);
+  _histHours = h;
+  loadHistory();
 }
 
-async function loadHistory(hours) {
-  _histHours = hours;
-  const resp = await fetch(`/api/data/history?hours=${hours}`);
+function setHistZone(btn, z) {
+  document.querySelectorAll('.hist-chip[data-zone]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _histZone = z;
+  loadHistory();
+}
+
+async function loadHistory() {
+  const resp = await fetch(`/api/data/history?hours=${_histHours}`);
   if (!resp.ok) return;
   const data = await resp.json();
-  const traces = [];
-  let refReadings = null;
+  const zonesData = data.zones || {};
 
-  for (const [zid, readings] of Object.entries(data.zones)) {
-    const id = +zid;
-    traces.push({
-      x: readings.map(r => r.timestamp),
-      y: readings.map(r => r.soil_moisture_pct),
-      type: 'scatter', mode: 'lines',
-      name: ZONE_NAMES[id] || `Zone ${id}`,
-      line: {color: ZONE_COLORS[id], width: 2},
-    });
-    if (!refReadings) refReadings = readings;
-  }
+  // Zones à afficher
+  const zoneIds = (_histZone === 'all')
+    ? Object.keys(zonesData).map(z => +z)
+    : (zonesData[_histZone] ? [+_histZone] : []);
 
-  Plotly.react('historyChart', traces, plotlyTheme({
+  // ── 1) Humidité du sol — 1 trace par zone affichée ──
+  const moistureTraces = zoneIds.map(id => ({
+    x: zonesData[id].map(r => r.timestamp),
+    y: zonesData[id].map(r => r.soil_moisture_pct),
+    type: 'scatter', mode: 'lines',
+    name: ZONE_NAMES[id] || `Zone ${id}`,
+    line: {color: ZONE_COLORS[id], width: 2.2},
+    hovertemplate: '%{y:.1f}%<extra>' + (ZONE_NAMES[id] || `Zone ${id}`) + '</extra>',
+  }));
+  Plotly.react('moistureChart', moistureTraces, plotlyTheme({
     margin: {t: 10, b: 44, l: 44, r: 12},
     yaxis: {title: 'Humidité (%)', range: [0, 100]},
   }), {responsive: true, displayModeBar: false});
 
-  if (refReadings) {
-    const tempTraces = [
-      {
-        x: refReadings.map(r => r.timestamp),
-        y: refReadings.map(r => r.temperature_c),
-        type: 'scatter', mode: 'lines', name: 'Ext.',
-        line: {color: '#ff9f0a', width: 1.5},
-      },
-    ];
+  // ── 2) Températures — extérieure et serre (basé sur la 1ère zone du set) ──
+  const refReadings = zoneIds.length ? zonesData[zoneIds[0]] : null;
+  const tempTraces = [];
+  if (refReadings && refReadings.length) {
+    tempTraces.push({
+      x: refReadings.map(r => r.timestamp),
+      y: refReadings.map(r => r.temperature_c),
+      type: 'scatter', mode: 'lines', name: 'Extérieure',
+      line: {color: '#ff9f0a', width: 1.8},
+      hovertemplate: '%{y:.1f}°C<extra>Ext.</extra>',
+    });
     if (refReadings.some(r => r.temp_serre_c != null)) {
       tempTraces.push({
         x: refReadings.map(r => r.timestamp),
         y: refReadings.map(r => r.temp_serre_c),
         type: 'scatter', mode: 'lines', name: 'Serre',
-        line: {color: '#30d158', width: 1.5, dash: 'dot'},
+        line: {color: '#30d158', width: 1.8, dash: 'dot'},
+        hovertemplate: '%{y:.1f}°C<extra>Serre</extra>',
       });
     }
-    Plotly.react('tempChart', tempTraces, plotlyTheme({
-      margin: {t: 10, b: 44, l: 44, r: 12},
-      yaxis: {title: 'Température (°C)'},
-    }), {responsive: true, displayModeBar: false});
+  }
+  Plotly.react('tempChart', tempTraces, plotlyTheme({
+    margin: {t: 10, b: 44, l: 44, r: 12},
+    yaxis: {title: 'Température (°C)'},
+  }), {responsive: true, displayModeBar: false});
+
+  // ── 3) Événements d'arrosage — barres open/close par zone ──
+  try {
+    const evResp = await fetch(`/api/data/irrigation_events?hours=${_histHours}`);
+    if (evResp.ok) {
+      const evData = await evResp.json();
+      const events = (evData.events || []).filter(e =>
+        _histZone === 'all' || e.zone_id === +_histZone
+      );
+      // Trace par zone : 1 barre verticale par "open" (durée jusqu'au "close")
+      const evTraces = [];
+      const byZone = {};
+      events.forEach(e => { (byZone[e.zone_id] = byZone[e.zone_id] || []).push(e); });
+      for (const [zid, evs] of Object.entries(byZone)) {
+        const id = +zid;
+        const opens = evs.filter(e => e.action === 'open');
+        evTraces.push({
+          x: opens.map(e => e.timestamp),
+          y: opens.map(_ => 1),
+          type: 'bar', name: ZONE_NAMES[id] || `Zone ${id}`,
+          marker: {color: ZONE_COLORS[id], opacity: .8},
+          hovertemplate: '%{x|%d.%m %H:%M}<extra>' + (ZONE_NAMES[id] || `Zone ${id}`) + ' — ouverture</extra>',
+        });
+      }
+      Plotly.react('irrigChart', evTraces, plotlyTheme({
+        margin: {t: 10, b: 44, l: 44, r: 12},
+        yaxis: {title: 'Ouvertures', range: [0, 1.4], showticklabels: false},
+        barmode: 'overlay', bargap: 0.6,
+      }), {responsive: true, displayModeBar: false});
+    }
+  } catch (e) {
+    console.warn('Irrigation events fetch failed:', e);
   }
 }
 
-loadHistory(24);
+loadHistory();
 </script>
 {% endblock %}
