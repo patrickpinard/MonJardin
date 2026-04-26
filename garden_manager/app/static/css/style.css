@@ -577,6 +577,43 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .photos-help i { color: var(--green); margin-right: 4px; }
 
+/* Accordéon mois (utilise <details>/<summary>) */
+.photos-month {
+  padding: 0;       /* la padding est sur summary + day-list */
+  overflow: hidden;
+}
+.photos-month-summary {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px;
+  cursor: pointer;
+  list-style: none;        /* enlève le triangle natif */
+  font-size: 14px; font-weight: 700;
+  color: var(--text-primary);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--t);
+}
+.photos-month-summary::-webkit-details-marker { display: none; }
+.photos-month-summary::marker { display: none; content: ''; }
+.photos-month-summary:hover { background: var(--bg-secondary); }
+.photos-month-label { flex: 1; }
+.photos-month-count {
+  font-size: 11.5px; font-weight: 500; color: var(--text-tertiary);
+}
+.photos-month-chevron {
+  transition: transform .2s var(--ease);
+  color: var(--text-tertiary); font-size: 13px;
+}
+.photos-month[open] > .photos-month-summary {
+  border-bottom: 1px solid var(--border);
+}
+.photos-month[open] .photos-month-chevron {
+  transform: rotate(180deg);
+}
+.photos-month .photos-day-list {
+  padding: 14px 18px 16px;
+}
+
 .photos-day-list { display: flex; flex-direction: column; gap: 14px; }
 .photos-day-row {
   display: flex; align-items: flex-start; gap: 14px;

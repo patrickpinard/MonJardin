@@ -534,17 +534,18 @@
       </div>
     </div>
 
-    <!-- Vue calendrier : un bloc par mois avec photos groupées par jour -->
+    <!-- Vue calendrier : un accordéon par mois (1er ouvert, autres pliés) -->
     {% if photos_by_month %}
     {% for month_label, days in photos_by_month %}
-    <div class="card mb-3 photos-month">
-      <div class="card-title">
+    <details class="card mb-3 photos-month" {% if loop.first %}open{% endif %}>
+      <summary class="photos-month-summary">
         <i class="bi bi-calendar3" style="color:var(--green);"></i>
-        {{ month_label }}
-        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
+        <span class="photos-month-label">{{ month_label }}</span>
+        <span class="photos-month-count">
           {{ days | sum(attribute='count') }} photo{{ 's' if days | sum(attribute='count') > 1 else '' }}
         </span>
-      </div>
+        <i class="bi bi-chevron-down photos-month-chevron"></i>
+      </summary>
       <div class="photos-day-list">
         {% for day in days %}
         <div class="photos-day-row">
@@ -579,7 +580,7 @@
         </div>
         {% endfor %}
       </div>
-    </div>
+    </details>
     {% endfor %}
     {% else %}
     <div class="card empty-state" style="padding:40px 20px;text-align:center;">
