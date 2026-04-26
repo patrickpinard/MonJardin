@@ -5,6 +5,44 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ---
 
+## [5.0] — 2026-04-26
+
+Release de **consolidation UI** : tous les apports v4.x sont validés en production
+et l'uniformisation visuelle est finalisée à travers toute l'application.
+
+### UI uniforme — onglets et filtres
+- **Onglets actifs** : règle CSS unique → fond vert plein, texte et icônes blancs
+  (Dashboard, Zone détail, Conseils, Administration, etc.)
+- **Filtres** : structure unifiée (modèle Encyclopédie) sur toutes les pages :
+  `filter-bar > filter-section > filter-section-label + filter-row > filter-chip`
+- Pages alignées : `/plants`, `/plans`, `/conseils`, `/history`, `/zones/<id>#graphiques`
+- Promotion en CSS global de `.filter-bar`, `.filter-section`, `.filter-row`, `.filter-chip`
+- `.filter-chip.active` passe en **fond vert plein** (au lieu du tint translucide)
+
+### Alignement parfait des filtres sur la même ligne
+- `.filter-bar` : `display: flex; flex-wrap: wrap; align-items: flex-start`
+- `.filter-section-label` : `height: 16px` fixe → labels toujours au même y
+- `.filter-row` : `min-height: 30px` (= chip height) → chips toujours au même y
+- `.filter-chip` : `height: 30px` + `box-sizing: border-box` → button et anchor identiques
+- Icônes : `line-height: 1; font-size: 12px` fixe
+
+### Header simplifié
+- Pastille **« S »** orange compacte (24×24 carré arrondi) remplace l'ancien
+  badge « SIM ×50 🌸 Printemps » qui prenait trop de place
+- Clic → `/admin?tab=simulation` (active directement le bon onglet)
+
+### Centralisation de la version
+- Variable Jinja `app_version` (= "5.0") + `app_release_date` (= "Avril 2026")
+  injectée par le context_processor — un seul endroit à modifier
+- Sidebar `v{{ app_version }}`, login footer, page About : tous synchronisés
+
+### Documentation
+- README.md : section v5.0 + version footer
+- CHANGELOG.md : nouvelle entrée structurée
+- CLAUDE.md : version courante 5.0
+
+---
+
 ## [4.5] — 2026-04-26
 
 ### Photos par zone (PWA mobile)

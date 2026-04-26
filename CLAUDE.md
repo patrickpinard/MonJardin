@@ -1,6 +1,6 @@
 # MonJardin — Guide projet pour Claude
 
-> Version courante : **4.5** (avril 2026). Voir `CHANGELOG.md` pour l'historique.
+> Version courante : **5.0** (avril 2026). Voir `CHANGELOG.md` pour l'historique.
 
 ## Vue d'ensemble
 
