@@ -775,8 +775,10 @@
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div>
           <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Variété</label>
-          <input type="text" name="variety" id="ep-variety" placeholder="ex. Cœur de bœuf…"
+          <input type="text" name="variety" id="ep-variety" list="ep-variety-list" placeholder="ex. Cœur de bœuf…"
+            autocomplete="off"
             style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-md);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+          <datalist id="ep-variety-list"></datalist>
         </div>
         <div>
           <label style="font-size:12px;color:var(--text-secondary);font-weight:600;display:block;margin-bottom:4px;">Date de récolte prévue</label>
@@ -880,6 +882,7 @@
                 data-qp-water="{{ v.get('water_need', 'medium') }}"
                 data-qp-sun="{{ v.get('sun_need', 'full') }}"
                 data-qp-tip="{{ (v.get('planting_tip_fr') or v.get('notes_fr', ''))[:140] | e }}"
+                data-qp-varieties="{{ v.get('varieties', []) | join('|') | e }}"
                 onclick="qpSelectVeg(this)">
           <span class="qp-veg-emoji">{{ v.get('emoji','🌱') }}</span>
           <span class="qp-veg-name">{{ v.name }}</span>
@@ -942,8 +945,10 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
           <div>
             <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:3px;">Variété (optionnel)</label>
-            <input type="text" name="variety" placeholder="ex. Cœur de bœuf"
+            <input type="text" name="variety" id="qp-variety" list="qp-variety-list" placeholder="ex. Cœur de bœuf"
+              autocomplete="off"
               style="width:100%;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);padding:7px 10px;font-size:13px;font-family:var(--font);">
+            <datalist id="qp-variety-list"></datalist>
           </div>
           <div>
             <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:3px;">Quantité</label>
@@ -1116,6 +1121,15 @@ document.getElementById('delete-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeDeleteModal();
 });
 
+// ── Variétés suggérées par espèce (depuis plants_database.json) ──
+const _VARIETIES_BY_NAME = {
+  {% for vname, vinfo in plant_info.items() %}
+    {% if vinfo.get('varieties') %}
+    {{ vname | tojson }}: {{ vinfo.get('varieties') | tojson }},
+    {% endif %}
+  {% endfor %}
+};
+
 // ── Edit modal ──────────────────────────────────────────
 const _editForm = document.getElementById('edit-planting-form');
 let _editCurrentSpecies = '';   // mémorise l'espèce pour le bouton Supprimer
@@ -1123,6 +1137,17 @@ let _editCurrentCount   = 1;
 function openEditModal(id, name, variety, harvest, status, waterNeed, notes, redirectTo, currentCount) {
   document.getElementById('ep-name').textContent = name;
   document.getElementById('ep-variety').value    = variety;
+  // Suggestions de variétés (datalist HTML5)
+  const dl = document.getElementById('ep-variety-list');
+  if (dl) {
+    dl.innerHTML = '';
+    const list = _VARIETIES_BY_NAME[name] || [];
+    list.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      dl.appendChild(opt);
+    });
+  }
   document.getElementById('ep-harvest').value    = harvest;
   document.getElementById('ep-status').value     = status;
   document.getElementById('ep-water').value      = waterNeed;
@@ -1340,6 +1365,27 @@ function qpSelectVeg(btn) {
     document.getElementById('qp-tip-text').textContent = tip;
   } else {
     document.getElementById('qp-tip').style.display = 'none';
+  }
+
+  // Variétés suggérées (datalist HTML5)
+  const varieties = (btn.dataset.qpVarieties || '').split('|').filter(Boolean);
+  const dl = document.getElementById('qp-variety-list');
+  const inp = document.getElementById('qp-variety');
+  if (dl) {
+    dl.innerHTML = '';
+    varieties.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      dl.appendChild(opt);
+    });
+  }
+  if (inp) {
+    inp.value = '';  // reset au changement de légume
+    if (varieties.length > 0) {
+      inp.placeholder = `ex. ${varieties[0]}, ${varieties[1] || varieties[0]}…`;
+    } else {
+      inp.placeholder = 'ex. Cœur de bœuf';
+    }
   }
 
   // ── Compagnonnage live ──

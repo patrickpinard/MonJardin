@@ -102,7 +102,17 @@
       "depth_cm": 20,
       "planting_tip_fr": "Après les Saints de Glace (15 mai). Enterrer la tige jusqu'aux premières feuilles. Tuteurer à 30 cm.",
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Cœur de bœuf",
+        "Marmande",
+        "Roma",
+        "Cerise",
+        "Noire de Crimée",
+        "Saint-Pierre",
+        "Andine cornue",
+        "Green Zebra"
+      ]
     },
     {
       "name": "Carotte",
@@ -195,7 +205,15 @@
       "planting_tip_fr": "Semer à 1 cm (variété Longue de Chantenay en juin). Espacement 5 cm après éclaircissage.",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 25
+      "space_row_cm": 25,
+      "varieties": [
+        "Nantaise",
+        "Touchon",
+        "Chantenay",
+        "Colmar",
+        "Marché de Paris",
+        "Jaune du Doubs"
+      ]
     },
     {
       "name": "Salade",
@@ -298,7 +316,16 @@
       "depth_cm": 0.5,
       "category": "légume",
       "sowing_type": "plant",
-      "space_row_cm": 30
+      "space_row_cm": 30,
+      "varieties": [
+        "Batavia",
+        "Laitue Romaine",
+        "Feuille de Chêne",
+        "Lollo Rossa",
+        "Reine des Glaces",
+        "Sucrine",
+        "Mesclun"
+      ]
     },
     {
       "name": "Courgette",
@@ -376,7 +403,14 @@
       "depth_cm": 3,
       "planting_tip_fr": "Espacement généreux : 80 cm entre plants. 2–3 plants suffisent pour une famille.",
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Verte Noire de Milan",
+        "Ronde de Nice",
+        "Yellow Crookneck",
+        "Costata Romanesco",
+        "Gold Rush"
+      ]
     },
     {
       "name": "Haricot",
@@ -454,7 +488,15 @@
       "planting_tip_fr": "3 graines par poquet, espacement 10 cm. Semer directement en mai–juillet.",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 40
+      "space_row_cm": 40,
+      "varieties": [
+        "Phénomène",
+        "Filet",
+        "Buerre",
+        "Coco rose",
+        "Mangetout",
+        "Tarbais"
+      ]
     },
     {
       "name": "Basilic",
@@ -544,7 +586,14 @@
       "depth_cm": 0.5,
       "planting_tip_fr": "Semer en surface (0,5 cm). Hors gel uniquement — ne supporte pas < 10°C.",
       "category": "herbe",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Grand Vert",
+        "Pourpre",
+        "Citron",
+        "Cannelle",
+        "Thaï"
+      ]
     },
     {
       "name": "Concombre",
@@ -630,7 +679,14 @@
       "depth_cm": 2,
       "planting_tip_fr": "Graines à plat, 2 cm de profondeur. Espacement 40 cm. Arrosage régulier.",
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Marketmore",
+        "Long anglais",
+        "Cornichon",
+        "Lemon",
+        "Beit Alpha"
+      ]
     },
     {
       "name": "Poivron",
@@ -716,7 +772,15 @@
       "depth_cm": 15,
       "planting_tip_fr": "Sol chaud indispensable — attendre le 15 mai minimum. Espacement 40 cm.",
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "California Wonder",
+        "Yolo Wonder",
+        "Rouge Long",
+        "Jaune",
+        "Doux d'Espagne",
+        "Lipstick"
+      ]
     },
     {
       "name": "Radis",
@@ -809,7 +873,14 @@
       "depth_cm": 1.5,
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 20
+      "space_row_cm": 20,
+      "varieties": [
+        "18 jours",
+        "Cherry Belle",
+        "Rond rouge",
+        "Glaçon",
+        "Daïkon"
+      ]
     },
     {
       "name": "Oignon",
@@ -895,7 +966,14 @@
       "depth_cm": 1,
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 25
+      "space_row_cm": 25,
+      "varieties": [
+        "Jaune Paille",
+        "Stuttgart",
+        "Rouge de Florence",
+        "Cévenne",
+        "Cipollini"
+      ]
     },
     {
       "name": "Poireau",
@@ -977,7 +1055,13 @@
       "planting_tip_fr": "Transplanter au dibble, 15 cm de profondeur. Espacement 15 cm. Semer en juin.",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 30
+      "space_row_cm": 30,
+      "varieties": [
+        "Bleu de Solaise",
+        "Monstrueux d'Elbeuf",
+        "Géant d'Hiver",
+        "Carentan"
+      ]
     },
     {
       "name": "Chou",
@@ -1057,7 +1141,14 @@
       "notes_fr": "Rotation obligatoire : ne pas replanter de Brassicacées dans la même zone pendant 3 ans. Protégez avec un filet anti-insectes contre la piéride du chou.",
       "depth_cm": 0.5,
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Cabus",
+        "Pommé de Brunswick",
+        "Chinois",
+        "Frisé",
+        "Rouge"
+      ]
     },
     {
       "name": "Pomme de terre",
@@ -1132,7 +1223,16 @@
       "notes_fr": "Faites prégerminer les plants 3 semaines avant. Buttez régulièrement pour éviter le verdissement. Évitez de cultiver à côté de tomates (même famille, mêmes maladies).",
       "depth_cm": 8,
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Charlotte",
+        "Bintje",
+        "Amandine",
+        "Ratte",
+        "Désirée",
+        "Mona Lisa",
+        "Vitelotte"
+      ]
     },
     {
       "name": "Épinard",
@@ -1213,7 +1313,12 @@
       "depth_cm": 1,
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 25
+      "space_row_cm": 25,
+      "varieties": [
+        "Géant d'hiver",
+        "Matador",
+        "Monstrueux de Viroflay"
+      ]
     },
     {
       "name": "Ail",
@@ -1287,7 +1392,13 @@
       "depth_cm": 5,
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 25
+      "space_row_cm": 25,
+      "varieties": [
+        "Blanc",
+        "Rose",
+        "Ail des ours",
+        "Violet de Cadours"
+      ]
     },
     {
       "name": "Fenouil",
@@ -1363,7 +1474,12 @@
       "depth_cm": 1,
       "planting_tip_fr": "Semer à 1 cm, espacement 30 cm. Juin recommandé pour éviter la montée en graines.",
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Romanesco",
+        "Genève",
+        "Doux de Florence"
+      ]
     },
     {
       "name": "Brocoli",
@@ -1443,7 +1559,12 @@
       "notes_fr": "Même précautions que le chou : rotation 3 ans, filet anti-insectes. Protégez contre les gelées tardives avec un voile de forçage.",
       "depth_cm": 0.5,
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Calabrais",
+        "Romanesco",
+        "Pourpre du Cap"
+      ]
     },
     {
       "name": "Betterave",
@@ -1518,7 +1639,13 @@
       "planting_tip_fr": "Semer à 2 cm, espacement 15 cm. Juin pour une conservation automnale.",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 25
+      "space_row_cm": 25,
+      "varieties": [
+        "Crapaudine",
+        "Ronde Plate d'Égypte",
+        "Burpee Golden",
+        "Chioggia"
+      ]
     },
     {
       "name": "Chou-fleur",
@@ -1593,7 +1720,12 @@
       "notes_fr": "Culture délicate nécessitant un sol riche et une humidité constante. Un seul stress hydrique peut provoquer le buttoning ou la montée en fleurs prématurée.",
       "depth_cm": 0.5,
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Géant d'automne",
+        "All The Year Round",
+        "Cheddar (orange)"
+      ]
     },
     {
       "name": "Potiron",
@@ -1669,7 +1801,14 @@
       "depth_cm": 3,
       "planting_tip_fr": "3 cm de profondeur, espacement 100 cm. Semer en mai après le gel.",
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Rouge vif d'Étampes",
+        "Musquée de Provence",
+        "Butternut",
+        "Délicata",
+        "Hokkaido"
+      ]
     },
     {
       "name": "Aubergine",
@@ -1752,7 +1891,14 @@
       "notes_fr": "Semez en février à 25°C. Repic en pot 12 cm à partir de mars. En serre, tuteurez dès 30 cm. Pincez le bourgeon terminal pour favoriser la ramification.",
       "depth_cm": 15,
       "category": "légume",
-      "sowing_type": "plant"
+      "sowing_type": "plant",
+      "varieties": [
+        "Black Beauty",
+        "Violetta Lunga",
+        "Listada de Gandia",
+        "Rosa Bianca",
+        "Florida Market"
+      ]
     },
     {
       "name": "Piment",
@@ -1987,7 +2133,13 @@
       "depth_cm": 4,
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 40
+      "space_row_cm": 40,
+      "varieties": [
+        "Mangetout",
+        "À grains ronds",
+        "Petit Provençal",
+        "Gourmand"
+      ]
     },
     {
       "name": "Fève",
@@ -2061,7 +2213,13 @@
       "notes_fr": "Pincez les sommités florales dès la nouaison pour limiter les pucerons. Plantation d'automne (octobre) donne les meilleurs rendements.",
       "depth_cm": 5,
       "category": "légume",
-      "sowing_type": "seed"
+      "sowing_type": "seed",
+      "varieties": [
+        "Aguadulce",
+        "Express",
+        "Reina Mora",
+        "Crimson Flowered"
+      ]
     },
     {
       "name": "Mâche",
@@ -2140,7 +2298,12 @@
       "planting_tip_fr": "Semer à 1 cm. Résistante au gel — idéale pour l'automne.",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 15
+      "space_row_cm": 15,
+      "varieties": [
+        "Verte de Cambrai",
+        "À grosse graine",
+        "Ronde maraîchère"
+      ]
     },
     {
       "name": "Roquette",
@@ -2221,7 +2384,11 @@
       "planting_tip_fr": "Semer à 0,5 cm, sans couverture. Croissance rapide en 4 semaines.",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 20
+      "space_row_cm": 20,
+      "varieties": [
+        "Cultivée",
+        "Sauvage (sylvestris)"
+      ]
     },
     {
       "name": "Navet",
@@ -2296,7 +2463,13 @@
       "planting_tip_fr": "Semer à 1 cm, espacement 15 cm. Navet d'automne en juin.",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 25
+      "space_row_cm": 25,
+      "varieties": [
+        "Boule d'Or",
+        "Marteau",
+        "Nancy",
+        "Long des Vertus"
+      ]
     },
     {
       "name": "Panais",
@@ -2457,7 +2630,12 @@
       "depth_cm": 0.5,
       "category": "herbe",
       "sowing_type": "plant",
-      "space_row_cm": 25
+      "space_row_cm": 25,
+      "varieties": [
+        "Plat (italien)",
+        "Frisé",
+        "Géant d'Italie"
+      ]
     },
     {
       "name": "Ciboulette",
@@ -3227,7 +3405,12 @@
       "planting_tip_fr": "4 graines par poquet, espacement 40 cm. Semer en bloc (pollinisation croisée).",
       "category": "légume",
       "sowing_type": "seed",
-      "space_row_cm": 70
+      "space_row_cm": 70,
+      "varieties": [
+        "Doux Golden Bantam",
+        "Sucré F1",
+        "Précoce Wisconsin"
+      ]
     },
     {
       "name": "Souci",
