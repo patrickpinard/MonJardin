@@ -93,6 +93,9 @@
       <i class="bi bi-cpu-fill" style="color:var(--orange);"></i> Simulation
     </button>
     {% endif %}
+    <button class="time-tab" onclick="switchTab(this,'nouvelle_annee')">
+      <i class="bi bi-arrow-counterclockwise" style="color:var(--orange);"></i> Nouvelle année
+    </button>
   </div>
 
 
@@ -251,35 +254,95 @@
       </div>
     </div>
 
-    <!-- Reset annuel : nouveau jardin -->
-    <div class="card" style="border:1px solid rgba(255,69,58,.3);">
-      <div class="card-title"><i class="bi bi-arrow-counterclockwise" style="color:var(--red);"></i> Recommencer une nouvelle année</div>
-      <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">
-        Réinitialise le jardin pour démarrer une nouvelle saison :
+  </div><!-- /#tab-systeme -->
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB NOUVELLE ANNÉE — reset annuel du jardin
+       ══════════════════════════════════════════════════════ -->
+  <div id="tab-nouvelle_annee" style="display:none;">
+
+    <!-- Présentation -->
+    <div class="card mb-3" style="background:linear-gradient(135deg, rgba(255,159,10,.06), rgba(255,69,58,.04));">
+      <div style="display:flex;align-items:flex-start;gap:16px;">
+        <div style="font-size:42px;flex-shrink:0;">♻️</div>
+        <div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">Démarrer une nouvelle saison de jardinage</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">
+            En fin d'automne ou au début du printemps, vous pouvez « tout remettre à zéro »
+            pour repartir sur des bases propres. <strong>L'historique de vos plantations est conservé</strong>
+            pour vous aider à respecter la rotation des cultures dans les années à venir.
+          </div>
+        </div>
       </div>
-      <ul style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin:0 0 14px 18px;padding:0;">
-        <li><strong>Plantations actives</strong> archivées (statut <code>archived</code>) — l'historique est <strong>conservé</strong> pour les conseils de rotation des cultures.</li>
-        <li><strong>Zones réinitialisées</strong> aux noms et dimensions par défaut (Serre, Soleil, Mi-ombre, Aromates).</li>
-        <li><strong>Wizard de configuration</strong> reproposé sur le dashboard (vous pouvez aussi configurer manuellement).</li>
-        <li>Les capteurs, journal, comptes utilisateurs et alertes ne sont <strong>pas</strong> touchés.</li>
-      </ul>
+    </div>
+
+    <!-- Détail de ce qui se passe -->
+    <div class="grid-2" style="gap:14px;margin-bottom:14px;">
+      <div class="card">
+        <div class="card-title" style="color:var(--green);"><i class="bi bi-check2-circle"></i> Ce qui est réinitialisé</div>
+        <ul style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin:0;padding-left:18px;">
+          <li><strong>Plantations actives & planifiées</strong> → archivées</li>
+          <li><strong>Noms et dimensions des zones</strong> → valeurs par défaut</li>
+          <li><strong>Seuils d'humidité, mode auto</strong> → valeurs par défaut</li>
+          <li><strong>Flag onboarding</strong> → wizard reproposé au dashboard</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--blue);"><i class="bi bi-shield-check"></i> Ce qui est préservé</div>
+        <ul style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin:0;padding-left:18px;">
+          <li><strong>Historique des plantations</strong> (status « archived »)</li>
+          <li><strong>Données capteurs</strong> et tous les graphiques</li>
+          <li><strong>Journal complet</strong> (irrigations, lucarne, événements)</li>
+          <li><strong>Comptes utilisateurs</strong> et destinataires d'alertes</li>
+          <li><strong>Configuration globale</strong> (météo, simulation)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Pourquoi c'est utile -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="bi bi-lightbulb-fill" style="color:var(--orange);"></i> Pourquoi ce reset est utile ?</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+        Au fil des saisons, des plantations se terminent, des variétés sont changées,
+        la disposition du jardin évolue. Le reset annuel vous permet de
+        <strong>repartir sur une page blanche</strong> sans perdre la mémoire
+        utile : MonJardin se souvient de ce que vous avez planté l'an passé pour
+        vous prévenir au moment des nouveaux semis :
+        <em>« attention, des Solanacées étaient à cet emplacement il y a 8 mois,
+        évitez d'y replanter de la tomate »</em>.
+        <br><br>
+        L'idéal : effectuer ce reset <strong>en fin d'hiver</strong> (février-mars)
+        avant de planifier la nouvelle saison.
+      </div>
+    </div>
+
+    <!-- Action de reset -->
+    <div class="card" style="border:2px solid rgba(255,69,58,.4);background:rgba(255,69,58,.02);">
+      <div class="card-title" style="color:var(--red);">
+        <i class="bi bi-exclamation-triangle-fill"></i> Réinitialiser maintenant
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">
+        Cette action est <strong>définitive</strong> pour les zones (mais pas pour les plantations
+        qui restent archivées). Tapez <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:3px;color:var(--red);font-weight:700;">RESET</code>
+        en majuscules pour confirmer votre intention.
+      </div>
       <form method="post" action="{{ url_for('dashboard.admin_reset_garden') }}"
             id="reset-garden-form" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
         <div>
           <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:4px;">
-            Tapez <strong style="color:var(--red);">RESET</strong> pour confirmer
+            Confirmation
           </label>
-          <input type="text" name="confirm" placeholder="RESET"
-                 style="width:140px;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:8px 12px;font-size:13px;font-family:var(--font);text-transform:uppercase;letter-spacing:1px;">
+          <input type="text" name="confirm" placeholder="RESET" autocomplete="off"
+                 style="width:160px;background:var(--bg-primary);border:2px solid var(--red);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);text-transform:uppercase;letter-spacing:2px;font-weight:700;">
         </div>
-        <button type="submit" class="btn btn-sm" style="background:var(--red);color:#fff;border:none;"
-                onclick="return confirm('Êtes-vous sûr ? Cette action est irréversible (sauf historique). Continuer ?');">
-          <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser le jardin
+        <button type="submit" class="btn btn-sm" style="background:var(--red);color:#fff;border:none;padding:10px 18px;font-weight:700;"
+                onclick="return confirm('Êtes-vous sûr ? Les plantations actives seront archivées et les zones réinitialisées. Continuer ?');">
+          <i class="bi bi-arrow-counterclockwise"></i> Démarrer une nouvelle année
         </button>
       </form>
     </div>
 
-  </div><!-- /#tab-systeme -->
+  </div><!-- /#tab-nouvelle_annee -->
 
 
   <!-- ══════════════════════════════════════════════════════
@@ -585,7 +648,7 @@
 <script src="{{ url_for('static', filename='js/controls.js') }}?v={{ static_v }}"></script>
 <script>
 // ── Tab switching ───────────────────────────────────────
-const ADMIN_TABS = ['acces','systeme','alertes','simulation'];
+const ADMIN_TABS = ['acces','systeme','alertes','simulation','nouvelle_annee'];
 function switchTab(btn, tab) {
   document.querySelectorAll('#admin-tab-bar .time-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');

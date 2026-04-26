@@ -1,0 +1,172 @@
+{
+  "terms": [
+    {
+      "term": "Saints de Glace",
+      "category": "Météo",
+      "definition": "Période traditionnelle des 11, 12 et 13 mai en Suisse, considérée comme le dernier risque de gelée tardive. Avant cette date, on ne transplante pas les plants sensibles au froid (tomates, courgettes, basilic, poivrons) en plein air.",
+      "tip": "À Vullierens, attendre le 15 mai minimum pour les solanacées."
+    },
+    {
+      "term": "Compagnonnage",
+      "category": "Plantation",
+      "definition": "Pratique consistant à associer des plantes qui se favorisent mutuellement (croissance, protection contre parasites, amélioration du sol). Exemple classique : carotte + oignon (les deux se protègent contre leurs mouches respectives).",
+      "tip": "Voir l'onglet 'Associations' de la page Conseils pour 30 paires éprouvées."
+    },
+    {
+      "term": "Rotation des cultures",
+      "category": "Plantation",
+      "definition": "Principe fondamental qui consiste à ne pas replanter la même famille botanique au même endroit chaque année. Permet d'éviter l'épuisement du sol et la propagation des maladies. La règle d'or : attendre au moins 3 ans avant de revenir avec la même famille.",
+      "tip": "MonJardin vous prévient automatiquement au moment de planter (page Plan rotation)."
+    },
+    {
+      "term": "Famille botanique",
+      "category": "Plantation",
+      "definition": "Regroupement scientifique des plantes selon leurs caractéristiques. Exemple : les Solanacées (tomate, pomme de terre, aubergine, poivron) sont sensibles aux mêmes maladies. Les Cucurbitacées (courgette, concombre, melon) ont des besoins similaires en eau et chaleur.",
+      "tip": "Penser en familles, pas en espèces, pour planifier les rotations."
+    },
+    {
+      "term": "Mildiou",
+      "category": "Maladies",
+      "definition": "Maladie fongique qui apparaît quand la température est entre 15-25°C et l'humidité de l'air dépasse 85% pendant plusieurs heures consécutives. Affecte surtout les Solanacées (tomate, pomme de terre) et Cucurbitacées (courgette).",
+      "tip": "Pailler le sol, espacer les plants, pulvériser bouillie bordelaise en préventif."
+    },
+    {
+      "term": "Oïdium",
+      "category": "Maladies",
+      "definition": "Maladie cryptogamique reconnaissable au feutrage blanchâtre sur les feuilles. Apparaît par temps chaud (>22°C) avec humidité variable et faible vent. Affecte surtout les Cucurbitacées.",
+      "tip": "Pulvériser un mélange lait + eau (1:9) toutes les semaines en préventif."
+    },
+    {
+      "term": "Bouillie bordelaise",
+      "category": "Traitements",
+      "definition": "Fongicide à base de sulfate de cuivre et de chaux, autorisé en agriculture biologique. Utilisé en pulvérisation pour prévenir mildiou et autres maladies fongiques sur tomates, pommes de terre, vignes et arbres fruitiers.",
+      "tip": "Toujours pulvériser par temps sec, en soirée, à dose modérée (l'excès de cuivre nuit au sol)."
+    },
+    {
+      "term": "Paillage",
+      "category": "Sol",
+      "definition": "Couche de matière organique (paille, copeaux, feuilles, BRF) ou minérale étalée sur le sol autour des plantes. Réduit l'évaporation, limite les adventices, protège de l'érosion et nourrit le sol en se décomposant.",
+      "tip": "5-8 cm d'épaisseur idéal. Renouveler en cours de saison si le sol redevient nu."
+    },
+    {
+      "term": "Compost",
+      "category": "Sol",
+      "definition": "Matière organique décomposée par fermentation aérobie (avec oxygène). Constitué d'un mélange équilibré de matières azotées (épluchures, tontes) et carbonées (feuilles mortes, paille). Apport d'engrais naturel et amendement du sol.",
+      "tip": "3-5 cm de compost mûr étalés en surface chaque printemps revitalisent durablement le sol."
+    },
+    {
+      "term": "Engrais vert",
+      "category": "Sol",
+      "definition": "Plante semée non pour récolte mais pour enrichir et protéger le sol pendant l'inter-saison. Phacélie, trèfle, moutarde, vesce sont les plus courants. On les fauche et enfouit avant floraison comme engrais naturel.",
+      "tip": "Semer en septembre sur les planches libérées pour passer l'hiver. Enfouir au printemps."
+    },
+    {
+      "term": "Adventices",
+      "category": "Sol",
+      "definition": "Terme botanique pour 'mauvaises herbes' — plantes qui poussent spontanément où on ne les a pas semées. Souvent indicatrices de l'état du sol (chiendent = sol compacté, ortie = sol riche en azote).",
+      "tip": "Ne pas chercher à toutes les éliminer : certaines sont utiles (mâche, pourpier comestibles)."
+    },
+    {
+      "term": "Repiquage",
+      "category": "Plantation",
+      "definition": "Action de transplanter un jeune plant cultivé en pot ou en pépinière vers son emplacement définitif au jardin. Étape délicate qui demande de respecter les bons délais (après les Saints de Glace pour les sensibles au froid).",
+      "tip": "Repiquer en soirée par temps gris pour limiter le stress hydrique. Bien arroser après."
+    },
+    {
+      "term": "Semis en place",
+      "category": "Plantation",
+      "definition": "Semer directement à l'endroit où la plante grandira (pas de repiquage). Convient aux légumes-racines (carotte, radis, panais) et aux plantes qui n'aiment pas le repiquage (haricot, pois).",
+      "tip": "Semer en lignes pour faciliter l'éclaircissage et l'entretien."
+    },
+    {
+      "term": "Semis sous abri",
+      "category": "Plantation",
+      "definition": "Semis en intérieur (serre, véranda, châssis chauffé) avant la saison pour anticiper et avoir des plants prêts à repiquer dès que les conditions extérieures le permettent. Indispensable pour tomates, poivrons, aubergines.",
+      "tip": "Semer 6 à 8 semaines avant la date de repiquage prévue."
+    },
+    {
+      "term": "Éclaircissage",
+      "category": "Plantation",
+      "definition": "Suppression des plants en surnombre après germination pour ne garder que les plus vigoureux à la bonne distance. Essentiel pour carottes, radis, betteraves, pour qu'ils puissent grossir.",
+      "tip": "Éclaircir en deux temps : d'abord les plus faibles, puis ajuster à la distance finale après quelques semaines."
+    },
+    {
+      "term": "Buttage",
+      "category": "Entretien",
+      "definition": "Action de ramener de la terre au pied des plantes pour favoriser leur enracinement et la formation de tubercules (pommes de terre) ou protéger du soleil (poireau blanchi).",
+      "tip": "Butter les pommes de terre 2 à 3 fois pendant la saison, dès que les plants atteignent 20 cm."
+    },
+    {
+      "term": "Pincement",
+      "category": "Entretien",
+      "definition": "Suppression de l'extrémité d'une tige pour favoriser la ramification ou concentrer l'énergie sur les fruits déjà formés (notamment pour tomates : couper le bourgeon terminal en fin de saison).",
+      "tip": "Pour les tomates : pincer au-dessus du 5e ou 6e bouquet floral pour accélérer la maturation."
+    },
+    {
+      "term": "Gourmand",
+      "category": "Entretien",
+      "definition": "Tige secondaire qui pousse à l'aisselle des feuilles d'une tomate. Si on les laisse, ils consomment beaucoup d'énergie au détriment des fruits. À supprimer régulièrement.",
+      "tip": "Passer chaque semaine : pincer les gourmands tant qu'ils sont petits (à la main, sans outil)."
+    },
+    {
+      "term": "Tuteurage",
+      "category": "Entretien",
+      "definition": "Mise en place d'un support (tuteur, treillis, ficelle) pour soutenir les plantes grimpantes ou hautes (tomates, haricots à rames, pois, concombres). Évite la casse des tiges et garde les fruits propres.",
+      "tip": "Installer le tuteur AU MOMENT de la plantation pour ne pas abîmer les racines plus tard."
+    },
+    {
+      "term": "Binage",
+      "category": "Entretien",
+      "definition": "Casser la croûte superficielle du sol avec une binette pour favoriser l'aération et la pénétration de l'eau. Adage : 'un binage vaut deux arrosages'.",
+      "tip": "Biner après chaque pluie ou arrosage important, dès que le sol est ressuyé."
+    },
+    {
+      "term": "Sol ressuyé",
+      "category": "Sol",
+      "definition": "État du sol après avoir absorbé l'eau de pluie ou d'arrosage : ni détrempé ni sec. Idéal pour travailler la terre sans la tasser ni l'abîmer.",
+      "tip": "Tester avec une boule de terre dans la main : doit s'effriter sans coller, ni tomber en poussière."
+    },
+    {
+      "term": "Lune montante",
+      "category": "Calendrier lunaire",
+      "definition": "Phase où la Lune semble monter dans le ciel jour après jour (de plus en plus haut au coucher). Selon le calendrier lunaire, période favorable aux semis des légumes-fruits (tomates, courgettes, haricots).",
+      "tip": "À ne pas confondre avec lune croissante (= grossissante visuellement)."
+    },
+    {
+      "term": "Lune descendante",
+      "category": "Calendrier lunaire",
+      "definition": "Phase où la Lune semble descendre dans le ciel jour après jour. Selon le calendrier lunaire, période favorable aux travaux du sol et aux plantations de légumes-racines (carottes, radis, pommes de terre).",
+      "tip": "Aussi favorable au repiquage et à la taille."
+    },
+    {
+      "term": "Zone USDA",
+      "category": "Climat",
+      "definition": "Système de classification des régions selon leurs températures hivernales minimales. Détermine quelles plantes peuvent survivre à l'hiver. Vullierens (Vaud, ~430m) est en zone 7b (températures min -15 à -12°C).",
+      "tip": "Vérifier la zone USDA d'un fruitier avant achat pour éviter une perte par gel."
+    },
+    {
+      "term": "Capacité de rétention",
+      "category": "Sol",
+      "definition": "Quantité maximale d'eau qu'un sol peut retenir après ressuyage. Sol argileux : élevée mais l'eau circule mal. Sol sableux : faible mais bonne aération. Sol limoneux : équilibre idéal.",
+      "tip": "Améliorer un sol par apport de compost augmente la rétention sans tasser."
+    },
+    {
+      "term": "Mycorhizes",
+      "category": "Sol",
+      "definition": "Champignons microscopiques en symbiose avec les racines des plantes. Ils étendent la zone d'absorption (jusqu'à 100×) et fournissent eau et nutriments en échange de sucres. Présents naturellement dans un sol vivant.",
+      "tip": "Le travail du sol intensif (motoculteur) détruit les mycorhizes. Préférer la grelinette."
+    },
+    {
+      "term": "BRF",
+      "category": "Sol",
+      "definition": "Bois Raméal Fragmenté : copeaux de jeunes branches (≤7cm diamètre) broyés et étalés sur le sol. Riche en lignine, il se décompose en humus stable et nourrit la pédofaune (vers, champignons).",
+      "tip": "Étaler 3-5 cm en automne, ne pas l'enfouir. La décomposition prend 1-2 ans mais dure 5+."
+    },
+    {
+      "term": "pH du sol",
+      "category": "Sol",
+      "definition": "Mesure de l'acidité du sol (0-14, neutre à 7). La plupart des légumes préfèrent un pH 6-7 (légèrement acide à neutre). Un pH trop bas (acide) bloque l'absorption de calcium ; trop haut, du fer.",
+      "tip": "Test simple : citron sur sol = mousse → calcaire (pH élevé)."
+    }
+  ]
+}
