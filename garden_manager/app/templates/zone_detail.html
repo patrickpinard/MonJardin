@@ -552,20 +552,24 @@
             <div class="photos-day-num">{{ day.day_num }}</div>
             <div class="photos-day-name">{{ day.day_name }}</div>
           </div>
-          <div class="photos-day-thumbs">
+          <div class="photos-day-thumbs" data-day-photos='{{ day.photos | tojson | forceescape }}'>
             {% for ph in day.photos %}
             <div class="photo-thumb"
-                 onclick="openLightbox({{ loop.index0 }}, {{ day.photos | tojson }})"
+                 data-photo-id="{{ ph.id }}"
+                 data-index="{{ loop.index0 }}"
+                 data-captured="{{ ph.captured_at }}"
+                 data-caption="{{ (ph.caption or '') | e }}"
+                 onclick="thumbClick(this)"
                  style="background-image: url('{{ url_for('config.serve_zone_photo', zone_id=zone.zone_id, filename=ph.filename) }}');"
                  title="Cliquer pour agrandir · {{ ph.captured_at }}">
               <span class="photo-thumb-zoom"><i class="bi bi-zoom-in"></i></span>
               <button type="button" class="photo-thumb-act photo-thumb-edit"
-                      onclick="event.stopPropagation(); openPhotoEditModal({{ ph.id }}, {{ ph.captured_at | tojson }}, {{ (ph.caption or '') | tojson }})"
+                      onclick="event.stopPropagation(); thumbEdit(this.parentElement)"
                       title="Modifier la date ou la légende">
                 <i class="bi bi-pencil-fill"></i>
               </button>
               <button type="button" class="photo-thumb-act photo-thumb-del"
-                      onclick="event.stopPropagation(); confirmDeletePhoto({{ ph.id }}, {{ zone.zone_id }})"
+                      onclick="event.stopPropagation(); thumbDelete(this.parentElement)"
                       title="Supprimer cette photo">
                 <i class="bi bi-x-lg"></i>
               </button>
@@ -1851,6 +1855,28 @@ document.getElementById('photo-edit-overlay').addEventListener('click', e => {
 const ZONE_ID_FOR_PHOTOS = {{ zone.zone_id }};
 let _lbList = [];
 let _lbIndex = 0;
+
+// ── Handlers basés sur data-attributes (évite tout problème de quoting JSON dans onclick) ──
+function thumbClick(thumbEl) {
+  const idx = parseInt(thumbEl.dataset.index, 10) || 0;
+  const list = thumbEl.parentElement;
+  let photos = [];
+  try { photos = JSON.parse(list.dataset.dayPhotos || '[]'); }
+  catch (e) { console.warn('Parse day-photos failed:', e); }
+  openLightbox(idx, photos);
+}
+function thumbEdit(thumbEl) {
+  const id       = parseInt(thumbEl.dataset.photoId, 10);
+  const captured = thumbEl.dataset.captured || '';
+  const caption  = thumbEl.dataset.caption  || '';
+  if (typeof openPhotoEditModal === 'function') {
+    openPhotoEditModal(id, captured, caption);
+  }
+}
+function thumbDelete(thumbEl) {
+  const id = parseInt(thumbEl.dataset.photoId, 10);
+  confirmDeletePhoto(id, ZONE_ID_FOR_PHOTOS);
+}
 
 function openLightbox(idx, photos) {
   _lbList = photos || [];

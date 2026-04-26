@@ -464,6 +464,142 @@
       "definition": "Apogée = point le plus éloigné de la lune par rapport à la Terre ; périgée = le plus proche. Influences supposées sur la vitalité des plantes.",
       "tip": "Tradition : éviter de semer 12h avant et après ces points. À l'apogée plutôt récolter ; au périgée plutôt planter.",
       "details": "Cycle d'environ 27,5 jours. Marqué dans les calendriers lunaires (Rustica, Maria Thun)."
+    },
+    {
+      "term": "Solanacées",
+      "category": "Familles botaniques",
+      "icon": "🍅",
+      "definition": "Famille de plantes incluant tomate, poivron, piment, aubergine et pomme de terre. Légumes-fruits gourmands en chaleur et en azote.",
+      "tip": "Très sensibles au mildiou et à la verticilliose : ne jamais replanter au même endroit avant 4 ans.",
+      "details": "Nom scientifique : Solanaceae. Caractérisée par des fleurs en étoile à 5 pétales et des fruits en baies. La pomme de terre fait exception (organe consommé = tubercule)."
+    },
+    {
+      "term": "Cucurbitacées",
+      "category": "Familles botaniques",
+      "icon": "🥒",
+      "definition": "Famille des courges, courgettes, concombres, melons, pastèques, potirons. Plantes coureuses ou grimpantes à grandes feuilles, très gourmandes en eau et en chaleur.",
+      "tip": "Espacer généreusement (1 m² par pied de courgette) — l'humidité confinée favorise l'oïdium.",
+      "details": "Nom scientifique : Cucurbitaceae. Fleurs jaunes mâles et femelles séparées sur la même plante (monoïque). Pollinisation par les abeilles indispensable."
+    },
+    {
+      "term": "Brassicacées",
+      "category": "Familles botaniques",
+      "icon": "🥬",
+      "definition": "Famille des choux, navets, radis, roquette, moutarde. Riches en composés soufrés, exigeantes en azote, sensibles à la mouche du chou et à la piéride.",
+      "tip": "Utiliser un filet anti-insectes (mailles ≤ 1,3 mm) dès la plantation pour exclure piérides et altises.",
+      "details": "Nom scientifique : Brassicaceae (anciennement Crucifères). Fleurs en croix à 4 pétales — d'où l'ancien nom. Beaucoup de variantes du chou : feuilles (kale), bourgeons (Bruxelles), pomme (chou cabus), inflorescence (brocoli, chou-fleur)."
+    },
+    {
+      "term": "Apiacées",
+      "category": "Familles botaniques",
+      "icon": "🥕",
+      "definition": "Famille de la carotte, du persil, du céleri, du fenouil, de l'aneth, du panais et de la coriandre. Plantes à feuilles découpées et fleurs en ombelles.",
+      "tip": "Semer à côté d'oignons ou de poireaux pour repousser la mouche de la carotte.",
+      "details": "Nom scientifique : Apiaceae (anciennement Ombellifères). Beaucoup de plantes médicinales et aromatiques. Attention : certaines apiacées sauvages sont très toxiques (cigüe)."
+    },
+    {
+      "term": "Alliacées",
+      "category": "Familles botaniques",
+      "icon": "🧄",
+      "definition": "Famille de l'ail, de l'oignon, de l'échalote, du poireau, de la ciboulette. Plantes à bulbe au goût soufré, très peu gourmandes en azote.",
+      "tip": "Excellents répulsifs contre pucerons et mouche de la carotte — à intercaler dans les rangs.",
+      "details": "Nom scientifique : Alliaceae (parfois rangée dans Amaryllidaceae). Riches en allicine (composé soufré antibactérien). Préfèrent un sol drainé, pas trop riche en matière organique fraîche."
+    },
+    {
+      "term": "Légumineuses",
+      "category": "Familles botaniques",
+      "icon": "🫘",
+      "definition": "Famille du haricot, du pois, de la fève, des lentilles, du soja. Plantes capables de fixer l'azote atmosphérique grâce à des bactéries symbiotiques (Rhizobium) sur leurs racines.",
+      "tip": "Excellentes têtes de rotation : laissent le sol enrichi en azote pour les cultures suivantes (choux, courges).",
+      "details": "Nom scientifique : Fabaceae (anciennement Légumineuses ou Papilionacées). Fleurs typiques en forme de papillon. Utilisées aussi comme engrais verts (luzerne, trèfle, féverole)."
+    },
+    {
+      "term": "Astéracées",
+      "category": "Familles botaniques",
+      "icon": "🥗",
+      "definition": "Famille de la salade (laitue), de l'endive, du tournesol, de l'artichaut, du topinambour, de la chicorée, des soucis. Fleurs composées en capitules (multiples petites fleurs serrées).",
+      "tip": "La salade peut être semée en échelonné toute la belle saison — variétés résistantes à la chaleur en été.",
+      "details": "Nom scientifique : Asteraceae (anciennement Composées). La plus grande famille de plantes à fleurs (~32 000 espèces). Inclut beaucoup d'auxiliaires pollinisateurs."
+    },
+    {
+      "term": "Chénopodiacées",
+      "category": "Familles botaniques",
+      "icon": "🌿",
+      "definition": "Famille de la betterave, des épinards, de la bette à carde, des arroches. Plantes à feuilles tendres, riches en oxalates et en fer, tolérantes au sel.",
+      "tip": "Espacer betterave et épinard (≥30 cm) — ils se concurrencent pour le potassium.",
+      "details": "Nom scientifique : Chenopodiaceae, désormais incluse dans Amaranthaceae. Beaucoup d'espèces poussent spontanément (chénopode blanc, pourpier sauvage)."
+    },
+    {
+      "term": "Lamiacées",
+      "category": "Familles botaniques",
+      "icon": "🌱",
+      "definition": "Famille des herbes aromatiques méditerranéennes : basilic, thym, romarin, sauge, menthe, origan, mélisse, hysope, sarriette, lavande. Tiges carrées, feuilles opposées, riches en huiles essentielles.",
+      "tip": "Préfèrent un sol drainant, pas trop riche. Trop d'eau et d'azote diluent les huiles essentielles.",
+      "details": "Nom scientifique : Lamiaceae (anciennement Labiées). Très mellifères : à associer aux légumes pour attirer les pollinisateurs. Beaucoup sont vivaces (thym, romarin, sauge)."
+    },
+    {
+      "term": "Poacées",
+      "category": "Familles botaniques",
+      "icon": "🌾",
+      "definition": "Famille des céréales et des graminées : maïs, blé, riz, avoine, orge, seigle. Plantes à tiges creuses (chaumes) et feuilles en gaine.",
+      "tip": "Au potager, le maïs est l'espèce phare — très gourmand en azote, idéal en succession après légumineuses.",
+      "details": "Nom scientifique : Poaceae (anciennement Graminées). Famille la plus importante économiquement (céréales). Le maïs nécessite la pollinisation par le vent — semer en blocs carrés plutôt qu'en rangs."
+    },
+    {
+      "term": "Valérianacées",
+      "category": "Familles botaniques",
+      "icon": "🥬",
+      "definition": "Famille de la mâche (doucette) et de la valériane. Plantes à feuilles tendres, rustiques, idéales pour les cultures d'automne et d'hiver.",
+      "tip": "La mâche se sème de fin août à octobre pour récolte octobre-mars (résiste à -10°C).",
+      "details": "Nom scientifique : Valerianaceae, désormais incluse dans Caprifoliaceae. La valériane officinale a des propriétés sédatives."
+    },
+    {
+      "term": "Rosacées",
+      "category": "Familles botaniques",
+      "icon": "🍓",
+      "definition": "Famille de la fraise, du framboisier, du pommier, du cerisier, du poirier, du prunier, du rosier. Inclut la majorité des fruits tempérés.",
+      "tip": "Au potager, c'est surtout la fraise (vivace) — à renouveler tous les 3-4 ans pour maintenir les rendements.",
+      "details": "Nom scientifique : Rosaceae. Fleurs à 5 pétales libres et nombreuses étamines. Beaucoup d'espèces utiles aux pollinisateurs au printemps."
+    },
+    {
+      "term": "Boraginacées",
+      "category": "Familles botaniques",
+      "icon": "💙",
+      "definition": "Famille de la bourrache, du myosotis, de la consoude. Plantes mellifères à fleurs bleues, très attractives pour les abeilles.",
+      "tip": "La bourrache est un excellent compagnon des fraises et des tomates : attire pollinisateurs et auxiliaires.",
+      "details": "Nom scientifique : Boraginaceae. Fleurs typiques en cymes scorpioïdes. Les fleurs de bourrache sont comestibles (goût d'huître)."
+    },
+    {
+      "term": "Tropaeolacées",
+      "category": "Familles botaniques",
+      "icon": "🧡",
+      "definition": "Famille de la capucine. Petite famille (~80 espèces) à fleurs orange/jaune comestibles, utilisée comme plante-piège contre les pucerons.",
+      "tip": "Semer la capucine en bordure de potager : les pucerons s'y concentrent et épargnent les autres cultures.",
+      "details": "Nom scientifique : Tropaeolaceae. Toute la plante est comestible (feuilles poivrées, fleurs sucrées, graines au goût de câpre)."
+    },
+    {
+      "term": "Hydrophyllacées",
+      "category": "Familles botaniques",
+      "icon": "💜",
+      "definition": "Famille de la phacélie. Petite famille principalement utilisée comme engrais vert et plante mellifère exceptionnelle (l'une des plus riches en nectar).",
+      "tip": "Semer la phacélie en interculture (août-septembre) : protège le sol, attire les abeilles, se broie facilement au printemps.",
+      "details": "Nom scientifique : Hydrophyllaceae, désormais incluse dans Boraginaceae. Croissance rapide (6-8 semaines), gel-sensible, idéale pour structurer le sol."
+    },
+    {
+      "term": "Asparagacées",
+      "category": "Familles botaniques",
+      "icon": "🌿",
+      "definition": "Famille de l'asperge. Plantes vivaces longévives à racines charnues (rhizomes) et tiges modifiées en cladodes.",
+      "tip": "L'asperge demande 2-3 ans de patience avant la première vraie récolte, mais produit ensuite pendant 15-20 ans.",
+      "details": "Nom scientifique : Asparagaceae. Inclut aussi des plantes ornementales (yucca, agave). Préparer une fosse de plantation profonde (40 cm) avec compost."
+    },
+    {
+      "term": "Polygonacées",
+      "category": "Familles botaniques",
+      "icon": "🥧",
+      "definition": "Famille de la rhubarbe et de l'oseille. Plantes vivaces à grandes feuilles riches en acide oxalique (à consommer avec modération).",
+      "tip": "La rhubarbe préfère les sols riches et frais. Diviser les souches tous les 5-6 ans pour maintenir la vigueur.",
+      "details": "Nom scientifique : Polygonaceae. Tige typique avec une gaine à chaque nœud (ochréa). Sarrasin est aussi une polygonacée (pseudo-céréale)."
     }
   ]
 }
