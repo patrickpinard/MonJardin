@@ -221,7 +221,26 @@ def add_planting():
         except (ValueError, TypeError):
             quantity = 1
 
-        for _ in range(quantity):
+        # ── Position cible dans la grille (depuis le modal Quick-Plant) ──
+        try:
+            grid_row = max(0, int(form.get("grid_row", 0)))
+            grid_col = max(0, int(form.get("grid_col", 0)))
+            grid_w   = max(1, int(form.get("grid_w",   1)))
+            grid_h   = max(1, int(form.get("grid_h",   1)))
+        except (ValueError, TypeError):
+            grid_row = grid_col = 0
+            grid_w = grid_h = 1
+
+        zone_obj = Zone.query.get(zone_id)
+        CELL_CM = 30
+        cols = max(4, int((zone_obj.length_m or 2.0) * 100 / CELL_CM)) if zone_obj else 8
+        rows = max(2, int((zone_obj.width_m  or 1.0) * 100 / CELL_CM)) if zone_obj else 4
+
+        # Si grid_w > 1 → mode "rangée" : 1 seule plantation occupant N cases
+        if grid_w > 1:
+            # Clamp pour rester dans la grille
+            if grid_col + grid_w > cols:
+                grid_w = max(1, cols - grid_col)
             db.session.add(Planting(
                 zone_id=zone_id,
                 vegetable_name=vegetable_name,
@@ -231,18 +250,56 @@ def add_planting():
                 water_need=water_need,
                 status="active",
                 notes=form.get("notes", ""),
+                grid_row=grid_row, grid_col=grid_col,
+                grid_w=grid_w, grid_h=grid_h,
             ))
+        else:
+            # Mode normal : N plantations indépendantes, posées dans les cases libres
+            occupied = set()
+            for op in Planting.query.filter_by(zone_id=zone_id, status="active").all():
+                ow, oh = max(1, op.grid_w or 1), max(1, op.grid_h or 1)
+                for dr in range(oh):
+                    for dc in range(ow):
+                        occupied.add(((op.grid_row or 0) + dr, (op.grid_col or 0) + dc))
+            # Première case = celle cliquée si libre
+            placed = 0
+            # Génère les cases dans l'ordre : (grid_row, grid_col) d'abord, puis row-major
+            candidates = []
+            if (grid_row, grid_col) not in occupied:
+                candidates.append((grid_row, grid_col))
+            for r in range(rows):
+                for c in range(cols):
+                    if (r, c) not in occupied and (r, c) != (grid_row, grid_col):
+                        candidates.append((r, c))
+            for r, c in candidates:
+                if placed >= quantity:
+                    break
+                db.session.add(Planting(
+                    zone_id=zone_id,
+                    vegetable_name=vegetable_name,
+                    variety=form.get("variety", ""),
+                    planted_date=planted,
+                    expected_harvest_date=harvest,
+                    water_need=water_need,
+                    status="active",
+                    notes=form.get("notes", ""),
+                    grid_row=r, grid_col=c,
+                    grid_w=1, grid_h=1,
+                ))
+                occupied.add((r, c))
+                placed += 1
+
         # Log dans le journal
-        zone_obj = Zone.query.get(zone_id)
         zname = zone_obj.name if zone_obj else f"Z{zone_id}"
         emoji_v = (veg.get("emoji", "🌱") if veg else "🌱")
-        qty_label = f"{quantity}× " if quantity > 1 else ""
-        db.session.add(JournalEntry(
-            level="info",
-            message=f"🌱 Plantation : {qty_label}{emoji_v} {vegetable_name} ajouté(s) dans {zname}",
-        ))
+        if grid_w > 1:
+            msg = f"🌱 Rangée semée : {emoji_v} {vegetable_name} sur {grid_w} cases dans {zname}"
+        else:
+            qty_label = f"{quantity}× " if quantity > 1 else ""
+            msg = f"🌱 Plantation : {qty_label}{emoji_v} {vegetable_name} ajouté(s) dans {zname}"
+        db.session.add(JournalEntry(level="info", message=msg))
         db.session.commit()
-        if quantity > 1:
+        if quantity > 1 and grid_w == 1:
             flash(f"{quantity} plants de {vegetable_name} ajoutés.", "success")
     except Exception as e:
         flash(f"Erreur lors de l'ajout : {e}", "danger")

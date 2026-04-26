@@ -279,6 +279,51 @@ def set_zone_mode(zone_id: int):
     return jsonify({"ok": True, "zone_id": zone_id, "mode": mode})
 
 
+@api_bp.post("/zones/<int:zone_id>/plants/<int:plant_id>/move")
+def plant_move(zone_id: int, plant_id: int):
+    """Déplace un plant individuel vers (row, col) dans la grille de la zone.
+
+    Body: {"row": int, "col": int}. Vérifie qu'il n'y a pas de collision avec
+    d'autres plantings actifs (en tenant compte de leur grid_w/grid_h).
+    """
+    body = request.get_json(silent=True) or {}
+    new_row = body.get("row")
+    new_col = body.get("col")
+    if not isinstance(new_row, int) or not isinstance(new_col, int) or new_row < 0 or new_col < 0:
+        return jsonify({"ok": False, "error": "row/col doivent être des entiers positifs"}), 400
+
+    p = Planting.query.filter_by(id=plant_id, zone_id=zone_id).first()
+    if p is None:
+        return jsonify({"ok": False, "error": "Plant introuvable dans cette zone"}), 404
+
+    zone = Zone.query.get(zone_id)
+    CELL_CM = 30
+    cols = max(4, int((zone.length_m or 2.0) * 100 / CELL_CM))
+    rows = max(2, int((zone.width_m  or 1.0) * 100 / CELL_CM))
+    w, h = max(1, p.grid_w or 1), max(1, p.grid_h or 1)
+    if new_col + w > cols or new_row + h > rows:
+        return jsonify({"ok": False, "error": "Hors grille (taille ne rentre pas)"}), 400
+
+    # Collision check vs autres plantings actifs
+    target_cells = {(new_row + dr, new_col + dc) for dr in range(h) for dc in range(w)}
+    others = Planting.query.filter(Planting.zone_id == zone_id,
+                                   Planting.status == "active",
+                                   Planting.id != p.id).all()
+    for o in others:
+        ow, oh = max(1, o.grid_w or 1), max(1, o.grid_h or 1)
+        oc, orow = (o.grid_col or 0), (o.grid_row or 0)
+        for dr in range(oh):
+            for dc in range(ow):
+                if (orow + dr, oc + dc) in target_cells:
+                    return jsonify({"ok": False,
+                                    "error": f"Case (L{orow+dr+1}, C{oc+dc+1}) occupée par {o.vegetable_name}"}), 409
+
+    p.grid_row = new_row
+    p.grid_col = new_col
+    db.session.commit()
+    return jsonify({"ok": True, "id": plant_id, "row": new_row, "col": new_col})
+
+
 @api_bp.post("/zones/<int:zone_id>/plants/reorder")
 def plants_reorder(zone_id: int):
     """Réordonne les groupes (espèce + variété) actifs d'une zone via le plan visuel.

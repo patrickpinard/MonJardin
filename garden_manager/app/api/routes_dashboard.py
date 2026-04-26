@@ -636,6 +636,52 @@ def zone_detail(zone_id: int):
     # Pas de cap à 100% : si > 100, c'est une sur-occupation à signaler
     zone_occupancy_pct = round(used_area_cm2 / total_area_cm2 * 100) if total_area_cm2 else 0
 
+    # ── Grille visuelle case-par-case ─────────────────────────────────
+    # Chaque case = 30 cm × 30 cm. Chaque planting actif occupe ≥ 1 case.
+    CELL_CM = 30
+    grid_cols = max(4, int(zone_length * 100 / CELL_CM))
+    grid_rows = max(2, int(zone_width  * 100 / CELL_CM))
+
+    actives_for_grid = [p for p in plantings if p.status == "active"]
+    # Construit la liste des cellules occupées + données pour le rendu
+    grid_plantings = []
+    occupied = set()  # set de (row, col)
+    for p in actives_for_grid:
+        info = plant_info.get(p.vegetable_name, {})
+        r, c = (p.grid_row or 0), (p.grid_col or 0)
+        w, h = max(1, p.grid_w or 1), max(1, p.grid_h or 1)
+        # Clamp sur la grille
+        r = max(0, min(r, grid_rows - 1))
+        c = max(0, min(c, grid_cols - 1))
+        if c + w > grid_cols: w = grid_cols - c
+        if r + h > grid_rows: h = grid_rows - r
+        for dr in range(h):
+            for dc in range(w):
+                occupied.add((r + dr, c + dc))
+        days_left = ((p.expected_harvest_date - date.today()).days
+                     if p.expected_harvest_date else None)
+        grid_plantings.append({
+            "id":            p.id,
+            "row":           r,
+            "col":           c,
+            "w":             w,
+            "h":             h,
+            "name":          p.vegetable_name,
+            "variety":       (p.variety or "").strip(),
+            "display_name":  f"{p.vegetable_name} · {p.variety}" if p.variety else p.vegetable_name,
+            "emoji":         info.get("emoji", "🌱"),
+            "color":         info.get("color_primary", "#4CAF50"),
+            "water_need":    p.water_need or info.get("water_need", "medium"),
+            "harvest":       p.expected_harvest_date.isoformat() if p.expected_harvest_date else "",
+            "days_left":     days_left,
+            "status":        p.status,
+            "notes":         p.notes or "",
+            "is_seed":       (info.get("space_cm", 30) <= 10),  # carotte/radis/oignon = semis
+        })
+    # Liste des cases vides (pour drop targets)
+    empty_cells = [(r, c) for r in range(grid_rows) for c in range(grid_cols)
+                   if (r, c) not in occupied]
+
     return render_template(
         "zone_detail.html",
         zone=zone,
@@ -659,6 +705,11 @@ def zone_detail(zone_id: int):
         remaining_area_m2=remaining_area_m2,
         zone_occupancy_pct=zone_occupancy_pct,
         watering_window=watering_window,
+        # Nouveau plan visuel case-par-case
+        grid_cols=grid_cols,
+        grid_rows=grid_rows,
+        grid_plantings=grid_plantings,
+        empty_cells=empty_cells,
     )
 
 
