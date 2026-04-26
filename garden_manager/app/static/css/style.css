@@ -428,6 +428,20 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   width: calc(100% - 6px);
   letter-spacing: .1px;
 }
+.plant-cell-variety {
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255,255,255,.65);
+  font-style: normal;
+  text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  width: calc(100% - 6px);
+  margin-top: 1px;
+  letter-spacing: .1px;
+  line-height: 1.2;
+}
+.plant-grid-mini .plant-cell-variety { font-size: 8px; }
 .plant-cell-count {
   position: absolute; top: 4px; right: 4px;
   background: rgba(255,255,255,.95);

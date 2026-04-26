@@ -250,6 +250,12 @@
   <a href="/conseils" class="mobile-menu-item {% if '/conseils' in request.path or '/planting' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-lightbulb-fill"></i> Conseils
   </a>
+  <a href="/rotation" class="mobile-menu-item {% if '/rotation' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-arrow-repeat"></i> Plan rotation
+  </a>
+  <a href="/glossaire" class="mobile-menu-item {% if '/glossaire' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-book"></i> Glossaire
+  </a>
   <a href="/history" class="mobile-menu-item {% if '/history' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-graph-up"></i> Graphiques
   </a>

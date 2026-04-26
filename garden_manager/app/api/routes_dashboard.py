@@ -106,23 +106,25 @@ def dashboard():
                                  .order_by(IrrigationLog.timestamp.desc())
                                  .first())
 
-    # ── species_summary par zone (pour le plant-grid des cartes du dashboard) ──
-    # Charge la DB plants pour les emojis + récolte prochaine
+    # ── species_summary par zone groupé par (espèce + variété) ──
     _plants_db = _load_plants_db()
     _emoji_global = {p["name"]: p.get("emoji", "🌱") for p in _plants_db}
     from collections import defaultdict as _dd
     for zd in zones_data:
         groups: dict = _dd(list)
         for p in zd["plantings"]:
-            groups[p.vegetable_name].append(p)
+            key = (p.vegetable_name, (p.variety or "").strip())
+            groups[key].append(p)
         species = []
-        for vname, plist in groups.items():
+        for (vname, variety), plist in groups.items():
             rep = max(plist, key=lambda p: p.id)
             harvest_dates = [p.expected_harvest_date for p in plist if p.expected_harvest_date]
             next_harvest  = min(harvest_dates) if harvest_dates else None
             d_left = (next_harvest - date.today()).days if next_harvest else None
             species.append({
                 "name":       vname,
+                "variety":    variety,
+                "display_name": f"{vname} · {variety}" if variety else vname,
                 "emoji":      _emoji_global.get(vname, "🌱"),
                 "count":      len(plist),
                 "rep_id":     rep.id,
@@ -573,22 +575,23 @@ def zone_detail(zone_id: int):
     ]
     seasonal_plants.sort(key=lambda v: v.get("difficulty", "medium"))
 
-    # Group active plantings by species for the visual layout
+    # Group active plantings by (species, variety) — différencie ex. Tomate Cœur de bœuf vs Tomate Cerise
     from collections import defaultdict
     zone_length = getattr(zone, "length_m", None) or 2.0
     zone_width  = getattr(zone, "width_m",  None) or 1.0
     species_map: dict = defaultdict(list)
     for p in plantings:
         if p.status == "active":
-            species_map[p.vegetable_name].append(p)
+            # Clé composite : (vegetable_name, variety|"")
+            key = (p.vegetable_name, (p.variety or "").strip())
+            species_map[key].append(p)
 
     plant_species_summary = []
     used_area_cm2 = 0.0
-    for vname, plist in species_map.items():
+    for (vname, variety), plist in species_map.items():
         info  = plant_info.get(vname, {})
         space = info.get("space_cm", 30)
         # Inter-rang : pour les semis en ligne (carotte, radis, oignon...).
-        # Si absent, on retombe sur space_cm (grille carrée pour plants individuels).
         space_row = info.get("space_row_cm", space)
         count = len(plist)
         cols_fit = max(1, int(zone_length * 100 / space))
@@ -596,15 +599,19 @@ def zone_detail(zone_id: int):
         capacity = cols_fit * rows_fit
         used_area_cm2 += space * space_row * count
 
-        # Représentant : la plantation la plus récente du groupe (pour openEditModal)
+        # Représentant : la plantation la plus récente du groupe
         rep = max(plist, key=lambda p: p.id)
-        # Date de récolte la plus tôt et progression
         harvest_dates = [p.expected_harvest_date for p in plist if p.expected_harvest_date]
         next_harvest  = min(harvest_dates) if harvest_dates else None
         days_left = (next_harvest - date.today()).days if next_harvest else None
 
+        # Display label : "Tomate" ou "Tomate · Cœur de bœuf"
+        display_name = f"{vname} · {variety}" if variety else vname
+
         plant_species_summary.append({
             "name":      vname,
+            "variety":   variety,
+            "display_name": display_name,
             "count":     count,
             "emoji":     info.get("emoji", "🌱"),
             "space_cm":  space,
@@ -612,9 +619,7 @@ def zone_detail(zone_id: int):
             "color":     info.get("color_primary", "#4CAF50"),
             "water_need": info.get("water_need", "medium"),
             "capacity":  capacity,
-            # Champs pour le clic dans la grille visuelle
             "rep_id":    rep.id,
-            "variety":   rep.variety or "",
             "harvest":   next_harvest.isoformat() if next_harvest else "",
             "days_left": days_left,
             "status":    rep.status,
@@ -622,8 +627,9 @@ def zone_detail(zone_id: int):
         })
 
     total_area_cm2 = zone_length * 100 * zone_width * 100
-    remaining_area_m2 = round(max(0.0, total_area_cm2 - used_area_cm2) / 10_000, 2)
-    zone_occupancy_pct = min(100, round(used_area_cm2 / total_area_cm2 * 100)) if total_area_cm2 else 0
+    remaining_area_m2 = round((total_area_cm2 - used_area_cm2) / 10_000, 2)
+    # Pas de cap à 100% : si > 100, c'est une sur-occupation à signaler
+    zone_occupancy_pct = round(used_area_cm2 / total_area_cm2 * 100) if total_area_cm2 else 0
 
     return render_template(
         "zone_detail.html",
