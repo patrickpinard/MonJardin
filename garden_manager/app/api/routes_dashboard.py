@@ -1549,7 +1549,7 @@ def glossary_page():
         log.warning("Glossaire non chargé : %s", e)
         terms = []
     # Ordre éditorial des catégories (de la plus générale à la plus pointue)
-    CAT_ORDER = ["Météo", "Climat", "Sol", "Plantation", "Entretien",
+    CAT_ORDER = ["Météo", "Climat", "Sol", "Familles botaniques", "Plantation", "Entretien",
                  "Maladies", "Traitements", "Calendrier lunaire"]
     def _cat_rank(c):
         try:    return CAT_ORDER.index(c)

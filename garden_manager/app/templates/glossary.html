@@ -129,6 +129,7 @@
 .cat-entretien .gloss-card-hero    { background: linear-gradient(135deg, #fbbf2433, #d9770622); }
 .cat-calendrier-lunaire .gloss-card-hero { background: linear-gradient(135deg, #94a3b833, #64748b22); }
 .cat-climat .gloss-card-hero       { background: linear-gradient(135deg, #38bdf833, #0284c722); }
+.cat-familles-botaniques .gloss-card-hero { background: linear-gradient(135deg, #34d39933, #16a34a22); }
 
 .gloss-empty {
   padding: 40px; text-align: center; color: var(--text-tertiary);
@@ -175,6 +176,7 @@
       'Entretien': '✂️',
       'Calendrier lunaire': '🌙',
       'Climat': '🌡️',
+      'Familles botaniques': '🌳',
     } %}
     {% for category, terms in glossary_by_category.items() %}
     {% set cat_slug = category | lower | replace(' ', '-') | replace('é','e') | replace('è','e') | replace('â','a') %}
