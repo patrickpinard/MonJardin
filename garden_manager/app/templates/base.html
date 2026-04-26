@@ -109,7 +109,7 @@
       <a href="/about" class="sidebar-about {% if '/about' in request.path %}active{% endif %}">
         <i class="bi bi-info-circle-fill"></i>
         <span>À propos</span>
-        <span class="sidebar-version">v2.0</span>
+        <span class="sidebar-version">v{{ app_version }}</span>
       </a>
     </div>
 
@@ -146,18 +146,18 @@
 
       {% if simulation_mode %}
       <div class="top-bar-divider"></div>
-      <div class="top-bar-sim">
-        <i class="bi bi-cpu-fill"></i> SIM ×{{ sim_speed }}
-        {% set _profile_labels = {
-          'printemps_normal': '🌸 Printemps',
-          'ete_chaud': '☀️ Été chaud',
-          'ete_orageux': '⛈ Orageux',
-          'automne_humide': '🍂 Automne',
-          'gel_tardif': '🧊 Gel',
-          'canicule': '🔥 Canicule'
-        } %}
-        <span class="sim-profile-chip">{{ _profile_labels.get(weather_profile, weather_profile) }}</span>
-      </div>
+      {% set _profile_labels = {
+        'printemps_normal': '🌸 Printemps',
+        'ete_chaud': '☀️ Été chaud',
+        'ete_orageux': '⛈ Orageux',
+        'automne_humide': '🍂 Automne',
+        'gel_tardif': '🧊 Gel',
+        'canicule': '🔥 Canicule'
+      } %}
+      <a href="/admin?tab=simulation" class="top-bar-sim-pill"
+         title="Mode simulation actif (×{{ sim_speed }}) — profil {{ _profile_labels.get(weather_profile, weather_profile) }}. Cliquer pour configurer.">
+        <span class="top-bar-sim-letter">S</span>
+      </a>
       {% endif %}
 
       <div class="top-bar-spacer"></div>

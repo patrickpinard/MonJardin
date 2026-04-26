@@ -58,6 +58,34 @@
   {% endif %}
 
   <!-- ══════════════════════════════════════════════════════
+       TAB BAR — 4 onglets en haut (Accueil / Météo / Tâches / Mes zones)
+       ══════════════════════════════════════════════════════ -->
+  <div class="time-tabs mb-3" id="dash-tabs">
+    <button class="time-tab active" data-tab="accueil" onclick="switchDashTab(this,'accueil')">
+      <i class="bi bi-house-heart-fill"></i> Accueil
+    </button>
+    <button class="time-tab" data-tab="meteo" onclick="switchDashTab(this,'meteo')">
+      <i class="bi bi-cloud-sun-fill"></i> Météo
+    </button>
+    <button class="time-tab" data-tab="taches" onclick="switchDashTab(this,'taches')">
+      <i class="bi bi-calendar3-event-fill"></i> Tâches
+      {% set _badge_count = (monthly_tasks | length) + (disease_alerts | length) %}
+      {% if _badge_count %}
+      <span class="badge" style="margin-left:4px;font-size:10px;background:{% if disease_alerts | selectattr('level','eq','danger') | list %}rgba(255,69,58,.25);color:var(--red){% elif disease_alerts %}rgba(255,159,10,.25);color:var(--orange){% else %}rgba(48,209,88,.2);color:var(--green){% endif %};">{{ _badge_count }}</span>
+      {% endif %}
+    </button>
+    <button class="time-tab" data-tab="zones" onclick="switchDashTab(this,'zones')">
+      <i class="bi bi-grid-1x2-fill"></i> Mes zones
+      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(255,255,255,.08);color:var(--text-secondary);">{{ zones_data | length }}</span>
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB ACCUEIL : hero, statut général, actions, alertes, récoltes prévues
+       ══════════════════════════════════════════════════════ -->
+  <div id="tab-accueil">
+
+  <!-- ══════════════════════════════════════════════════════
        HERO — "Aujourd'hui" + Pulse Score
        ══════════════════════════════════════════════════════ -->
   <div class="hero-grid mb-3">
@@ -108,9 +136,12 @@
 
   </div>
 
+  </div><!-- /#tab-accueil (sera réouvert après le bandeau météo) -->
+
   <!-- ══════════════════════════════════════════════════════
-       BANDEAU MÉTÉO RICHE 24h
+       BANDEAU MÉTÉO RICHE 24h (visible uniquement dans tab-meteo)
        ══════════════════════════════════════════════════════ -->
+  <div id="meteo-strip" style="display:none;">
   <div class="card weather-strip-card mb-3">
     <div class="weather-strip-head">
       <div class="weather-strip-now">
@@ -149,6 +180,10 @@
     </div>
     {% endif %}
   </div>
+  </div><!-- /#meteo-strip -->
+
+  <!-- ── Suite de tab-accueil (actions + alertes) ── -->
+  <div id="tab-accueil-bottom">
 
   <!-- ── Bandeau d'actions concrètes (arrosage, lucarne, récolte) ── -->
   {% if actions %}
@@ -189,20 +224,7 @@
   </div>
   {% endif %}
 
-  <!-- Tab bar — Option A : Vue d'ensemble (défaut) | Mes zones -->
-  <div class="time-tabs mb-3" id="dash-tabs">
-    <button class="time-tab active" data-tab="apercu" onclick="switchDashTab(this,'apercu')">
-      <i class="bi bi-house-heart-fill"></i> Vue d'ensemble
-      {% set _badge_count = (monthly_tasks | length) + (disease_alerts | length) + (harvest_list | length) %}
-      {% if _badge_count %}
-      <span class="badge" style="margin-left:4px;font-size:10px;background:{% if disease_alerts | selectattr('level','eq','danger') | list %}rgba(255,69,58,.25);color:var(--red){% elif disease_alerts %}rgba(255,159,10,.25);color:var(--orange){% else %}rgba(48,209,88,.2);color:var(--green){% endif %};">{{ _badge_count }}</span>
-      {% endif %}
-    </button>
-    <button class="time-tab" data-tab="zones" onclick="switchDashTab(this,'zones')">
-      <i class="bi bi-grid-1x2-fill"></i> Mes zones
-      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(255,255,255,.08);color:var(--text-secondary);">{{ zones_data | length }}</span>
-    </button>
-  </div>
+  </div><!-- /#tab-accueil-bottom -->
 
   <!-- ── TAB ZONES ── -->
   <div id="tab-zones" style="display:none;">
@@ -383,7 +405,29 @@
   </div>
 
   <!-- ── TAB TÂCHES ── -->
-  <div id="tab-taches">
+  <div id="tab-taches" style="display:none;">
+
+    <!-- Intro pédagogique -->
+    <div class="card mb-3" style="border-left:4px solid var(--green);">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="font-size:28px;flex-shrink:0;">📋</div>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px;">Vos tâches du potager pour ce mois</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">
+            Cette section combine deux types d'informations contextuelles :
+            <ul style="margin:8px 0 0 0;padding-left:20px;">
+              <li><strong>Vigilance sanitaire</strong> — alertes calculées à partir de la météo
+                (humidité, température, vent) et de vos plantations actives.
+                Ex. : risque de mildiou si humidité prolongée + tomates en zone.</li>
+              <li><strong>Tâches du mois</strong> — semis et récoltes optimaux pour la région suisse,
+                filtrés par les espèces présentes ou recommandées dans votre potager.</li>
+            </ul>
+            Cliquez sur ✓ pour valider une tâche faite, ✕ pour la masquer.
+            Tout est persisté localement (rien n'est envoyé au serveur).
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Risques sanitaires (alertes contextuelles maladies/parasites) -->
     {% if disease_alerts %}
@@ -484,11 +528,47 @@
       </div>
       {% endif %}
     </div>
-  </div>
+
+    <!-- Pour aller plus loin -->
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title"><i class="bi bi-collection-fill" style="color:var(--green);"></i> Pour aller plus loin</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:10px;">
+        <a href="/conseils" style="text-decoration:none;display:flex;gap:10px;align-items:flex-start;padding:12px;background:var(--bg-secondary);border-radius:var(--r-md);transition:background var(--t);" onmouseover="this.style.background='var(--bg-tertiary)'" onmouseout="this.style.background='var(--bg-secondary)'">
+          <div style="font-size:24px;flex-shrink:0;">💡</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Conseils saisonniers</div>
+            <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.4;margin-top:2px;">9 catégories filtrables par saison : arrosage, sol, planification, plantation, compagnonnage, sous serre, observation, lutte naturelle, saisonnalité.</div>
+          </div>
+        </a>
+        <a href="/plans" style="text-decoration:none;display:flex;gap:10px;align-items:flex-start;padding:12px;background:var(--bg-secondary);border-radius:var(--r-md);transition:background var(--t);" onmouseover="this.style.background='var(--bg-tertiary)'" onmouseout="this.style.background='var(--bg-secondary)'">
+          <div style="font-size:24px;flex-shrink:0;">📋</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Plans pré-faits</div>
+            <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.4;margin-top:2px;">20 plans clé en main avec compatibilité de compagnonnage vérifiée. Filtrables par niveau, type, saison, surface.</div>
+          </div>
+        </a>
+        <a href="/rotation" style="text-decoration:none;display:flex;gap:10px;align-items:flex-start;padding:12px;background:var(--bg-secondary);border-radius:var(--r-md);transition:background var(--t);" onmouseover="this.style.background='var(--bg-tertiary)'" onmouseout="this.style.background='var(--bg-secondary)'">
+          <div style="font-size:24px;flex-shrink:0;">🔄</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Plan de rotation</div>
+            <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.4;margin-top:2px;">Visualise les familles botaniques cultivées par zone sur 3 ans pour respecter la règle des 4 ans.</div>
+          </div>
+        </a>
+        <a href="/glossaire" style="text-decoration:none;display:flex;gap:10px;align-items:flex-start;padding:12px;background:var(--bg-secondary);border-radius:var(--r-md);transition:background var(--t);" onmouseover="this.style.background='var(--bg-tertiary)'" onmouseout="this.style.background='var(--bg-secondary)'">
+          <div style="font-size:24px;flex-shrink:0;">📚</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Glossaire (74 termes)</div>
+            <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.4;margin-top:2px;">Termes horticoles, familles botaniques, traitements naturels — avec définitions et conseils pratiques.</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /#tab-taches -->
 
   <!-- ── TAB MÉTÉO (réorganisé : prévisions en tête, vent en compact en bas) ── -->
   {% set forecast_by_day = forecast_by_day if forecast_by_day is defined else [] %}
-  <div id="tab-meteo">
+  <div id="tab-meteo" style="display:none;">
 
     <!-- Risque gel (si applicable) -->
     {% if weather.frost_risk %}
@@ -542,20 +622,38 @@
         </div>
         {% endfor %}
       </div>
-      <!-- Vent : compacté en pied de carte (info secondaire) -->
-      <div style="margin-top:12px;padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;">
-        <span style="color:var(--text-tertiary);"><i class="bi bi-wind"></i> Vent</span>
-        <span style="color:var(--text-primary);font-weight:600;">
-          💨 Prévu : {{ weather.wind_kmh }} km/h
-        </span>
-        <span style="color:var(--text-secondary);">·</span>
-        <span style="color:var(--text-primary);font-weight:600;">
-          🌬 Mesuré : <span id="dash-wind-arduino">—</span>
-        </span>
-        <span style="color:var(--text-tertiary);font-size:10.5px;margin-left:auto;">Source : {{ weather.source }}</span>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-tertiary);text-align:right;">
+        Source météo : <strong>{{ weather.source }}</strong>
       </div>
     </div>
     {% endif %}
+
+    <!-- Carte dédiée : anémomètre — comparaison prévision vs mesure réelle -->
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-wind" style="color:var(--blue);"></i>
+        Anémomètre — vent prévu vs mesuré
+      </div>
+      <div class="wind-compare">
+        <div class="wind-compare-item">
+          <div class="wind-compare-icon">💨</div>
+          <div class="wind-compare-value">{{ weather.wind_kmh }} <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">km/h</span></div>
+          <div class="wind-compare-label">Prévu (Open-Meteo)</div>
+        </div>
+        <div class="wind-compare-arrow">↔</div>
+        <div class="wind-compare-item">
+          <div class="wind-compare-icon">🌬</div>
+          <div class="wind-compare-value"><span id="dash-wind-arduino">—</span></div>
+          <div class="wind-compare-label">Mesuré (anémomètre QS-FS01)</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11.5px;color:var(--text-tertiary);line-height:1.55;">
+        <i class="bi bi-info-circle" style="color:var(--blue);"></i>
+        L'anémomètre mesure le vent <strong>local au jardin</strong>, qui peut différer
+        sensiblement des prévisions régionales. La protection automatique de la lucarne
+        utilise la valeur la plus élevée des deux. Seuil de fermeture : <strong>40 km/h</strong>.
+      </div>
+    </div>
 
   </div>
 
@@ -672,18 +770,21 @@
   // Si DOM déjà prêt (script chargé après)
   if (document.readyState !== 'loading') _applyTaskStates();
 
-  // Mapping logique : "apercu" agrège plusieurs sections de l'ancien dashboard
-  const DASH_TABS_MAP = {
-    'apercu': ['taches', 'meteo', 'recoltes'],
-    'zones':  ['zones'],
+  // Mapping logique : 4 onglets, chacun agrège des sections de la page
+  // (chaque clé est un onglet, chaque valeur est la liste des id à afficher)
+  const DASH_SECTIONS = {
+    'accueil': ['tab-accueil', 'tab-accueil-bottom', 'tab-recoltes'],
+    'meteo':   ['meteo-strip', 'tab-meteo'],
+    'taches':  ['tab-taches'],
+    'zones':   ['tab-zones'],
   };
   function switchDashTab(btn, tab) {
     document.querySelectorAll('#dash-tabs .time-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    for (const [t, ids] of Object.entries(DASH_TABS_MAP)) {
+    for (const [t, ids] of Object.entries(DASH_SECTIONS)) {
       const visible = (t === tab);
       ids.forEach(id => {
-        const el = document.getElementById('tab-' + id);
+        const el = document.getElementById(id);
         if (el) el.style.display = visible ? '' : 'none';
       });
     }
