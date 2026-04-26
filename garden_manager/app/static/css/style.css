@@ -2799,16 +2799,23 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
 }
 .filter-chip {
-  padding: 6px 13px; border-radius: var(--r-pill);
+  /* Box model strict pour aligner <button> et <a> sur la même ligne */
+  box-sizing: border-box;
+  height: 30px;             /* hauteur fixe pour homogénéité button/anchor */
+  padding: 0 13px;          /* padding-y nul, hauteur portée par height */
+  border-radius: var(--r-pill);
   background: var(--bg-secondary); color: var(--text-secondary);
   border: 1px solid var(--border-md);
-  font-size: 12px; font-weight: 600; cursor: pointer;
+  font-size: 12px; font-weight: 600; line-height: 1; cursor: pointer;
   transition: all var(--t);
   font-family: inherit;
   display: inline-flex; align-items: center; gap: 5px;
   text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
+.filter-chip i { line-height: 1; }
 .filter-chip:hover  { color: var(--text-primary); border-color: var(--border-strong); background: var(--bg-tertiary); }
 .filter-chip:active { transform: scale(.96); }
 .filter-chip.active {
