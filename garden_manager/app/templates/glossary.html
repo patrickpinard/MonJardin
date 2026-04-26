@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Glossaire{% endblock %}
+
+{% block head %}
+<style>
+.gloss-search {
+  width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-md);
+  border-radius: var(--r-md); color: var(--text-primary); padding: 11px 14px;
+  font-size: 14px; font-family: var(--font);
+  margin-bottom: 16px;
+}
+.cat-section { margin-bottom: 22px; }
+.cat-header {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 10px;
+}
+.cat-count {
+  background: var(--bg-secondary); color: var(--text-secondary);
+  font-size: 11px; padding: 2px 8px; border-radius: var(--r-pill);
+  font-weight: 600;
+}
+.term-card {
+  background: var(--bg-primary); border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: var(--r-md); padding: 14px 16px; margin-bottom: 8px;
+}
+.term-name {
+  font-size: 16px; font-weight: 700; color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.term-def {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+  margin-bottom: 8px;
+}
+.term-tip {
+  font-size: 12px; color: var(--text-tertiary); line-height: 1.5;
+  padding: 7px 11px; background: rgba(48,209,88,.06);
+  border-left: 2px solid var(--green); border-radius: var(--r-sm);
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.term-tip i { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+
+.term-card.hidden { display: none; }
+.cat-section.hidden { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1 class="page-title">📚 Glossaire</h1>
+      <div class="page-subtitle">{{ total_terms }} termes horticoles · de Saints de Glace à Mycorhizes</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-body" style="max-width:880px;">
+
+  <input type="text" id="gloss-search" class="gloss-search"
+    placeholder="🔍 Rechercher un terme (ex. mildiou, paillage, rotation...)"
+    oninput="filterGlossary()">
+
+  <div id="gloss-empty" style="display:none;text-align:center;padding:30px;color:var(--text-tertiary);">
+    <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+    Aucun terme ne correspond à votre recherche.
+  </div>
+
+  <div id="gloss-content">
+    {% for category, terms in glossary_by_category.items() %}
+    <div class="cat-section" data-category="{{ category }}">
+      <div class="cat-header">
+        <span>{{ category }}</span>
+        <span class="cat-count">{{ terms | length }}</span>
+      </div>
+      {% for t in terms %}
+      <div class="term-card" data-term="{{ t.term | lower }}" data-def="{{ t.definition | lower }}">
+        <div class="term-name">{{ t.term }}</div>
+        <div class="term-def">{{ t.definition }}</div>
+        {% if t.tip %}
+        <div class="term-tip"><i class="bi bi-lightbulb-fill"></i> <span>{{ t.tip }}</span></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+function filterGlossary() {
+  const q = (document.getElementById('gloss-search').value || '').toLowerCase().trim();
+  let visible = 0;
+  document.querySelectorAll('.term-card').forEach(card => {
+    const t = card.dataset.term || '';
+    const d = card.dataset.def  || '';
+    const match = !q || t.includes(q) || d.includes(q);
+    card.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+  // Cacher les sections vides
+  document.querySelectorAll('.cat-section').forEach(sec => {
+    const has = sec.querySelectorAll('.term-card:not(.hidden)').length > 0;
+    sec.classList.toggle('hidden', !has);
+  });
+  document.getElementById('gloss-empty').style.display = visible === 0 ? '' : 'none';
+}
+</script>
+{% endblock %}

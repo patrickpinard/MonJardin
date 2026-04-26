@@ -1292,6 +1292,31 @@ def rotation_page():
     )
 
 
+@dashboard_bp.get("/glossaire")
+def glossary_page():
+    """Glossaire des termes horticoles utilisés dans MonJardin."""
+    glossary_path = Path(current_app.root_path).parent / "data" / "glossary.json"
+    try:
+        with open(glossary_path, encoding="utf-8") as f:
+            data = json.load(f)
+            terms = data.get("terms", [])
+    except Exception as e:
+        log.warning("Glossaire non chargé : %s", e)
+        terms = []
+    # Tri par catégorie puis terme
+    terms.sort(key=lambda t: (t.get("category", ""), t.get("term", "")))
+    # Grouper par catégorie
+    from collections import defaultdict as _dd
+    by_cat = _dd(list)
+    for t in terms:
+        by_cat[t.get("category", "Divers")].append(t)
+    return render_template(
+        "glossary.html",
+        glossary_by_category=dict(by_cat),
+        total_terms=len(terms),
+    )
+
+
 @dashboard_bp.get("/conseils")
 def conseils():
     advisor = current_app.extensions["planting_advisor"]
