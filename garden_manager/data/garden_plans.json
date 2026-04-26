@@ -639,6 +639,115 @@
           "quantity": 2
         }
       ]
+    },
+    {
+      "id": "asperges_rhubarbe_vivaces",
+      "name": "Asperges & Rhubarbe — vivaces",
+      "emoji": "🌾",
+      "description": "Plantes vivaces nécessitant 2-3 ans avant la première vraie récolte. Préparation profonde du sol indispensable, fumure riche, sol bien drainé. Engagement long terme mais récoltes pendant 15-20 ans.",
+      "level": "hard",
+      "min_area_m2": 6.0,
+      "needs_roof": false,
+      "season_start": [
+        3,
+        4
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Asperge",
+          "quantity": 8
+        },
+        {
+          "vegetable_name": "Rhubarbe",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Ciboulette",
+          "quantity": 4
+        },
+        {
+          "vegetable_name": "Persil",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "id": "serre_tropicale_chaude",
+      "name": "Serre tropicale d'été",
+      "emoji": "🥵",
+      "description": "Cultures exigeantes en chaleur, dans une serre maintenue ≥ 18°C la nuit. Aubergine, poivron, piment, basilic. Demande pollinisation manuelle (secouer les plants), arrosage précis, gestion des aérations canicule.",
+      "level": "hard",
+      "min_area_m2": 5.0,
+      "needs_roof": true,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Aubergine",
+          "quantity": 4,
+          "variety": "Violette longue"
+        },
+        {
+          "vegetable_name": "Poivron",
+          "quantity": 4,
+          "variety": "Doux des Landes"
+        },
+        {
+          "vegetable_name": "Piment",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 5,
+          "variety": "Grand Vert"
+        }
+      ]
+    },
+    {
+      "id": "jardin_medicinal",
+      "name": "Jardin médicinal & tisanes",
+      "emoji": "🌿",
+      "description": "Plantes médicinales et à tisanes : hysope, sauge, mélisse, origan, lavande, sarriette. Demande connaissance des associations, exposition variée (plein soleil pour les méditerranéennes, mi-ombre pour la mélisse), drainage soigné. Récoltes échelonnées toute l'année.",
+      "level": "hard",
+      "min_area_m2": 4.0,
+      "needs_roof": false,
+      "season_start": [
+        3,
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Hysope",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Sauge",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Mélisse",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Origan",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Lavande",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Sarriette",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Estragon",
+          "quantity": 2
+        }
+      ]
     }
   ]
 }
