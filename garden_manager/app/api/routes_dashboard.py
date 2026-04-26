@@ -331,7 +331,8 @@ def dashboard():
     forecast_24h = []
     forecast_by_day = []
     try:
-        full_forecast = weather_service.get_forecast_48h() or []
+        # 7 jours d'horaire pour pouvoir agréger jusqu'à une semaine
+        full_forecast = weather_service.get_forecast_hourly(days=7) or []
         # Bandeau 24h pills (top dashboard)
         for f in full_forecast[:24]:
             ts = f.get("hour") or f.get("timestamp")
