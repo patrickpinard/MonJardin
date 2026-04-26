@@ -82,7 +82,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "67",
+            "static_v": "68",
         }
 
     log.info(
@@ -150,6 +150,50 @@ def _migrate_db(app: Flask) -> None:
                 conn.execute(text("UPDATE plantings SET display_order = id WHERE display_order = 0"))
                 conn.commit()
                 log.info("Migration DB : colonne display_order ajoutée à plantings (init = id)")
+            # plantings : positions dans la grille visuelle (case par case)
+            for col, sql in [
+                ("grid_row", "ALTER TABLE plantings ADD COLUMN grid_row INTEGER NOT NULL DEFAULT 0"),
+                ("grid_col", "ALTER TABLE plantings ADD COLUMN grid_col INTEGER NOT NULL DEFAULT 0"),
+                ("grid_w",   "ALTER TABLE plantings ADD COLUMN grid_w   INTEGER NOT NULL DEFAULT 1"),
+                ("grid_h",   "ALTER TABLE plantings ADD COLUMN grid_h   INTEGER NOT NULL DEFAULT 1"),
+            ]:
+                if col not in p_cols:
+                    conn.execute(text(sql))
+                    conn.commit()
+                    log.info("Migration DB : colonne %s ajoutée à plantings", col)
+            # Auto-placement des plantings actifs sans position assignée
+            _autoplace_plantings_initial()
+
+
+def _autoplace_plantings_initial() -> None:
+    """Place automatiquement les plantings actifs encore en (0,0) sur la grille.
+
+    Appelé une seule fois après migration : remplit la grille de chaque zone
+    case par case (row-major) pour préserver l'affichage existant.
+    """
+    from .models import Planting, Zone
+    CELL_CM = 30
+    zones = Zone.query.all()
+    for z in zones:
+        cols = max(4, int((z.length_m or 2.0) * 100 / CELL_CM))
+        actives = (Planting.query
+                   .filter_by(zone_id=z.zone_id, status="active")
+                   .order_by(Planting.id).all())
+        # Repérer ceux qui n'ont pas de position (tous en 0,0 et grid_w=1)
+        unplaced = [p for p in actives
+                    if (p.grid_row or 0) == 0 and (p.grid_col or 0) == 0
+                    and (p.grid_w or 1) == 1 and (p.grid_h or 1) == 1]
+        # Si le premier planting est aussi en (0,0), considérer tout le set comme à placer
+        if not unplaced or (len(unplaced) < len(actives)):
+            # Il y a déjà des positions assignées → ne rien faire
+            continue
+        for idx, p in enumerate(actives):
+            p.grid_row = idx // cols
+            p.grid_col = idx % cols
+            p.grid_w = 1
+            p.grid_h = 1
+        log.info("Auto-placement initial : zone %s (%d plants)", z.name, len(actives))
+    db.session.commit()
 
 
 def _init_services(app: Flask) -> None:

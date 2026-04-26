@@ -268,7 +268,7 @@
     {% set remaining_area_m2 = remaining_area_m2 if remaining_area_m2 is defined else 0 %}
     {% set zone_occupancy_pct = zone_occupancy_pct if zone_occupancy_pct is defined else 0 %}
 
-    <!-- Plan visuel des plantations — grille emoji style App Store -->
+    <!-- Plan visuel — grille case par case (chaque plant = 1 case, drag & drop libre) -->
     {% set active_plantings = plantings | selectattr('status','eq','active') | list %}
     {% set other_plantings = plantings | rejectattr('status','eq','active') | list %}
     <div class="card mb-3">
@@ -277,58 +277,85 @@
         {% set _occ_color = 'var(--red)' if zone_occupancy_pct > 100 else ('var(--red)' if zone_occupancy_pct >= 90 else ('var(--orange)' if zone_occupancy_pct >= 70 else 'var(--green)')) %}
         <span style="margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;flex-wrap:wrap;">
           <span style="color:var(--text-tertiary);">{{ active_plantings | length }} plant{{ 's' if active_plantings | length > 1 else '' }}</span>
+          <span style="color:var(--text-tertiary);">· grille {{ grid_cols }}×{{ grid_rows }} (cases de 30 cm)</span>
           <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--border);">
             <span style="width:6px;height:6px;border-radius:50%;background:{{ _occ_color }};"></span>
             <strong style="color:{{ _occ_color }};">{{ zone_occupancy_pct }}%</strong>
             <span style="color:var(--text-tertiary);">occupé</span>
-            {% if zone_occupancy_pct > 100 %}
-            <span style="color:var(--red);font-weight:700;" title="Sur-occupation : les plants sont trop nombreux selon les recommandations d'espacement">⚠ surchargée</span>
-            {% endif %}
           </span>
-          {% if plant_species_summary | length > 1 %}
-          <button class="plants-reorder-toggle" id="plants-reorder-toggle"
-                  onclick="togglePlantsReorder()" type="button">
-            <i class="bi bi-arrows-move"></i> <span id="plants-reorder-label">Réorganiser</span>
-          </button>
-          {% endif %}
         </span>
       </div>
-      <div class="plants-reorder-hint" id="plants-reorder-hint" style="display:none;">
-        <i class="bi bi-info-circle"></i> Glissez les plants pour les organiser comme dans votre jardin — l'ordre est sauvegardé.
+      <div class="zone-grid-hint">
+        <i class="bi bi-info-circle"></i>
+        Glissez chaque plant pour le déplacer.
+        Cliquez sur une case <strong>+</strong> pour planter.
+        Pour un semis en ligne (carottes, radis), cliquez puis cochez <em>« Rangée »</em>.
       </div>
-      <!-- Container avec ratio = proportions réelles de la zone -->
-      <div class="plant-grid-wrap" style="aspect-ratio: {{ _zone_length }} / {{ _zone_width }};">
-      <div class="plant-grid plant-grid-fill" id="plant-grid">
-        {% for s in plant_species_summary %}
-        <div class="plant-cell"
-             data-rep-id="{{ s.rep_id }}"
-             title="{{ s.display_name }}"
-             onclick="openEditModal({{ s.rep_id }}, '{{ s.name|e }}', '{{ s.variety|e }}', '{{ s.harvest }}', '{{ s.status }}', '{{ s.water_need }}', '{{ s.notes|e }}', 'zone', {{ s.count }})">
-          <span class="plant-cell-emoji">{{ s.emoji }}</span>
-          <span class="plant-cell-name">{{ s.name }}</span>
-          {% if s.variety %}<span class="plant-cell-variety">{{ s.variety }}</span>{% endif %}
-          {% if s.count > 1 %}<span class="plant-cell-count">{{ s.count }}×</span>{% endif %}
-          {% if s.days_left is not none and s.days_left <= 14 %}
-          <span class="plant-cell-harvest {% if s.days_left < 0 %}late{% elif s.days_left <= 3 %}soon{% endif %}">
-            {% if s.days_left < 0 %}⚠️ {{ -s.days_left }}j
-            {% elif s.days_left == 0 %}🎉
-            {% else %}{{ s.days_left }}j{% endif %}
-          </span>
-          {% endif %}
+      <!-- Grille fixe — chaque case = 30 cm × 30 cm -->
+      <div class="plant-grid-wrap" style="aspect-ratio: {{ grid_cols }} / {{ grid_rows }};">
+        <div class="plant-grid-board"
+             id="plant-grid-board"
+             style="grid-template-columns: repeat({{ grid_cols }}, 1fr); grid-template-rows: repeat({{ grid_rows }}, 1fr);"
+             data-zone-id="{{ zone.zone_id }}"
+             data-grid-cols="{{ grid_cols }}"
+             data-grid-rows="{{ grid_rows }}">
+          <!-- Cases vides — drop targets + clic pour planter -->
+          {% for r, c in empty_cells %}
+          <div class="plant-cell-slot" data-row="{{ r }}" data-col="{{ c }}"
+               onclick="openQuickPlantAt({{ zone.zone_id }}, {{ r }}, {{ c }})"
+               ondragover="cellDragOver(event)" ondragleave="cellDragLeave(event)" ondrop="cellDrop(event)"
+               title="Case ligne {{ r+1 }} colonne {{ c+1 }} — Cliquer pour planter ici">
+            <span class="plant-cell-slot-plus">+</span>
+          </div>
+          {% endfor %}
+          <!-- Plants : 1 case par planting (ou plus pour semis en rangée) -->
+          {% for gp in grid_plantings %}
+          <div class="plant-cell plant-cell-filled"
+               draggable="true"
+               data-id="{{ gp.id }}"
+               data-row="{{ gp.row }}" data-col="{{ gp.col }}"
+               data-w="{{ gp.w }}" data-h="{{ gp.h }}"
+               style="grid-row: {{ gp.row + 1 }} / span {{ gp.h }}; grid-column: {{ gp.col + 1 }} / span {{ gp.w }};"
+               title="{{ gp.display_name }}"
+               ondragstart="plantDragStart(event)" ondragend="plantDragEnd(event)"
+               onclick="openEditModal({{ gp.id }}, '{{ gp.name|e }}', '{{ gp.variety|e }}', '{{ gp.harvest }}', '{{ gp.status }}', '{{ gp.water_need }}', '{{ gp.notes|e }}', 'zone', 1)">
+            <span class="plant-cell-emoji">{{ gp.emoji }}</span>
+            <span class="plant-cell-name">{{ gp.name }}</span>
+            {% if gp.variety %}<span class="plant-cell-variety">{{ gp.variety }}</span>{% endif %}
+            {% if gp.w > 1 or gp.h > 1 %}
+            <span class="plant-cell-row-badge">📏 {{ gp.w * gp.h }} cases</span>
+            {% endif %}
+            {% if gp.days_left is not none and gp.days_left <= 14 %}
+            <span class="plant-cell-harvest {% if gp.days_left < 0 %}late{% elif gp.days_left <= 3 %}soon{% endif %}">
+              {% if gp.days_left < 0 %}⚠️ {{ -gp.days_left }}j
+              {% elif gp.days_left == 0 %}🎉
+              {% else %}{{ gp.days_left }}j{% endif %}
+            </span>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
-        <!-- Cellules vides "+ planter" -->
-        {% for _ in range(6) %}
-        <div class="plant-cell plant-cell-empty" onclick="openQuickPlant({{ zone.zone_id }})" title="Ajouter une plantation">
-          <span class="plant-cell-emoji">+</span>
-          <span class="plant-cell-name">Planter</span>
-        </div>
-        {% endfor %}
       </div>
-      </div><!-- /.plant-grid-wrap -->
       {% if not active_plantings %}
       <div style="text-align:center;padding:12px 16px;font-size:12px;color:var(--text-tertiary);">
-        Aucune plantation active. Cliquez sur une cellule <strong>+</strong> pour planter.
+        Aucune plantation active. Cliquez sur une case <strong>+</strong> pour planter.
+      </div>
+      {% endif %}
+
+      <!-- Résumé : nombre de plants identiques sous la zone -->
+      {% if plant_species_summary %}
+      <div class="zone-recap">
+        <div class="zone-recap-title"><i class="bi bi-list-check"></i> Récapitulatif des plants</div>
+        <div class="zone-recap-grid">
+          {% for s in plant_species_summary %}
+          <div class="zone-recap-item" title="{{ s.display_name }}">
+            <span class="zone-recap-emoji">{{ s.emoji }}</span>
+            <span class="zone-recap-name">{{ s.name }}</span>
+            {% if s.variety %}<span class="zone-recap-variety">{{ s.variety }}</span>{% endif %}
+            <span class="zone-recap-count">×{{ s.count }}</span>
+          </div>
+          {% endfor %}
+        </div>
       </div>
       {% endif %}
     </div>
@@ -865,6 +892,13 @@
       <input type="hidden" name="zone_id"        id="qp-zone-id" value="{{ zone.zone_id }}">
       <input type="hidden" name="vegetable_name" id="qp-veg-name">
       <input type="hidden" name="redirect_to"    value="zone">
+      <!-- Position cible dans la grille (renseigné par openQuickPlantAt) -->
+      <input type="hidden" name="grid_row" id="qp-grid-row" value="0">
+      <input type="hidden" name="grid_col" id="qp-grid-col" value="0">
+      <input type="hidden" name="grid_w"   id="qp-grid-w"   value="1">
+      <input type="hidden" name="grid_h"   id="qp-grid-h"   value="1">
+      <div id="qp-target-cell"
+           style="display:none;font-size:11.5px;color:var(--green);font-weight:600;margin-bottom:8px;padding:4px 9px;background:rgba(48,209,88,.08);border-radius:var(--r-pill);border:1px solid rgba(48,209,88,.3);text-align:center;"></div>
 
       <!-- Recherche -->
       <div style="margin-bottom:10px;">
@@ -972,6 +1006,32 @@
               <input type="number" name="quantity" id="qp-qty" value="1" min="1" max="50"
                 style="flex:1;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);padding:7px 10px;font-size:13px;text-align:center;font-family:var(--font);">
               <button type="button" onclick="qpAdjustQty(1)" style="width:30px;height:32px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-primary);cursor:pointer;font-size:16px;">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode rangée (semis carottes/radis/oignons : occupe plusieurs cases) -->
+        <div id="qp-row-section" style="display:none;margin-top:12px;padding:10px;background:rgba(56,189,248,.06);border:1px dashed rgba(56,189,248,.4);border-radius:var(--r-sm);">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px;color:var(--text-primary);font-weight:600;">
+            <input type="checkbox" id="qp-row-mode" onchange="qpToggleRowMode(this)"
+              style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);">
+            <span>📏 Mode <strong>rangée de semis</strong> (occupe plusieurs cases adjacentes)</span>
+          </label>
+          <div id="qp-row-options" style="display:none;margin-top:10px;display:none;">
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:6px;">
+              Étendue de la rangée (sens horizontal)
+            </label>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              {% for n in [2,3,4,5,6,8] %}
+              <button type="button" class="qp-row-len" data-len="{{ n }}" onclick="qpSetRowLen(this,{{ n }})"
+                style="padding:5px 11px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-pill);color:var(--text-primary);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">
+                {{ n }} cases
+              </button>
+              {% endfor %}
+            </div>
+            <div style="margin-top:6px;font-size:11px;color:var(--text-tertiary);line-height:1.4;">
+              <i class="bi bi-info-circle"></i>
+              Une rangée = 1 plantation enregistrée occupant N cases. La quantité au-dessus indique le nombre de graines/plants dans la rangée.
             </div>
           </div>
         </div>
@@ -1354,6 +1414,19 @@ function qpSelectVeg(btn) {
   document.getElementById('qp-sel-emoji').textContent = emoji;
   document.getElementById('qp-sel-cat').textContent = cat;
 
+  // ── Mode rangée : visible uniquement pour semis (espacement ≤ 10 cm) ──
+  const rowSection = document.getElementById('qp-row-section');
+  if (rowSection) {
+    const isSeed = space <= 10;
+    rowSection.style.display = isSeed ? '' : 'none';
+    if (!isSeed) {
+      document.getElementById('qp-row-mode').checked = false;
+      document.getElementById('qp-row-options').style.display = 'none';
+      document.getElementById('qp-grid-w').value = 1;
+      document.querySelectorAll('.qp-row-len').forEach(b => b.classList.remove('active'));
+    }
+  }
+
   // ── Recommandations (espacement / profondeur / eau / soleil) ──
   const cols = Math.max(1, Math.floor(_ZONE_LENGTH_M * 100 / space));
   const rows = Math.max(1, Math.floor(_ZONE_WIDTH_M  * 100 / spaceRow));
@@ -1479,75 +1552,92 @@ function qpAdjustQty(delta) {
   const v = Math.max(1, Math.min(50, (parseInt(inp.value) || 1) + delta));
   inp.value = v;
 }
+
+function qpToggleRowMode(chk) {
+  const opts = document.getElementById('qp-row-options');
+  if (opts) opts.style.display = chk.checked ? 'block' : 'none';
+  if (!chk.checked) {
+    document.getElementById('qp-grid-w').value = 1;
+    document.querySelectorAll('.qp-row-len').forEach(b => b.classList.remove('active'));
+  }
+}
+
+function qpSetRowLen(btn, n) {
+  document.querySelectorAll('.qp-row-len').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('qp-grid-w').value = n;
+}
 </script>
 
-<!-- ── Drag & drop des plants dans le plan visuel ── -->
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<!-- ── Drag & drop case-par-case (HTML5 natif) ── -->
 <script>
 (function() {
   const ZONE_ID = {{ zone.zone_id }};
-  let _pSortable = null;
-  let _pReorderActive = false;
+  let _draggedEl = null;
 
-  function _savePlantsOrder(order) {
-    fetch(`/api/zones/${ZONE_ID}/plants/reorder`, {
+  window.plantDragStart = function(ev) {
+    _draggedEl = ev.currentTarget;
+    ev.dataTransfer.effectAllowed = 'move';
+    try { ev.dataTransfer.setData('text/plain', _draggedEl.dataset.id); } catch (e) {}
+    _draggedEl.classList.add('plant-cell-dragging');
+  };
+  window.plantDragEnd = function(ev) {
+    if (_draggedEl) _draggedEl.classList.remove('plant-cell-dragging');
+    document.querySelectorAll('.plant-cell-slot.drop-hover').forEach(s => s.classList.remove('drop-hover'));
+    _draggedEl = null;
+  };
+  window.cellDragOver = function(ev) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'move';
+    ev.currentTarget.classList.add('drop-hover');
+  };
+  window.cellDragLeave = function(ev) {
+    ev.currentTarget.classList.remove('drop-hover');
+  };
+  window.cellDrop = function(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.remove('drop-hover');
+    if (!_draggedEl) return;
+    const plantId = parseInt(_draggedEl.dataset.id, 10);
+    const newRow  = parseInt(ev.currentTarget.dataset.row, 10);
+    const newCol  = parseInt(ev.currentTarget.dataset.col, 10);
+    if (isNaN(plantId) || isNaN(newRow) || isNaN(newCol)) return;
+    fetch(`/api/zones/${ZONE_ID}/plants/${plantId}/move`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({order: order}),
+      body: JSON.stringify({row: newRow, col: newCol}),
     })
     .then(r => r.json())
     .then(d => {
-      if (d.ok) showToast('Plan visuel sauvegardé', 'success');
-      else      showToast('Erreur sauvegarde : ' + (d.error || 'inconnue'), 'error');
+      if (d.ok) {
+        showToast('Plant déplacé', 'success');
+        // Recharge la grille pour refléter le nouvel état (case vide libérée + plant à la nouvelle position)
+        setTimeout(() => location.reload(), 250);
+      } else {
+        showToast('Erreur : ' + (d.error || 'inconnue'), 'error');
+      }
     })
     .catch(e => showToast('Erreur réseau : ' + e.message, 'error'));
-  }
+  };
 
-  window.togglePlantsReorder = function() {
-    const grid  = document.getElementById('plant-grid');
-    const label = document.getElementById('plants-reorder-label');
-    const hint  = document.getElementById('plants-reorder-hint');
-    const btn   = document.getElementById('plants-reorder-toggle');
-    if (!grid) return;
-    _pReorderActive = !_pReorderActive;
-    grid.classList.toggle('plants-reorder-mode', _pReorderActive);
-    if (hint)  hint.style.display = _pReorderActive ? 'flex' : 'none';
-    if (btn)   btn.classList.toggle('active', _pReorderActive);
-    if (label) label.textContent = _pReorderActive ? 'Terminé' : 'Réorganiser';
-
-    if (_pReorderActive) {
-      if (typeof Sortable === 'undefined') {
-        showToast('Librairie de tri non chargée', 'error');
-        return;
-      }
-      // Désactive le clic-pour-éditer pendant le mode réorganisation
-      grid.querySelectorAll('.plant-cell:not(.plant-cell-empty)').forEach(c => {
-        c._origOnclick = c.onclick;
-        c.onclick = (ev) => ev.preventDefault();
-      });
-      _pSortable = Sortable.create(grid, {
-        animation: 180,
-        ghostClass: 'plant-cell-ghost',
-        chosenClass: 'plant-cell-chosen',
-        dragClass: 'plant-cell-drag',
-        // Exclure les cellules "+ Planter" du tri
-        filter: '.plant-cell-empty',
-        preventOnFilter: false,
-        onEnd: () => {
-          const order = Array.from(grid.querySelectorAll('.plant-cell[data-rep-id]'))
-                              .map(c => parseInt(c.dataset.repId, 10))
-                              .filter(n => !isNaN(n));
-          if (order.length) _savePlantsOrder(order);
-        },
-      });
-    } else {
-      if (_pSortable) { _pSortable.destroy(); _pSortable = null; }
-      // Restaure les onclick d'origine
-      const grid2 = document.getElementById('plant-grid');
-      if (grid2) grid2.querySelectorAll('.plant-cell').forEach(c => {
-        if (c._origOnclick) { c.onclick = c._origOnclick; delete c._origOnclick; }
-      });
+  // Ouvre le modal "Planter" en pré-remplissant la case cible
+  window.openQuickPlantAt = function(zoneId, row, col) {
+    // Stocke la position cible — read par le form au submit
+    document.getElementById('qp-grid-row').value = row;
+    document.getElementById('qp-grid-col').value = col;
+    document.getElementById('qp-grid-w').value   = 1;
+    document.getElementById('qp-grid-h').value   = 1;
+    // Affiche un indicateur "case ciblée" + reset rangée
+    const tag = document.getElementById('qp-target-cell');
+    if (tag) {
+      tag.style.display = '';
+      tag.textContent = `📍 Case ligne ${row+1}, colonne ${col+1}`;
     }
+    const rowToggle = document.getElementById('qp-row-mode');
+    if (rowToggle) rowToggle.checked = false;
+    const rowOpts = document.getElementById('qp-row-options');
+    if (rowOpts) rowOpts.style.display = 'none';
+    if (typeof openQuickPlant === 'function') openQuickPlant(zoneId);
   };
 })();
 </script>

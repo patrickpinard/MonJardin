@@ -16,6 +16,12 @@ class Planting(db.Model):
     status = db.Column(db.String(16), default="active")  # planned | active | harvested | removed
     notes = db.Column(db.Text, nullable=True)
     display_order = db.Column(db.Integer, default=0, nullable=False)
+    # Position dans la grille visuelle de la zone (0-indexé)
+    grid_row = db.Column(db.Integer, default=0, nullable=False)
+    grid_col = db.Column(db.Integer, default=0, nullable=False)
+    # Étendue : 1×1 par défaut, plus large pour rangées de semis (ex. 4×1 carottes)
+    grid_w   = db.Column(db.Integer, default=1, nullable=False)
+    grid_h   = db.Column(db.Integer, default=1, nullable=False)
 
     def to_dict(self) -> dict:
         return {
@@ -28,6 +34,10 @@ class Planting(db.Model):
             "water_need": self.water_need,
             "status": self.status,
             "notes": self.notes,
+            "grid_row": self.grid_row or 0,
+            "grid_col": self.grid_col or 0,
+            "grid_w": self.grid_w or 1,
+            "grid_h": self.grid_h or 1,
         }
 
 

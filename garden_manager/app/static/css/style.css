@@ -479,6 +479,134 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .plant-cell-empty:hover .plant-cell-emoji { color: var(--green); opacity: 1; }
 .plant-cell-empty:hover .plant-cell-name { color: var(--green); }
 
+/* ── Nouvelle grille case-par-case (board) ─────────────── */
+.plant-grid-board {
+  display: grid;
+  gap: 4px;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255,255,255,.04) 0%, transparent 50%),
+    linear-gradient(160deg, #6D4C41 0%, #4E342E 55%, #3E2723 100%);
+  border-radius: var(--r-md);
+  padding: 8px;
+  border: 2px solid rgba(255,255,255,.08);
+  box-shadow: inset 0 2px 14px rgba(0,0,0,.45);
+  width: 100%; height: 100%;
+}
+.plant-cell-slot {
+  background: rgba(255,255,255,.025);
+  border: 1.5px dashed rgba(255,255,255,.16);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: rgba(255,255,255,.30);
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t), color var(--t);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  min-height: 0; min-width: 0;
+}
+.plant-cell-slot:hover {
+  background: rgba(48,209,88,.12);
+  border-color: rgba(48,209,88,.55);
+  color: var(--green);
+}
+.plant-cell-slot.drop-hover {
+  background: rgba(48,209,88,.30) !important;
+  border-color: var(--green) !important;
+  border-style: solid !important;
+  color: #fff;
+}
+.plant-cell-slot-plus { font-weight: 600; }
+
+.plant-cell-filled {
+  background: rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,255,255,.18);
+  border-radius: 8px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px; padding: 4px;
+  cursor: grab;
+  transition: transform .12s var(--ease), background var(--t), border-color var(--t), box-shadow var(--t);
+  position: relative;
+  user-select: none;
+  min-height: 0; min-width: 0; overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.plant-cell-filled:hover {
+  background: rgba(255,255,255,.14);
+  border-color: rgba(255,255,255,.32);
+  transform: scale(1.04);
+  z-index: 3;
+  box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+.plant-cell-filled:active   { cursor: grabbing; }
+.plant-cell-dragging        { opacity: .35; transform: scale(.92); }
+
+.plant-cell-row-badge {
+  position: absolute; top: 3px; left: 3px;
+  background: rgba(56,189,248,.85); color: #fff;
+  font-size: 9px; font-weight: 700;
+  padding: 1px 5px; border-radius: 8px;
+  letter-spacing: .2px;
+}
+
+.zone-grid-hint {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 11.5px; color: var(--text-tertiary);
+  padding: 8px 12px; margin: 6px 0 12px;
+  border-radius: var(--r-sm);
+  background: rgba(48,209,88,.05);
+  border-left: 2px solid var(--green);
+  line-height: 1.5;
+}
+.zone-grid-hint i { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+
+/* ── Récapitulatif sous la grille ──────────────────────── */
+.zone-recap {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.zone-recap-title {
+  font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 10px;
+}
+.zone-recap-title i { color: var(--green); }
+.zone-recap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}
+.zone-recap-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: var(--r-sm);
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  font-size: 12px;
+}
+.zone-recap-emoji { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.zone-recap-name  { font-weight: 600; color: var(--text-primary); flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zone-recap-variety {
+  font-size: 10px; color: var(--text-tertiary); font-style: italic;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.zone-recap-count {
+  font-weight: 700; color: var(--green);
+  background: rgba(48,209,88,.1); padding: 1px 7px; border-radius: var(--r-pill);
+  font-size: 11px; flex-shrink: 0;
+}
+
+/* Boutons de longueur de rangée (modal Quick-Plant) */
+.qp-row-len { transition: background var(--t), border-color var(--t), color var(--t); }
+.qp-row-len:hover {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-md) !important;
+}
+.qp-row-len.active {
+  background: var(--green) !important;
+  color: #fff !important;
+  border-color: var(--green) !important;
+}
+
 @media (max-width: 480px) {
   .plant-grid { grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 5px; padding: 10px; }
   .plant-cell-emoji { font-size: 26px; }
