@@ -111,7 +111,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "85",
+            "static_v": "86",
             # Version applicative (affichée dans la sidebar, login, about)
             "app_version":         "4.5",
             "app_release_date":    "Avril 2026",

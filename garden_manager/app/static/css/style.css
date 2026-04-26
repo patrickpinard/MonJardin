@@ -2043,41 +2043,17 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .time-tab[data-tab="plants"]      .bi { color: var(--brand); }
 .time-tab[data-tab="evenements"]  .bi { color: var(--orange); }
 .time-tab[data-tab="config"]      .bi { color: var(--text-tertiary); }
-/* Active pill — filled tint + colored border */
-.time-tab.active[data-tab="temps-reel"]  { background:rgba(48,209,88,.14);  border-color:rgba(48,209,88,.4);  color:var(--green); }
-.time-tab.active[data-tab="graphiques"]  { background:rgba(10,132,255,.14); border-color:rgba(10,132,255,.4); color:var(--blue); }
-.time-tab.active[data-tab="plants"]      { background:rgba(40,162,78,.14);  border-color:rgba(40,162,78,.4);  color:var(--brand); }
-.time-tab.active[data-tab="evenements"]  { background:rgba(255,159,10,.14); border-color:rgba(255,159,10,.4); color:var(--orange); }
-.time-tab.active[data-tab="config"]      { background:var(--bg-tertiary);   border-color:var(--border-strong); color:var(--text-primary); }
-
-/* Dashboard tabs (accueil/meteo/taches/zones) + Conseils tabs : actif en vert */
-.time-tab.active[data-tab="accueil"],
-.time-tab.active[data-tab="meteo"],
-.time-tab.active[data-tab="taches"],
-.time-tab.active[data-tab="zones"],
-.time-tab.active[data-tab="apercu"],
-.time-tab.active[data-tab="pratiques"],
-.time-tab.active[data-tab="associations"],
-.time-tab.active[data-tab="calendrier"],
-.time-tab.active[data-tab="plantations"] {
-  background: var(--green); border-color: var(--green); color: #fff;
-}
-.time-tab.active[data-tab="accueil"] .bi,
-.time-tab.active[data-tab="meteo"]   .bi,
-.time-tab.active[data-tab="taches"]  .bi,
-.time-tab.active[data-tab="zones"]   .bi,
-.time-tab.active[data-tab="apercu"]  .bi,
-.time-tab.active[data-tab="pratiques"]    .bi,
-.time-tab.active[data-tab="associations"] .bi,
-.time-tab.active[data-tab="calendrier"]   .bi,
-.time-tab.active[data-tab="plantations"]  .bi {
+/* ── Onglet actif uniforme : fond vert plein, texte et icône blancs
+   (s'applique à toutes les tabs : dashboard, zone détail, conseils, admin, etc.) ── */
+.time-tab.active {
+  background: var(--green) !important;
+  border-color: var(--green) !important;
   color: #fff !important;
 }
-
-/* Generic active (dashboard tabs without data-tab) */
-.time-tab.active:not([data-tab]) { background: var(--green); border-color: var(--green); color: #fff; }
-.time-tab.active:not([data-tab]) .bi { color: #fff !important; }
-.time-tab.active .bi { opacity: 1; }
+.time-tab.active .bi {
+  color: #fff !important;
+  opacity: 1;
+}
 .time-tab:hover:not(.active) { background: var(--bg-hover); border-color: var(--border-strong); color: var(--text-primary); }
 @media (max-width: 600px) {
   .time-tabs { width: 100%; justify-content: space-between; gap: 4px; }
@@ -2341,10 +2317,14 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   background: var(--green); color: #fff; border-color: var(--green);
 }
 .hist-chip.active:hover { background: var(--green); color: #fff; }
-.hist-chip[data-zone="1"]:not(.active) { color: #30d158; }
-.hist-chip[data-zone="2"]:not(.active) { color: #8BC34A; }
-.hist-chip[data-zone="3"]:not(.active) { color: #0a84ff; }
-.hist-chip[data-zone="4"]:not(.active) { color: #bf5af2; }
+.hist-chip[data-zone="1"]:not(.active),
+.filter-chip[data-zone="1"]:not(.active) { color: #30d158; }
+.hist-chip[data-zone="2"]:not(.active),
+.filter-chip[data-zone="2"]:not(.active) { color: #8BC34A; }
+.hist-chip[data-zone="3"]:not(.active),
+.filter-chip[data-zone="3"]:not(.active) { color: #0a84ff; }
+.hist-chip[data-zone="4"]:not(.active),
+.filter-chip[data-zone="4"]:not(.active) { color: #bf5af2; }
 
 /* Pastille compacte "S" → page Administration > Simulation
    Style "filled" orange (comme le bouton Simulation dans Administration) */
@@ -2787,16 +2767,55 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 }
 .search-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(48,209,88,.12); }
 .search-input::placeholder { color: var(--text-tertiary); }
+/* ── Barre de filtres uniforme (modèle de la page Encyclopédie) ──
+   Utilisée sur toutes les pages avec filtres : Encyclopédie, Plans, Conseils,
+   Graphiques, zone Graphiques. Structure :
+     <div class="filter-bar">
+       <div class="filter-section">
+         <div class="filter-section-label"><i class="bi bi-..."></i> Libellé</div>
+         <div class="filter-row">
+           <button class="filter-chip active">…</button>
+           <button class="filter-chip">…</button>
+         </div>
+       </div>
+     </div>
+*/
+.filter-bar {
+  background: var(--bg-primary); border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.filter-section { margin-bottom: 10px; }
+.filter-section:last-child { margin-bottom: 0; }
+.filter-section-label {
+  font-size: 10px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: .6px;
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.filter-section-label i { color: var(--text-tertiary); font-size: 12px; }
+.filter-row {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+}
 .filter-chip {
   padding: 6px 13px; border-radius: var(--r-pill);
   background: var(--bg-secondary); color: var(--text-secondary);
   border: 1px solid var(--border-md);
   font-size: 12px; font-weight: 600; cursor: pointer;
   transition: all var(--t);
+  font-family: inherit;
+  display: inline-flex; align-items: center; gap: 5px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.filter-chip:hover  { color: var(--text-primary); border-color: var(--border-strong); }
-.filter-chip.active { background: rgba(48,209,88,.12); color: var(--green);
-  border-color: rgba(48,209,88,.3); }
+.filter-chip:hover  { color: var(--text-primary); border-color: var(--border-strong); background: var(--bg-tertiary); }
+.filter-chip:active { transform: scale(.96); }
+.filter-chip.active {
+  background: var(--green); color: #fff;
+  border-color: var(--green);
+}
+.filter-chip.active:hover { background: var(--green); color: #fff; border-color: var(--green); }
 
 /* Empty state */
 .empty-state { text-align: center; padding: 48px 24px; color: var(--text-tertiary); }
