@@ -1063,7 +1063,26 @@ function switchTab(btn, tabName) {
   if (tabName === 'graphiques') {
     loadCombinedChart({{ zone.zone_id }}, _currentHours);
   }
+  // Persiste l'onglet courant dans le hash de l'URL — survit à un reload
+  // (utile notamment après un drag & drop dans le plan visuel).
+  try {
+    const newHash = '#' + tabName;
+    if (location.hash !== newHash) {
+      history.replaceState(null, '', newHash);
+    }
+  } catch (e) { /* silencieux */ }
 }
+
+// Restaure l'onglet actif depuis le hash au chargement de la page
+(function _restoreTabFromHash() {
+  const h = (location.hash || '').replace('#', '').trim();
+  if (!h) return;
+  const btn = document.querySelector(`#zone-tab-bar .time-tab[data-tab="${h}"]`);
+  if (btn) {
+    // Évite la double exécution avant la définition de switchTab
+    setTimeout(() => switchTab(btn, h), 0);
+  }
+})();
 
 // ── Graphique unifié (humidité + températures + vannes) ──
 let _currentHours = 24;
@@ -1611,6 +1630,8 @@ function qpSetRowLen(btn, n) {
     .then(d => {
       if (d.ok) {
         showToast('Plant déplacé', 'success');
+        // Force l'onglet "Plants" au reload (le hash survit au reload)
+        try { history.replaceState(null, '', '#plants'); } catch (e) {}
         // Recharge la grille pour refléter le nouvel état (case vide libérée + plant à la nouvelle position)
         setTimeout(() => location.reload(), 250);
       } else {
