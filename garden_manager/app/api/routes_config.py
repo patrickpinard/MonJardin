@@ -3,7 +3,7 @@ from datetime import date
 
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 
-from ..models import db, Zone, Planting
+from ..models import db, Zone, Planting, JournalEntry
 
 config_bp = Blueprint("config", __name__)
 
@@ -57,6 +57,15 @@ def update_zone(zone_id: int):
     except Exception:
         pass
 
+    # Log de la modification
+    db.session.add(JournalEntry(
+        level="info",
+        message=(
+            f"⚙️ Configuration modifiée : {zone.name} (Z{zone.zone_id}) — "
+            f"mode {zone.irrigation_mode}, seuils {int(zone.moisture_threshold_low)}–{int(zone.moisture_threshold_high)}%, "
+            f"durée {zone.irrigation_duration_min}min"
+        ),
+    ))
     db.session.commit()
     redirect_to = form.get("redirect_to", "settings")
     if redirect_to == "zone":
@@ -223,6 +232,15 @@ def add_planting():
                 status="active",
                 notes=form.get("notes", ""),
             ))
+        # Log dans le journal
+        zone_obj = Zone.query.get(zone_id)
+        zname = zone_obj.name if zone_obj else f"Z{zone_id}"
+        emoji_v = (veg.get("emoji", "🌱") if veg else "🌱")
+        qty_label = f"{quantity}× " if quantity > 1 else ""
+        db.session.add(JournalEntry(
+            level="info",
+            message=f"🌱 Plantation : {qty_label}{emoji_v} {vegetable_name} ajouté(s) dans {zname}",
+        ))
         db.session.commit()
         if quantity > 1:
             flash(f"{quantity} plants de {vegetable_name} ajoutés.", "success")
@@ -303,6 +321,13 @@ def edit_planting(planting_id: int):
                     if removed >= -diff:
                         break
 
+    # Log dans le journal
+    zone_obj = Zone.query.get(p.zone_id)
+    zname = zone_obj.name if zone_obj else f"Z{p.zone_id}"
+    db.session.add(JournalEntry(
+        level="info",
+        message=f"✏️ Plantation modifiée : {p.vegetable_name} dans {zname}",
+    ))
     db.session.commit()
     redirect_to = request.form.get("redirect_to", "planting")
     if redirect_to == "zone":
@@ -316,6 +341,12 @@ def harvest_planting(planting_id: int):
     """Marque une plantation comme récoltée."""
     p = Planting.query.get_or_404(planting_id)
     p.status = "harvested"
+    zone_obj = Zone.query.get(p.zone_id)
+    zname = zone_obj.name if zone_obj else f"Z{p.zone_id}"
+    db.session.add(JournalEntry(
+        level="success",
+        message=f"🧺 Récolte : {p.vegetable_name} dans {zname}",
+    ))
     db.session.commit()
     return redirect(url_for("config.planting_page"))
 
@@ -325,7 +356,14 @@ def delete_planting(planting_id: int):
     """Supprime une plantation."""
     p = Planting.query.get_or_404(planting_id)
     zone_id = p.zone_id
+    veg_name = p.vegetable_name
+    zone_obj = Zone.query.get(zone_id)
+    zname = zone_obj.name if zone_obj else f"Z{zone_id}"
     db.session.delete(p)
+    db.session.add(JournalEntry(
+        level="warning",
+        message=f"🗑 Plantation supprimée : {veg_name} de {zname}",
+    ))
     db.session.commit()
     redirect_to = request.form.get("redirect_to", "planting")
     if redirect_to == "zone":
@@ -344,6 +382,12 @@ def delete_species_from_zone(zone_id: int, vegetable_name: str):
     count = len(plantings)
     for p in plantings:
         db.session.delete(p)
+    zone_obj = Zone.query.get(zone_id)
+    zname = zone_obj.name if zone_obj else f"Z{zone_id}"
+    db.session.add(JournalEntry(
+        level="warning",
+        message=f"🗑 Espèce supprimée : {count}× {vegetable_name} de {zname}",
+    ))
     db.session.commit()
     flash(f"{count} plantation(s) de {vegetable_name} supprimée(s).", "success")
     redirect_to = request.form.get("redirect_to", "zone")
