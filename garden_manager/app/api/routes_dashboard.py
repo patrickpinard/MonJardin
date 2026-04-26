@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone, date
 from pathlib import Path
 
 from flask import Blueprint, current_app, render_template, send_from_directory, \
-    request, session, redirect
+    request, session, redirect, flash
 
 from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog, AdminUser, AlertRecipient, ALERT_TYPES, db
 
@@ -1088,6 +1088,64 @@ def admin_delete_user(uid):
     db.session.delete(user)
     db.session.commit()
     return redirect("/admin")
+
+
+@dashboard_bp.post("/admin/reset_garden")
+def admin_reset_garden():
+    """Reset annuel : archive les plantations actives et réinitialise
+    les zones aux valeurs par défaut. L'historique reste en DB pour
+    le conseiller de rotation des cultures.
+    """
+    confirm = request.form.get("confirm", "").strip().upper()
+    if confirm != "RESET":
+        flash("Confirmation incorrecte — tape RESET en majuscules pour valider.", "danger")
+        return redirect("/admin")
+
+    # 1. Archiver toutes les plantations actives (status='archived')
+    archived_count = 0
+    for p in Planting.query.filter(Planting.status.in_(["active", "planned"])).all():
+        p.status = "archived"
+        archived_count += 1
+
+    # 2. Réinitialiser les zones aux valeurs par défaut
+    DEFAULTS = {
+        1: ("Serre",     "Zone couverte avec toiture rétractable (vérin)", True,  30, 65, 15, 2.0, 1.0),
+        2: ("Soleil",    "Plein terre, exposition plein sud",                False, 30, 65, 15, 2.0, 1.0),
+        3: ("Mi-ombre",  "Plein terre, partiellement ombragée",              False, 30, 65, 15, 2.0, 1.0),
+        4: ("Aromates",  "Plein terre, herbes et aromatiques",               False, 25, 55, 10, 2.0, 1.0),
+    }
+    for zone in Zone.query.all():
+        d = DEFAULTS.get(zone.zone_id)
+        if d:
+            zone.name, zone.description, zone.has_roof = d[0], d[1], d[2]
+            zone.moisture_threshold_low  = d[3]
+            zone.moisture_threshold_high = d[4]
+            zone.irrigation_duration_min = d[5]
+            zone.length_m, zone.width_m  = d[6], d[7]
+            zone.irrigation_mode = "auto"
+
+    # 3. Journal
+    db.session.add(JournalEntry(
+        level="warning",
+        message=f"♻️ RESET annuel : {archived_count} plantation(s) archivée(s), zones réinitialisées",
+    ))
+    db.session.commit()
+
+    # 4. Supprimer le flag setup_done pour reproposer le wizard
+    try:
+        flag = _setup_done_path()
+        if flag.exists():
+            flag.unlink()
+    except Exception as e:
+        log.warning("Impossible de supprimer setup_done : %s", e)
+
+    flash(
+        f"♻️ Reset effectué : {archived_count} plantation(s) archivée(s) "
+        f"(historique préservé pour les conseils de rotation). "
+        f"Zones réinitialisées.",
+        "success",
+    )
+    return redirect("/admin?reset=done")
 
 
 def _setup_done_path():

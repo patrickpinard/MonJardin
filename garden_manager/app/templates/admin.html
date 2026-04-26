@@ -33,6 +33,20 @@
 
 <div class="page-body">
 
+  {% if request.args.get('reset') == 'done' %}
+  <div class="greenhouse-note mb-3" style="background:rgba(48,209,88,.06);border-color:rgba(48,209,88,.25);">
+    <i class="bi bi-check2-circle" style="color:var(--green);"></i>
+    <div>
+      <div class="gn-title" style="color:var(--green);">Reset effectué</div>
+      <div class="gn-body" style="line-height:1.5;">
+        Vos plantations sont archivées (l'historique est préservé pour les conseils de rotation).
+        <br>Vous pouvez maintenant <a href="/setup" style="color:var(--green);font-weight:700;">lancer le wizard de configuration</a>
+        pour redémarrer rapidement, ou bien configurer chaque zone manuellement depuis <a href="/zones/1" style="color:var(--green);">Zones</a>.
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   {% set err = request.args.get('error') %}
   {% if err == 'invalid' %}
   <div class="greenhouse-note mb-3" style="background:rgba(255,69,58,.06);border-color:rgba(255,69,58,.2);">
@@ -217,7 +231,7 @@
       <div id="healthResult" class="mt-2"></div>
     </div>
 
-    <div class="card">
+    <div class="card mb-3">
       <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations système</div>
       <div class="grid-3" style="gap:10px;">
         <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px;">
@@ -235,6 +249,34 @@
           <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">{{ users | selectattr('enabled') | list | length }} actif(s)</div>
         </div>
       </div>
+    </div>
+
+    <!-- Reset annuel : nouveau jardin -->
+    <div class="card" style="border:1px solid rgba(255,69,58,.3);">
+      <div class="card-title"><i class="bi bi-arrow-counterclockwise" style="color:var(--red);"></i> Recommencer une nouvelle année</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">
+        Réinitialise le jardin pour démarrer une nouvelle saison :
+      </div>
+      <ul style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin:0 0 14px 18px;padding:0;">
+        <li><strong>Plantations actives</strong> archivées (statut <code>archived</code>) — l'historique est <strong>conservé</strong> pour les conseils de rotation des cultures.</li>
+        <li><strong>Zones réinitialisées</strong> aux noms et dimensions par défaut (Serre, Soleil, Mi-ombre, Aromates).</li>
+        <li><strong>Wizard de configuration</strong> reproposé sur le dashboard (vous pouvez aussi configurer manuellement).</li>
+        <li>Les capteurs, journal, comptes utilisateurs et alertes ne sont <strong>pas</strong> touchés.</li>
+      </ul>
+      <form method="post" action="{{ url_for('dashboard.admin_reset_garden') }}"
+            id="reset-garden-form" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+        <div>
+          <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:4px;">
+            Tapez <strong style="color:var(--red);">RESET</strong> pour confirmer
+          </label>
+          <input type="text" name="confirm" placeholder="RESET"
+                 style="width:140px;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:8px 12px;font-size:13px;font-family:var(--font);text-transform:uppercase;letter-spacing:1px;">
+        </div>
+        <button type="submit" class="btn btn-sm" style="background:var(--red);color:#fff;border:none;"
+                onclick="return confirm('Êtes-vous sûr ? Cette action est irréversible (sauf historique). Continuer ?');">
+          <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser le jardin
+        </button>
+      </form>
     </div>
 
   </div><!-- /#tab-systeme -->
