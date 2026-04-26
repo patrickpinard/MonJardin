@@ -609,20 +609,39 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   transform: scale(1.03);
   box-shadow: 0 6px 18px rgba(0,0,0,.4);
 }
-.photo-thumb-del {
-  position: absolute; top: 4px; right: 4px;
-  width: 24px; height: 24px; border-radius: 50%;
-  background: rgba(0,0,0,.55); color: #fff;
+/* Boutons d'action sur les thumbnails (edit + delete) */
+.photo-thumb-act {
+  position: absolute;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(0,0,0,.6); color: #fff;
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 11px;
-  opacity: 0; transition: opacity var(--t);
+  opacity: 0; transition: opacity var(--t), background var(--t);
   -webkit-tap-highlight-color: transparent;
 }
-.photo-thumb:hover .photo-thumb-del,
-.photo-thumb-del:focus { opacity: 1; }
+.photo-thumb-act:hover { background: rgba(0,0,0,.85); }
+.photo-thumb-edit { top: 4px; right: 36px; }
+.photo-thumb-del  { top: 4px; right: 4px; }
+.photo-thumb:hover .photo-thumb-act,
+.photo-thumb-act:focus { opacity: 1; }
+
+/* Hint "loupe" pour signaler que le thumb est cliquable (vue agrandie) */
+.photo-thumb-zoom {
+  position: absolute; bottom: 4px; right: 4px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(0,0,0,.5); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  opacity: 0; transition: opacity var(--t);
+  pointer-events: none;
+}
+.photo-thumb:hover .photo-thumb-zoom { opacity: 1; }
+
 @media (max-width: 768px) {
-  .photo-thumb-del { opacity: .85; }
+  /* Sur mobile, boutons toujours visibles (pas de hover) */
+  .photo-thumb-act  { opacity: .9; }
+  .photo-thumb-zoom { opacity: .8; }
   .photos-day-label { width: 44px; }
   .photos-day-num   { font-size: 18px; }
   .photos-day-thumbs { grid-template-columns: repeat(3, 1fr); gap: 6px; }

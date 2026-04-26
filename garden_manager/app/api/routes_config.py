@@ -592,10 +592,80 @@ def upload_zone_photo(zone_id: int):
     return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
 
 
+@config_bp.post("/zones/<int:zone_id>/photos/<int:photo_id>/edit")
+def edit_zone_photo(zone_id: int, photo_id: int):
+    """Édite la date de prise et/ou la légende d'une photo.
+
+    Idempotent : si la photo n'existe plus (ex. supprimée depuis un autre
+    appareil), ne génère pas d'erreur — informe simplement l'utilisateur.
+    """
+    from datetime import datetime
+    photo = ZonePhoto.query.filter_by(id=photo_id, zone_id=zone_id).first()
+    if photo is None:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"ok": True, "already_deleted": True,
+                            "message": "Photo introuvable (peut-être supprimée depuis un autre appareil)."})
+        flash("Cette photo a déjà été supprimée (peut-être depuis un autre appareil).", "info")
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
+    body = request.get_json(silent=True) or request.form
+
+    captured_at_str = (body.get("captured_at") or "").strip()
+    if captured_at_str:
+        # Format attendu: "YYYY-MM-DDTHH:MM" (input datetime-local) ou ISO complet
+        try:
+            # Accepte avec ou sans secondes
+            for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M"):
+                try:
+                    dt = datetime.strptime(captured_at_str, fmt)
+                    break
+                except ValueError:
+                    dt = None
+            if dt is None:
+                # Dernier recours : isoformat
+                dt = datetime.fromisoformat(captured_at_str.replace("Z", "+00:00"))
+                if dt.tzinfo:
+                    dt = dt.astimezone().replace(tzinfo=None)
+            photo.captured_at = dt
+        except (ValueError, TypeError) as e:
+            if request.is_json:
+                return jsonify({"ok": False, "error": f"Date invalide : {e}"}), 400
+            flash(f"Date invalide : {e}", "danger")
+            return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
+
+    caption = body.get("caption")
+    if caption is not None:
+        caption = caption.strip()[:200]
+        photo.caption = caption or None
+
+    db.session.add(JournalEntry(
+        level="info",
+        message=f"✏️ Photo {photo_id} modifiée (zone {zone_id})",
+    ))
+    db.session.commit()
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": True, "photo": photo.to_dict()})
+    flash("Photo mise à jour.", "success")
+    return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
+
+
 @config_bp.post("/zones/<int:zone_id>/photos/<int:photo_id>/delete")
 def delete_zone_photo(zone_id: int, photo_id: int):
-    """Supprime une photo (et son fichier sur disque)."""
-    photo = ZonePhoto.query.filter_by(id=photo_id, zone_id=zone_id).first_or_404()
+    """Supprime une photo (et son fichier sur disque).
+
+    Idempotent : si la photo n'existe plus (déjà supprimée depuis un autre
+    appareil, par exemple), retourne un succès silencieux avec un message
+    explicite. Aucune 404 dans ce cas.
+    """
+    photo = ZonePhoto.query.filter_by(id=photo_id, zone_id=zone_id).first()
+    if photo is None:
+        # Déjà supprimée — pas une erreur côté client
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+            return jsonify({"ok": True, "already_deleted": True,
+                            "message": "Photo déjà supprimée."})
+        flash("Cette photo a déjà été supprimée (peut-être depuis un autre appareil).", "info")
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
+
     fpath = _photos_dir() / str(zone_id) / photo.filename
     try:
         if fpath.exists():
@@ -608,8 +678,8 @@ def delete_zone_photo(zone_id: int, photo_id: int):
         message=f"🗑 Photo supprimée (zone {zone_id}, fichier {photo.filename})",
     ))
     db.session.commit()
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"ok": True})
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+        return jsonify({"ok": True, "already_deleted": False})
     flash("Photo supprimée.", "success")
     return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
 
