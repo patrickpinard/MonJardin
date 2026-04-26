@@ -69,7 +69,8 @@ def update_zone(zone_id: int):
     db.session.commit()
     redirect_to = form.get("redirect_to", "settings")
     if redirect_to == "zone":
-        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+        # Modification de zone → retour sur l'onglet Configuration
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#config")
     return redirect(url_for("dashboard.settings"))
 
 
@@ -307,7 +308,7 @@ def add_planting():
     # Redirige vers la zone si demandé (modal Quick-Plant), sinon Plantation
     redirect_to = form.get("redirect_to", "")
     if redirect_to == "zone" and zone_id:
-        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#plants")
     return redirect(url_for("config.planting_page"))
 
 
@@ -393,7 +394,7 @@ def edit_planting(planting_id: int):
     redirect_to = request.form.get("redirect_to", "planting")
     if redirect_to == "zone":
         zone_id = p.zone_id
-        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#plants")
     return redirect(url_for("config.planting_page"))
 
 
@@ -428,7 +429,7 @@ def delete_planting(planting_id: int):
     db.session.commit()
     redirect_to = request.form.get("redirect_to", "planting")
     if redirect_to == "zone":
-        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#plants")
     return redirect(url_for("config.planting_page"))
 
 
@@ -453,7 +454,7 @@ def delete_species_from_zone(zone_id: int, vegetable_name: str):
     flash(f"{count} plantation(s) de {vegetable_name} supprimée(s).", "success")
     redirect_to = request.form.get("redirect_to", "zone")
     if redirect_to == "zone":
-        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#plants")
     return redirect(url_for("config.planting_page"))
 
 
