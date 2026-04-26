@@ -189,16 +189,39 @@
   </div>
   {% endif %}
 
+  <!-- Bandeau "Mes zones" compact (vu d'un coup d'œil, clic = bascule onglet Zones) -->
+  {% if zones_data %}
+  <div class="zones-strip" onclick="switchDashTab(document.querySelector('#dash-tabs .time-tab[data-tab=\\'zones\\']'),'zones')"
+       title="Cliquer pour voir le détail des zones">
+    {% for zd in zones_data %}
+    {% set _zsc = 'low' if zd.moisture < zd.zone.moisture_threshold_low
+                  else ('high' if zd.moisture > zd.zone.moisture_threshold_high else 'ok') %}
+    <div class="zones-strip-cell zones-strip-{{ _zsc }}">
+      <div class="zones-strip-icon">
+        {% if zd.zone.zone_id == 1 %}🏠
+        {% elif zd.zone.zone_id == 2 %}☀️
+        {% elif zd.zone.zone_id == 3 %}⛅
+        {% else %}🌿{% endif %}
+      </div>
+      <div class="zones-strip-meta">
+        <div class="zones-strip-name">{{ zd.zone.name }}</div>
+        <div class="zones-strip-mois">{{ zd.moisture | int }}% · {{ zd.valve_state == 'open' and '💧' or '·' }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <!-- Tab bar — Option A : Vue d'ensemble (défaut) | Mes zones -->
   <div class="time-tabs mb-3" id="dash-tabs">
-    <button class="time-tab active" onclick="switchDashTab(this,'apercu')">
+    <button class="time-tab active" data-tab="apercu" onclick="switchDashTab(this,'apercu')">
       <i class="bi bi-house-heart-fill"></i> Vue d'ensemble
       {% set _badge_count = (monthly_tasks | length) + (disease_alerts | length) + (harvest_list | length) %}
       {% if _badge_count %}
       <span class="badge" style="margin-left:4px;font-size:10px;background:{% if disease_alerts | selectattr('level','eq','danger') | list %}rgba(255,69,58,.25);color:var(--red){% elif disease_alerts %}rgba(255,159,10,.25);color:var(--orange){% else %}rgba(48,209,88,.2);color:var(--green){% endif %};">{{ _badge_count }}</span>
       {% endif %}
     </button>
-    <button class="time-tab" onclick="switchDashTab(this,'zones')">
+    <button class="time-tab" data-tab="zones" onclick="switchDashTab(this,'zones')">
       <i class="bi bi-grid-1x2-fill"></i> Mes zones
       <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(255,255,255,.08);color:var(--text-secondary);">{{ zones_data | length }}</span>
     </button>
@@ -486,7 +509,7 @@
     </div>
   </div>
 
-  <!-- ── TAB MÉTÉO ── -->
+  <!-- ── TAB MÉTÉO (réorganisé : prévisions en tête, vent en compact en bas) ── -->
   {% set forecast_by_day = forecast_by_day if forecast_by_day is defined else [] %}
   <div id="tab-meteo">
 
@@ -505,38 +528,15 @@
     </div>
     {% endif %}
 
-    <!-- Comparaison vent prévu / vent mesuré (info unique) -->
-    <div class="card mb-3">
-      <div class="card-title">
-        <i class="bi bi-wind" style="color:var(--blue);"></i>
-        Vent — comparaison prévision vs capteur
-      </div>
-      <div class="wind-compare">
-        <div class="wind-compare-item">
-          <div class="wind-compare-icon">💨</div>
-          <div class="wind-compare-value">{{ weather.wind_kmh }} km/h</div>
-          <div class="wind-compare-label">Prévu (Open-Meteo)</div>
-        </div>
-        <div class="wind-compare-arrow">↔</div>
-        <div class="wind-compare-item">
-          <div class="wind-compare-icon">🌬</div>
-          <div class="wind-compare-value" id="dash-wind-arduino">—</div>
-          <div class="wind-compare-label">Mesuré (anémomètre)</div>
-        </div>
-      </div>
-      <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
-        <i class="bi bi-info-circle"></i>
-        Le capteur mesure le vent local au jardin, qui peut différer
-        sensiblement des prévisions régionales.
-      </div>
-    </div>
-
-    <!-- Prévisions par jour (jusqu'à 48h) -->
+    <!-- Prévisions par jour (jusqu'à 48h) — en tête -->
     {% if forecast_by_day %}
     <div class="card mb-3">
       <div class="card-title">
         <i class="bi bi-calendar-week-fill" style="color:var(--orange);"></i>
         Prévisions par jour
+        <a href="/history" class="btn btn-ghost btn-xs" style="margin-left:auto;font-size:11px;">
+          <i class="bi bi-graph-up"></i> Graphiques
+        </a>
       </div>
       <div class="forecast-day-list">
         {% for d in forecast_by_day %}
@@ -565,29 +565,20 @@
         </div>
         {% endfor %}
       </div>
-      <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
-        <i class="bi bi-info-circle"></i>
-        Détail horaire 24h : voir le bandeau en haut du dashboard.
-        Source : <strong>{{ weather.source }}</strong>.
+      <!-- Vent : compacté en pied de carte (info secondaire) -->
+      <div style="margin-top:12px;padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;">
+        <span style="color:var(--text-tertiary);"><i class="bi bi-wind"></i> Vent</span>
+        <span style="color:var(--text-primary);font-weight:600;">
+          💨 Prévu : {{ weather.wind_kmh }} km/h
+        </span>
+        <span style="color:var(--text-secondary);">·</span>
+        <span style="color:var(--text-primary);font-weight:600;">
+          🌬 Mesuré : <span id="dash-wind-arduino">—</span>
+        </span>
+        <span style="color:var(--text-tertiary);font-size:10.5px;margin-left:auto;">Source : {{ weather.source }}</span>
       </div>
     </div>
     {% endif %}
-
-    <!-- Lien vers historique complet -->
-    <div class="card">
-      <div class="card-title">
-        <i class="bi bi-graph-up" style="color:var(--green);"></i>
-        Historique météo
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="flex:1;font-size:13px;color:var(--text-secondary);line-height:1.5;">
-          Voir l'évolution des températures, humidité et précipitations sur 24h, 7j ou 30j.
-        </div>
-        <a href="/history" class="btn btn-primary btn-sm">
-          <i class="bi bi-graph-up"></i> Ouvrir Graphiques
-        </a>
-      </div>
-    </div>
 
   </div>
 
