@@ -285,13 +285,23 @@
             <span style="color:var(--red);font-weight:700;" title="Sur-occupation : les plants sont trop nombreux selon les recommandations d'espacement">⚠ surchargée</span>
             {% endif %}
           </span>
+          {% if plant_species_summary | length > 1 %}
+          <button class="plants-reorder-toggle" id="plants-reorder-toggle"
+                  onclick="togglePlantsReorder()" type="button">
+            <i class="bi bi-arrows-move"></i> <span id="plants-reorder-label">Réorganiser</span>
+          </button>
+          {% endif %}
         </span>
+      </div>
+      <div class="plants-reorder-hint" id="plants-reorder-hint" style="display:none;">
+        <i class="bi bi-info-circle"></i> Glissez les plants pour les organiser comme dans votre jardin — l'ordre est sauvegardé.
       </div>
       <!-- Container avec ratio = proportions réelles de la zone -->
       <div class="plant-grid-wrap" style="aspect-ratio: {{ _zone_length }} / {{ _zone_width }};">
-      <div class="plant-grid plant-grid-fill">
+      <div class="plant-grid plant-grid-fill" id="plant-grid">
         {% for s in plant_species_summary %}
         <div class="plant-cell"
+             data-rep-id="{{ s.rep_id }}"
              title="{{ s.display_name }}"
              onclick="openEditModal({{ s.rep_id }}, '{{ s.name|e }}', '{{ s.variety|e }}', '{{ s.harvest }}', '{{ s.status }}', '{{ s.water_need }}', '{{ s.notes|e }}', 'zone', {{ s.count }})">
           <span class="plant-cell-emoji">{{ s.emoji }}</span>
@@ -1469,5 +1479,76 @@ function qpAdjustQty(delta) {
   const v = Math.max(1, Math.min(50, (parseInt(inp.value) || 1) + delta));
   inp.value = v;
 }
+</script>
+
+<!-- ── Drag & drop des plants dans le plan visuel ── -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+(function() {
+  const ZONE_ID = {{ zone.zone_id }};
+  let _pSortable = null;
+  let _pReorderActive = false;
+
+  function _savePlantsOrder(order) {
+    fetch(`/api/zones/${ZONE_ID}/plants/reorder`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({order: order}),
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) showToast('Plan visuel sauvegardé', 'success');
+      else      showToast('Erreur sauvegarde : ' + (d.error || 'inconnue'), 'error');
+    })
+    .catch(e => showToast('Erreur réseau : ' + e.message, 'error'));
+  }
+
+  window.togglePlantsReorder = function() {
+    const grid  = document.getElementById('plant-grid');
+    const label = document.getElementById('plants-reorder-label');
+    const hint  = document.getElementById('plants-reorder-hint');
+    const btn   = document.getElementById('plants-reorder-toggle');
+    if (!grid) return;
+    _pReorderActive = !_pReorderActive;
+    grid.classList.toggle('plants-reorder-mode', _pReorderActive);
+    if (hint)  hint.style.display = _pReorderActive ? 'flex' : 'none';
+    if (btn)   btn.classList.toggle('active', _pReorderActive);
+    if (label) label.textContent = _pReorderActive ? 'Terminé' : 'Réorganiser';
+
+    if (_pReorderActive) {
+      if (typeof Sortable === 'undefined') {
+        showToast('Librairie de tri non chargée', 'error');
+        return;
+      }
+      // Désactive le clic-pour-éditer pendant le mode réorganisation
+      grid.querySelectorAll('.plant-cell:not(.plant-cell-empty)').forEach(c => {
+        c._origOnclick = c.onclick;
+        c.onclick = (ev) => ev.preventDefault();
+      });
+      _pSortable = Sortable.create(grid, {
+        animation: 180,
+        ghostClass: 'plant-cell-ghost',
+        chosenClass: 'plant-cell-chosen',
+        dragClass: 'plant-cell-drag',
+        // Exclure les cellules "+ Planter" du tri
+        filter: '.plant-cell-empty',
+        preventOnFilter: false,
+        onEnd: () => {
+          const order = Array.from(grid.querySelectorAll('.plant-cell[data-rep-id]'))
+                              .map(c => parseInt(c.dataset.repId, 10))
+                              .filter(n => !isNaN(n));
+          if (order.length) _savePlantsOrder(order);
+        },
+      });
+    } else {
+      if (_pSortable) { _pSortable.destroy(); _pSortable = null; }
+      // Restaure les onclick d'origine
+      const grid2 = document.getElementById('plant-grid');
+      if (grid2) grid2.querySelectorAll('.plant-cell').forEach(c => {
+        if (c._origOnclick) { c.onclick = c._origOnclick; delete c._origOnclick; }
+      });
+    }
+  };
+})();
 </script>
 {% endblock %}

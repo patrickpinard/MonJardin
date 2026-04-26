@@ -2574,6 +2574,48 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .zc-card-chosen  { box-shadow: 0 12px 32px rgba(48,209,88,.35) !important; }
 .zc-card-drag    { transform: rotate(1deg); opacity: .9; }
 
+/* ── Drag & drop des plants dans le plan visuel ─────── */
+.plants-reorder-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: var(--r-pill);
+  background: var(--bg-secondary); color: var(--text-secondary);
+  border: 1px solid var(--border);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+  transition: background var(--t), color var(--t), border-color var(--t), transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.plants-reorder-toggle:hover  { background: var(--bg-tertiary); color: var(--text-primary); }
+.plants-reorder-toggle:active { transform: scale(.96); }
+.plants-reorder-toggle.active {
+  background: var(--green); color: #fff; border-color: var(--green);
+}
+.plants-reorder-toggle.active:hover { background: var(--green); }
+.plants-reorder-hint {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-tertiary);
+  padding: 8px 12px; margin: 8px 0 12px;
+  border-radius: var(--r-sm);
+  background: rgba(48,209,88,.06); border-left: 2px solid var(--green);
+}
+.plants-reorder-hint i { color: var(--green); flex-shrink: 0; }
+
+/* Mode actif sur la grille */
+.plant-grid.plants-reorder-mode .plant-cell:not(.plant-cell-empty) {
+  cursor: grab;
+  outline: 2px dashed transparent;
+  transition: outline-color .2s;
+}
+.plant-grid.plants-reorder-mode .plant-cell:not(.plant-cell-empty):hover {
+  outline-color: var(--green);
+}
+.plant-grid.plants-reorder-mode .plant-cell:not(.plant-cell-empty):active { cursor: grabbing; }
+.plant-grid.plants-reorder-mode .plant-cell-empty { opacity: .35; pointer-events: none; }
+
+.plant-cell-ghost   { opacity: .35; background: var(--bg-tertiary) !important; }
+.plant-cell-chosen  { box-shadow: 0 8px 22px rgba(48,209,88,.45) !important; }
+.plant-cell-drag    { transform: rotate(1deg); opacity: .9; }
+
 /* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 1100px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
