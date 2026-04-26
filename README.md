@@ -1,4 +1,4 @@
-# 🌱 MonJardin — Version 3.0
+# 🌱 MonJardin — Version 4.0
 
 Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite
 
@@ -10,25 +10,25 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 ![Tableau de bord](docs/screenshot_dashboard_v2.png)
 
-*4 cartes de zones avec humidité en temps réel, températures serre/extérieur, statut des vannes, plantations actives et prévisions météo horaires.*
+*Dashboard Option A : hero "Aujourd'hui" + Pulse Score + bandeau météo 24h, puis 2 onglets "Vue d'ensemble" (alertes, prévisions 7 jours, tâches du mois, récoltes) et "Mes zones" (grille drag&drop des 4 cartes).*
 
 ### Page Conseils
 
 ![Conseils](docs/screenshot_conseils.png)
 
-*Carrousel de 12 conseils de jardinage, guide complet du compagnonnage (associations bénéfiques et à éviter), calendrier saisonnier.*
+*9 catégories de bonnes pratiques avec carrousels indépendants (Arrosage · Sol · Planification · Plantation · Compagnonnage · **Sous serre** · Observation · Lutte naturelle · Saisonnalité). Filtre par saison + recherche texte global.*
 
 ### Page Plantation
 
 ![Plantation](docs/screenshot_planting.png)
 
-*Gestion des plantations par zone, conseils du mois (65 espèces), progression et dates de récolte.*
+*Gestion des plantations par zone, conseils du mois (55 espèces), progression et dates de récolte.*
 
 ### Vue détail d'une zone
 
 ![Zone détail](docs/screenshot_zone_detail.png)
 
-*5 onglets : Plantations actives, barre d'humidité avec seuils, historique Plotly, configuration des seuils et journal des événements.*
+*5 onglets : Temps réel · Graphiques (3 graphes séparés : humidité, températures, événements arrosage) · **Plants** (plan visuel case-par-case avec drag&drop, multi-cases pour semis) · Événements · Configuration.*
 
 ### Diagnostic Arduino Edge Control
 
@@ -36,19 +36,13 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
 
 *6 onglets : Système (CPU, température MCU, SRAM, Flash), Réseau (WiFi, IP, MAC), Capteurs, Actionneurs, I/O & Bus, API brute.*
 
-### Diagnostic Raspberry Pi
-
-![Raspberry Pi](docs/screenshot_rpi.png)
-
-*3 onglets : Système (CPU, RAM, température), Stockage, Réseau (IP, débit).*
-
 ### À propos
 
 ![À propos](docs/screenshot_about.png)
 
-*Présentation du projet, fonctionnalités v3.0, matériel et stack technique.*
+*Présentation du projet, fonctionnalités v4.0, matériel et stack technique.*
 
-### Interface mobile iPhone (PWA) — 4 écrans
+### Interface mobile iPhone (PWA)
 
 <p align="center">
   <img src="docs/screenshot_iphone_bord.png" alt="Tableau de bord iPhone" width="220">
@@ -60,7 +54,7 @@ Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Ed
   <img src="docs/screenshot_iphone_plantation.png" alt="Plantation iPhone" width="220">
 </p>
 
-*Interface PWA installable sur iPhone — Tableau de bord, vue des zones, encyclopédie de 65 espèces et gestion des plantations.*
+*Interface PWA installable sur iPhone — Tableau de bord, vue des zones, encyclopédie de 55 espèces et gestion des plantations.*
 
 
 ## Architecture matérielle
@@ -76,95 +70,118 @@ MonJardin gère automatiquement l'arrosage et l'ouverture du toit de serre de 4 
 | Zone | Nom | Particularité |
 |------|-----|--------------|
 | 1 | Serre | Toit motorisé, capteur température intérieure |
-| 2 | Potager | Exposition plein sud |
-| 3 | Potager | Exposition partielle |
-| 4 | Fleurs | Seuils d'arrosage réduits |
+| 2 | Soleil | Exposition plein sud |
+| 3 | Mi-ombre | Exposition partielle |
+| 4 | Aromates | Seuils d'arrosage réduits |
+
+---
+
+## Nouveautés version 4.0
+
+### Plan visuel case-par-case avec drag & drop libre
+
+- **Grille fixe** N×M cases (30 cm × 30 cm) calculée d'après les dimensions réelles de la zone
+- **Toutes les cases visibles** — chaque case vide est cliquable pour planter à cet endroit précis
+- **1 plant = 1 case** : plus de badge `×3`, chaque plant peut être déplacé indépendamment
+- **Drag & drop natif HTML5** : glisser un plant vers n'importe quelle case libre, contrôle de collision côté serveur (HTTP 409 si occupée)
+- **Mode rangée pour les semis** (carottes, radis, oignons, …) : sélection de longueur (2 à 8 cases adjacentes), créées comme une seule plantation
+- **Auto-placement** des plantings existants à la migration (row-major)
+- **Récapitulatif** sous la grille : compte par espèce/variété
+- **Persistance de l'onglet** : retour automatique sur l'onglet *Plants* après chaque action (drag, ajout, suppression, édition) via hash d'URL
+
+### Drag & drop des cartes zones (Dashboard)
+
+- Bouton **« Réorganiser »** dans l'onglet *Mes zones* → mode drag actif
+- SortableJS pour glisser les cartes (souris ou tactile)
+- Sauvegarde immédiate de l'ordre via `Zone.display_order`
+- Ordre propagé partout (sidebar, dropdowns, plans, automation cycle)
+
+### Dashboard Option A (page d'accueil épurée)
+
+- 2 onglets seulement : **Vue d'ensemble** (par défaut) et **Mes zones**
+- Hero "Aujourd'hui à Vullierens" + Pulse Score + bandeau météo 24h restent visibles au-dessus
+- Vue d'ensemble réorganisée : alertes (gel + vigilance sanitaire) → **prévisions 7 jours** (vs 2 jours en v3) → tâches du mois → récoltes
+- Carte "Vent" compactée en pied de la carte Prévisions (info secondaire)
+- Carte de bienvenue **fermable** par bouton croix (réactivable depuis Administration)
+
+### Page Conseils refondue (9 catégories + filtre saison)
+
+| Catégorie | Conseils |
+|-----------|----------|
+| 💧 Arrosage | 6 conseils (matin, au pied, paillage…) |
+| 🟫 Sol & fertilité | 7 conseils (paillage, compost, pH…) |
+| 📅 Planification & rotation | 6 conseils |
+| 🌱 Plantation & semis | 6 conseils |
+| 🤝 Compagnonnage | 5 conseils |
+| 🏠 **Sous serre / Tunnel** | **10 conseils** (à faire / à éviter) |
+| 👁️ Observation & vigilance | 4 conseils |
+| 🐛 Lutte naturelle & santé | 6 conseils |
+| 🌿 Saisonnalité & climat | 7 conseils |
+
+- **Carrousels indépendants** par catégorie (style identique à la page Glossaire)
+- **Filtre par saison** : Toutes / 🌱 Printemps / ☀️ Été / 🍂 Automne / ❄️ Hiver
+- **Recherche texte** combinée avec le filtre saison
+- ~57 conseils au total (vs 12 en v3.0)
+
+### Glossaire enrichi (57 termes)
+
+- 8 catégories : Météo · Climat · Sol · Plantation · Entretien · Maladies · Traitements · Calendrier lunaire
+- **Cards toujours déployées** (suppression du toggle « En savoir plus »)
+- Images Wikimedia pour les termes principaux (Mildiou, Oïdium, Compost, Paillage, etc.)
+- Tri éditorial des catégories (général → pointu)
+- Recherche live + sections par catégorie avec carrousels
+
+### Plans pré-faits (16 plans clé en main)
+
+- Aromates de cuisine · Mini potager famille · Débutant salade-radis · Compagnonnage classique · Trois Sœurs · Serre d'été · Légumes racines hiver · Balcon en pots
+- **Nouveaux plans v4.0** : Jardin à pizza 🍕 · Ratatouille provençale · Carré anti-pucerons 🐞 · Soupe d'automne 🥣 · Salade complète été · Paradis des pollinisateurs 🐝 · Potager d'altitude · Premier potager pour enfant 👶
+- Modal de confirmation **uniformisé** (style global `showConfirm`)
+- Compatibilité serre + surface minimale + niveau de difficulté affichés
+
+### Page Graphiques refondue
+
+- 3 graphiques distincts mais **base de temps commune** :
+  - 💧 Humidité du sol (1 trace par zone)
+  - 🌡️ Températures (extérieure + serre)
+  - 💧 Événements d'arrosage (barres)
+- Filtre par zone : 5 chips style Conseils (**Toutes** + 1 par zone, utilise le nom configuré)
+- Filtre par période : 24h / 7 jours / 30 jours
+- Mêmes graphiques disponibles dans l'onglet *Graphiques* d'une zone (filtrés sur la zone courante)
+
+### Améliorations diverses
+
+- **Modals uniformes** : suppression des `confirm()` natifs, helpers globaux `confirmDelete`, `confirmResetGarden`, `confirmApplyPlan`
+- **Heures locales** : nouveaux filtres Jinja `localtime` / `localdate` / `localhour` qui convertissent UTC (DB) → Europe/Zurich pour l'affichage (fix bug heures journal)
+- **Édition de variété** : le calcul du diff de quantité dans le modal Edit filtre désormais par variété (Tomate Cerise et Tomate Cœur de bœuf indépendantes)
+- **Page d'administration** : tab dédié « Nouvelle année » pour reset annuel (archivage des plantations, dimensions zones par défaut)
+- **Migration DB automatique** au démarrage : nouvelles colonnes `display_order`, `grid_row`, `grid_col`, `grid_w`, `grid_h` ajoutées sans perte de données
 
 ---
 
 ## Nouveautés version 3.0
 
 ### Dashboard transformé en vue contextuelle
-- **Hero "Aujourd'hui"** : greeting personnalisé + phrases auto-générées (météo, récoltes prêtes, lucarne ouverte, sol sec) — toute l'info en 1 coup d'œil sans cliquer
-- **Pulse Score 0-100** : cercle SVG animé, état global du jardin (humidité 40 + alertes 30 + plants 20 + météo 10)
-- **Bandeau météo riche** : météo actuelle + forecast 24h scrollable horizontal en pleine largeur
-- **Bandeau d'actions concrètes** : 💧 zones à arroser, 🪟 lucarne ouverte, 🧺 récoltes prêtes — avec boutons d'action directs
-- **Onglet Tâches** : suggestions du mois (semis + récoltes ≤14j) avec boutons valider ✓ / annuler ✕
-
-### Plan visuel partagé (zones + dashboard)
-- Grille soil-brown style App Store, **proportionnelle aux dimensions réelles** de la zone
-- 1 cellule = 1 espèce avec emoji + quantité + délai de récolte
-- **Modal Quick-Plant** : ajout en 3 clics depuis cellule vide, recherche live, filtres catégorie
-- **Compagnonnage en temps réel** : ⚠️ incompatibilités, ✅ bonnes associations, 💡 suggestions
-- Recommandations affichées (espacement, profondeur, eau, soleil, conseil)
-- Suppression d'une espèce entière depuis le modal Edit
-
-### Conseils refondu en 4 onglets
-- 💡 **Bonnes pratiques** (carrousel 12 conseils)
-- ❤️ **Associations** (compagnonnages bons/mauvais)
-- 📅 **Calendrier saisonnier** (4 cartes saisons)
-- 🌸 **Plantations du mois** (page Plantation supprimée et fusionnée ici)
+- **Hero "Aujourd'hui"** : greeting personnalisé + phrases auto-générées (météo, récoltes prêtes, lucarne ouverte, sol sec)
+- **Pulse Score 0-100** : cercle SVG animé, état global du jardin
+- **Bandeau météo riche** : météo actuelle + forecast 24h scrollable
+- **Bandeau d'actions concrètes** : 💧 zones à arroser, 🪟 lucarne ouverte, 🧺 récoltes prêtes
+- **Onglet Tâches** : suggestions du mois (semis + récoltes ≤14j) avec validation
 
 ### Sécurité & automatisation
-- **Arrêt automatique d'arrosage manuel** après la durée max configurée par zone (anti-inondation)
-- **Plage horaire d'arrosage recommandée** par zone (calculée selon saison + besoins en eau)
-- **Graphique unifié zone** : un seul graph multi-axes (humidité + températures + bandes vannes ouvertes)
+- **Arrêt automatique d'arrosage manuel** après la durée max configurée par zone
+- **Plage horaire d'arrosage recommandée** par zone (selon saison + besoins)
 - **Statut lucarne en temps réel** : "En cours d'ouverture/fermeture" pendant le mouvement (~30s)
-
-### Données plantes
-- **Espacement réaliste** pour 22 espèces semées en ligne (`space_row_cm` : Carotte 5×25cm, Maïs 30×70cm, etc.) — capacité de zone 4× plus précise
-- Suppression de la catégorie "Fruits" (arbres et arbustes pas en potager) → 55 espèces (légumes, herbes, fleurs)
-
-### UX & navigation
-- Cartes zones du dashboard sur **2 colonnes** (au lieu de 4) pour plus d'espace
-- Sous-menus mobile **fermés par défaut** (Zones, Système & Admin) — menu plus compact
-- Cache-buster global pour CSS + JS (plus de problème de cache navigateur)
-- Tab Météo refondu : pas de doublon avec le bandeau du haut, comparaison vent prévu vs mesuré
-
-### Bug fixes notables
-- Tabs zone cassés (variables Jinja inter-blocks)
-- Statut lucarne figé sur "En cours…" (refresh dashboard non déclenché)
-- Légumes invisibles sur le plan visuel (zone "pleine")
-- Sens lucarne inversé dans certains cas (fallback `getRoofMovingTarget`)
-- Modal Quick-Plant non scrollable (boutons inaccessibles)
 
 ---
 
 ## Nouveautés version 2.0
 
-### Interface redessinée
-- **Dashboard** entièrement redessiné — navigation par onglets (Zones · Météo · Récoltes · Journal)
-- **Zone détail** restructurée en 5 onglets (Plantations · Graphique · Historique · Seuils · Journal)
-- **Onglets pill** sur toutes les pages secondaires pour navigation fluide
-- Logo MonJardin harmonisé (couleur unique cohérente)
-
-### Encyclopédie étendue
-- **65 espèces** au total : légumes, herbes aromatiques, fruits, fleurs (vs 50 en v1)
-- Ajout de 9 nouveaux fruits : Fraise, Framboise, Myrtille, Groseille, Cassis, Rhubarbe, Melon, Pastèque, Figue
-- Ajout de 6 herbes aromatiques : Coriandre, Aneth, Estragon, Mélisse, Sarriette, Marjolaine
-- Filtres par **catégorie** (légumes, herbes, fruits, fleurs) et par **saison**
-
-### Gestion des plantations
-- Formulaire plantation compatible iPad/PC/iPhone (grille 6 colonnes responsive)
-- Sélecteur de légumes natif iOS (UIPickerView) restauré via `@supports (-webkit-touch-callout)`
-- Affichage corrigé des légumes plantés dans la vue Plantation
-
-### Profil météo dynamique
-- **Profil météo actif** visible dans le header en mode simulation (chip coloré)
-- Changement de profil météo avec **effet immédiat** sur l'humidité des zones (`PROFILE_MOISTURE_DELTA`)
-- Températures simulées par profil (`PROFILE_TEMP`) — plus de température fixe à 18°C
-
-### Diagnostics système étendus
-- **Page Arduino** : 6 onglets avec CPU, température MCU, SRAM/Flash, IP, MAC, WiFi RSSI
-- **Page Raspberry Pi** : 3 onglets Système · Stockage · Réseau
-- Tailles d'affichage uniformisées sur toutes les pages de diagnostic
-
-### Alertes email
-- Notifications email paramétrables pour les événements d'arrosage et alertes
-- Gestion des destinataires dans l'interface admin
-
-### Mise à jour simplifiée
-- Script `update_pi.sh` amélioré : détection automatique du repo, backup DB, compatible PEP 668 (Raspberry Pi OS Bookworm)
+- **Dashboard** entièrement redessiné — navigation par onglets
+- **Encyclopédie** étendue (55 espèces : légumes, herbes, fleurs ; les fruits ont été retirés en v3.0)
+- **Profil météo dynamique** avec effet immédiat sur l'humidité simulée
+- **Diagnostics système étendus** : Arduino (6 onglets) et Raspberry Pi (3 onglets)
+- **Alertes email** paramétrables
+- **Mise à jour simplifiée** : `update_pi.sh` compatible PEP 668 (Raspberry Pi OS Bookworm)
 
 ---
 
@@ -176,9 +193,35 @@ MonJardin/
     ├── run.py                  # Point d'entrée unique
     ├── app/                    # Application Flask
     │   ├── api/                # Routes HTML + API JSON
-    │   ├── models/             # SQLAlchemy (Zone, SensorReading, Planting…)
+    │   │   ├── routes_dashboard.py     # Pages HTML
+    │   │   ├── routes_api.py           # API JSON (REST)
+    │   │   └── routes_config.py        # CRUD plantations / zones
+    │   ├── models/             # SQLAlchemy
+    │   │   ├── zone.py                 # + display_order
+    │   │   ├── planting.py             # + display_order, grid_row/col/w/h
+    │   │   ├── sensor_data.py
+    │   │   ├── irrigation_log.py       # + JournalEntry
+    │   │   ├── alert_recipient.py
+    │   │   └── admin_user.py
     │   ├── services/           # Moteurs décisionnels + clients matériel
+    │   │   ├── arduino_client.py
+    │   │   ├── weather_service.py      # + get_forecast_hourly(days=7)
+    │   │   ├── irrigation_engine.py
+    │   │   ├── roof_engine.py
+    │   │   ├── planting_advisor.py
+    │   │   ├── rotation_advisor.py
+    │   │   ├── disease_advisor.py
+    │   │   └── scheduler.py
     │   ├── templates/          # Interface Jinja2
+    │   │   ├── dashboard.html          # Option A (2 onglets)
+    │   │   ├── zone_detail.html        # Plan visuel case-par-case
+    │   │   ├── conseils.html           # 9 catégories + filtre saison
+    │   │   ├── glossary.html           # 57 termes
+    │   │   ├── plans.html              # 16 plans pré-faits
+    │   │   ├── history.html            # 3 graphes séparés + filtres zone
+    │   │   ├── rotation.html
+    │   │   ├── setup.html
+    │   │   └── admin.html              # + tab Nouvelle année
     │   └── static/             # CSS, JS, PWA assets
     ├── simulator/              # Émulateur Arduino (simulation physique)
     └── arduino_edge_control/   # Firmware C++ / PlatformIO
@@ -192,26 +235,30 @@ MonJardin/
 - **Moteur d'arrosage** — décisions par zone selon humidité, météo, gel, canicule, fenêtres horaires
 - **Moteur de toit** — ouverture/fermeture automatique (température, pluie, vent, nuit)
 - **Conseils plantation** — compagnonnage, calendrier suisse, alertes incompatibilité
+- **Détection précoce maladies** — mildiou, oïdium, limaces, gel, canicule (selon météo + plantings actifs)
+- **Rotation des cultures** — alertes par famille botanique, suggestion de meilleure zone
 - **APScheduler** — cycles toutes les 60 secondes
 
 ### Interface web (PWA)
-- Tableau de bord · Graphiques 30 jours · Journal des événements
-- Encyclopédie de **65 espèces** (légumes, herbes, fruits, fleurs — région suisse)
-- Gestion des plantations par zone avec progression et récolte
-- Page Conseils — carrousel, compagnonnage, calendrier saisonnier
-- Diagnostic Arduino (6 onglets) et Raspberry Pi (3 onglets) en temps réel
-- Paramètres du jardin configurables (nom, lieu, propriétaire)
-- **Mode sombre/clair** · **Installable sur iPhone/iPad** (PWA)
-- Sidebar rétractable · Menu hamburger mobile · Navigation onglets pill
+- Tableau de bord (Option A) · Graphiques (3 graphes filtrables) · Journal des événements
+- Encyclopédie de **55 espèces** (légumes, herbes, fleurs — région suisse)
+- **Plan visuel case-par-case** avec drag & drop libre + multi-cases pour semis
+- Page Conseils — 9 catégories carrousel, filtre saison
+- Page Glossaire — 57 termes horticoles avec images
+- Page Plans pré-faits — 16 plans clé en main
+- Page Plan rotation — historique par année et zone
+- Diagnostic Arduino (6 onglets) et Raspberry Pi (3 onglets)
+- Paramètres du jardin configurables · **Mode sombre/clair** · **Installable sur iPhone/iPad** (PWA)
 
 ### Météo
-- Open-Meteo (`GARDEN_LATITUDE / GARDEN_LONGITUDE`)
+- **Open-Meteo** — prévisions horaires jusqu'à 7 jours (`GARDEN_LATITUDE / GARDEN_LONGITUDE`)
+- **MétéoSuisse** — observations temps réel (station PAY par défaut)
 - Cache DB 30 min · fallback simulateur
 
 ### Simulation
 - Émulateur Arduino (`localhost:8081`) — physique réaliste par zone
 - 6 profils météo (printemps, été chaud, orageux, automne, gel, canicule)
-- **Profil météo affiché dans le header** avec effet immédiat sur humidité et température
+- Profil météo affiché dans le header avec effet immédiat
 - Historique démo 30 jours généré automatiquement
 - Accélération temps (`SIMULATION_SPEED`)
 
@@ -227,7 +274,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Ouvrir **http://localhost:5001**  
+Ouvrir **http://localhost:5001**
 Login par défaut : `admin` / `admin123`
 
 > En mode simulation (défaut), un émulateur Arduino démarre automatiquement sur `:8081`.
@@ -241,9 +288,51 @@ Login par défaut : `admin` / `admin123`
 | `SIMULATION_SPEED` | `1` | Accélérateur de temps (ex: `60`) |
 | `WEATHER_PROFILE` | `printemps_normal` | Profil météo simulé |
 | `FLASK_PORT` | `5001` | Port de l'application |
+| `FLASK_SECRET_KEY` | (à définir) | Clé session Flask — **obligatoire** pour la stabilité |
 | `GARDEN_NAME` | `MonJardin` | Nom affiché dans l'interface |
 | `GARDEN_LOCATION` | `Vullierens · Vaud` | Lieu du jardin |
 | `GARDEN_OWNER` | `Patrick Pinard` | Nom du propriétaire |
+| `GARDEN_LATITUDE` | `46.778` | Coordonnées Open-Meteo |
+| `GARDEN_LONGITUDE` | `6.641` | Coordonnées Open-Meteo |
+
+---
+
+## Schéma de base de données (v4.0)
+
+| Table | Colonnes notables |
+|-------|-------------------|
+| `zones` | `zone_id`, `name`, `length_m`, `width_m`, `has_roof`, **`display_order`**, irrigation_mode, seuils |
+| `plantings` | `id`, `zone_id`, `vegetable_name`, `variety`, `planted_date`, `expected_harvest_date`, `status`, **`display_order`**, **`grid_row`**, **`grid_col`**, **`grid_w`**, **`grid_h`** |
+| `sensor_readings` | `timestamp`, `zone_id`, `soil_moisture_pct`, `temperature_c`, `temp_serre_c` |
+| `irrigation_log` | `timestamp`, `zone_id`, `action`, `trigger_type`, `reason` |
+| `roof_log` | `timestamp`, `action`, `trigger_type`, `reason` |
+| `journal_entries` | `timestamp`, `level`, `message` (français, avec emojis) |
+| `weather_cache` | `timestamp`, `forecast_json`, `source`, `valid_until` |
+| `admin_users` | `id`, `username`, `pin_hash`, `enabled`, `last_login` |
+| `alert_recipients` | `id`, `email`, `name`, `alert_types`, `enabled` |
+
+> Les colonnes en **gras** sont nouvelles en v4.0. Une migration automatique `_migrate_db()` les ajoute au démarrage et auto-place les plantings existants sur la grille (row-major).
+
+---
+
+## API REST principale
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/api/data/current` | GET | Capteurs + actionneurs temps réel |
+| `/api/data/history?zone_id&hours` | GET | Série temporelle pour Plotly |
+| `/api/data/irrigation_events?hours` | GET | Marqueurs/barres d'arrosage |
+| `/api/control/valve/<zone_id>` | POST | Commande manuelle vanne |
+| `/api/control/roof` | POST | Commande manuelle lucarne |
+| `/api/control/zone/<zone_id>/mode` | POST | Mode auto/manual/disabled |
+| **`/api/zones/reorder`** | POST | **Drag&drop ordre des zones** |
+| **`/api/zones/<id>/plants/reorder`** | POST | **Réordonner les groupes d'espèces** |
+| **`/api/zones/<id>/plants/<id>/move`** | POST | **Déplacer un plant vers (row, col)** |
+| `/api/weather/current` | GET | Météo actuelle |
+| `/api/weather/forecast` | GET | Prévisions 7 jours |
+| `/api/system/health` | GET | Statut système |
+| `/api/system/force_cycle` | POST | Forcer cycle automation |
+| `/setup/skip` | POST | Masquer la bannière de bienvenue |
 
 ---
 
@@ -337,11 +426,28 @@ Micro-ordinateur exécutant le serveur Flask, le moteur de décision et l'interf
 ## Stack technique
 
 - **Backend** : Python 3.10 · Flask · SQLAlchemy · APScheduler
-- **Frontend** : Jinja2 · CSS custom (Apple design system) · Plotly.js · Bootstrap Icons
+- **Frontend** : Jinja2 · CSS custom (Apple design system) · Plotly.js · Bootstrap Icons · SortableJS
 - **Base de données** : SQLite (WAL)
 - **Firmware** : C++ · PlatformIO · ArduinoJson
 - **PWA** : Service Worker · Web App Manifest · iOS safe-area
+- **Météo** : Open-Meteo (prévisions 7j) + MétéoSuisse (observations)
 
 ---
 
-*Version 3.0 · Avril 2026 · Patrick Pinard*
+## Localisation
+
+Tout le texte de l'interface est en **français** : messages du journal, raisons d'arrosage, alertes, labels de formulaire, conseils, glossaire.
+
+---
+
+## Documentation associée
+
+- [`AUDIT.md`](AUDIT.md) — audit sécurité firmware + backend (rev. 2026-04-21)
+- [`CLAUDE.md`](CLAUDE.md) — guide de contribution & conventions du projet
+- [`docs/MonJardin_Documentation_Technique.pdf`](docs/MonJardin_Documentation_Technique.pdf) — documentation technique complète
+- [`docs/schema_connexion.svg`](docs/schema_connexion.svg) — schéma matériel
+- [`CHANGELOG.md`](CHANGELOG.md) — historique des versions
+
+---
+
+*Version 4.0 · Avril 2026 · Patrick Pinard · Vullierens, Vaud · Suisse*

@@ -2,9 +2,9 @@
   "plans": [
     {
       "id": "aromates_cuisine",
-      "name": "Aromates de cuisine",
+      "name": "Aromates frais (cuisine)",
       "emoji": "🌿",
-      "description": "Les indispensables aromatiques pour la cuisine de tous les jours. Idéal pour une petite zone (1-2 m²) ou un coin ensoleillé près de la maison.",
+      "description": "Aromates à feuillage frais pour la cuisine quotidienne (basilic, persil, ciboulette, coriandre). Compatibilité de compagnonnage assurée. Pour les aromates méditerranéens (thym, romarin), voir le plan dédié.",
       "level": "easy",
       "min_area_m2": 1.0,
       "season_start": [
@@ -15,7 +15,7 @@
       "plantings": [
         {
           "vegetable_name": "Basilic",
-          "quantity": 3,
+          "quantity": 4,
           "variety": "Grand Vert"
         },
         {
@@ -25,19 +25,15 @@
         },
         {
           "vegetable_name": "Ciboulette",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Coriandre",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Cerfeuil",
           "quantity": 2
-        },
-        {
-          "vegetable_name": "Thym",
-          "quantity": 2
-        },
-        {
-          "vegetable_name": "Romarin",
-          "quantity": 1
-        },
-        {
-          "vegetable_name": "Menthe",
-          "quantity": 1
         }
       ]
     },
@@ -203,11 +199,6 @@
           "variety": "California Wonder"
         },
         {
-          "vegetable_name": "Concombre",
-          "quantity": 2,
-          "variety": "Marketmore"
-        },
-        {
           "vegetable_name": "Basilic",
           "quantity": 6,
           "variety": "Grand Vert"
@@ -236,15 +227,6 @@
           "variety": "Chantenay"
         },
         {
-          "vegetable_name": "Betterave",
-          "quantity": 16,
-          "variety": "Crapaudine"
-        },
-        {
-          "vegetable_name": "Panais",
-          "quantity": 16
-        },
-        {
           "vegetable_name": "Oignon",
           "quantity": 20,
           "variety": "Jaune Paille"
@@ -253,6 +235,10 @@
           "vegetable_name": "Ail",
           "quantity": 12,
           "variety": "Blanc"
+        },
+        {
+          "vegetable_name": "Navet",
+          "quantity": 10
         }
       ]
     },
@@ -286,10 +272,6 @@
         {
           "vegetable_name": "Ciboulette",
           "quantity": 2
-        },
-        {
-          "vegetable_name": "Thym",
-          "quantity": 1
         }
       ]
     },
@@ -376,7 +358,7 @@
           "quantity": 3
         },
         {
-          "vegetable_name": "Thym",
+          "vegetable_name": "Origan",
           "quantity": 2
         }
       ]
@@ -424,7 +406,7 @@
       "id": "soupe_dautomne",
       "name": "Soupe d'automne",
       "emoji": "🥣",
-      "description": "Légumes pour soupes et veloutés réconfortants : potiron, carotte, panais, poireau, céleri. Récolte octobre-décembre.",
+      "description": "Légumes pour soupes et veloutés réconfortants : carotte, pomme de terre, oignon, bette à carde. Compatibilités vérifiées.",
       "level": "medium",
       "min_area_m2": 6.0,
       "season_start": [
@@ -433,29 +415,20 @@
       ],
       "plantings": [
         {
-          "vegetable_name": "Potiron",
-          "quantity": 2,
-          "variety": "Butternut"
-        },
-        {
           "vegetable_name": "Carotte",
           "quantity": 25
         },
         {
-          "vegetable_name": "Panais",
-          "quantity": 12
+          "vegetable_name": "Oignon",
+          "quantity": 8
         },
         {
-          "vegetable_name": "Poireau",
-          "quantity": 15,
-          "variety": "Bleu de Solaise"
+          "vegetable_name": "Pomme de terre",
+          "quantity": 8,
+          "variety": "Charlotte"
         },
         {
-          "vegetable_name": "Céleri-branche",
-          "quantity": 4
-        },
-        {
-          "vegetable_name": "Persil",
+          "vegetable_name": "Bette à carde",
           "quantity": 4
         }
       ]
@@ -487,10 +460,6 @@
           "vegetable_name": "Tomate",
           "quantity": 3,
           "variety": "Cerise"
-        },
-        {
-          "vegetable_name": "Concombre",
-          "quantity": 2
         },
         {
           "vegetable_name": "Roquette",
@@ -585,12 +554,12 @@
           "quantity": 25
         },
         {
-          "vegetable_name": "Épinard",
-          "quantity": 15
-        },
-        {
           "vegetable_name": "Fève",
           "quantity": 12
+        },
+        {
+          "vegetable_name": "Roquette",
+          "quantity": 8
         }
       ]
     },
@@ -629,6 +598,45 @@
         {
           "vegetable_name": "Capucine",
           "quantity": 4
+        }
+      ]
+    },
+    {
+      "id": "aromates_mediterraneens",
+      "name": "Aromates méditerranéens",
+      "emoji": "🌿",
+      "description": "Aromates ligneux du sud (thym, romarin, sauge, origan, lavande). Très peu d'eau, plein soleil. Compatibilité totale entre eux.",
+      "level": "easy",
+      "min_area_m2": 1.5,
+      "season_start": [
+        3,
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Thym",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Romarin",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Sauge",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Origan",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Lavande",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Sarriette",
+          "quantity": 2
         }
       ]
     }
