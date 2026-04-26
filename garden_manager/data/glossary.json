@@ -6,7 +6,8 @@
       "definition": "Période traditionnelle des 11, 12 et 13 mai en Suisse, considérée comme le dernier risque de gelée tardive. Avant cette date, on ne transplante pas les plants sensibles au froid (tomates, courgettes, basilic, poivrons) en plein air.",
       "tip": "À Vullierens, attendre le 15 mai minimum pour les solanacées.",
       "icon": "❄️",
-      "details": "Mamert, Pancrace et Servais (11-12-13 mai). Tradition issue du Moyen-Âge où les paysans avaient remarqué une recrudescence des gelées tardives à cette période. Aujourd'hui encore valable en plaine suisse : transplanter avant cette date expose à des pertes par gel nocturne (-2°C suffit à tuer une jeune tomate)."
+      "details": "Mamert, Pancrace et Servais (11-12-13 mai). Tradition issue du Moyen-Âge où les paysans avaient remarqué une recrudescence des gelées tardives à cette période. Aujourd'hui encore valable en plaine suisse : transplanter avant cette date expose à des pertes par gel nocturne (-2°C suffit à tuer une jeune tomate).",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Frozen_lettuce_leaves.jpg/480px-Frozen_lettuce_leaves.jpg"
     },
     {
       "term": "Compagnonnage",
@@ -38,7 +39,8 @@
       "definition": "Maladie fongique qui apparaît quand la température est entre 15-25°C et l'humidité de l'air dépasse 85% pendant plusieurs heures consécutives. Affecte surtout les Solanacées (tomate, pomme de terre) et Cucurbitacées (courgette).",
       "tip": "Pailler le sol, espacer les plants, pulvériser bouillie bordelaise en préventif.",
       "icon": "🍂",
-      "details": "Phytophthora infestans : champignon responsable de la grande famine en Irlande au 19e siècle. Symptômes sur tomate : taches brunes huileuses sur feuilles, fruits qui pourrissent en quelques jours. Fortement contagieux par les éclaboussures de pluie. Une fois installé, irréversible. Seule la prévention est efficace."
+      "details": "Phytophthora infestans : champignon responsable de la grande famine en Irlande au 19e siècle. Symptômes sur tomate : taches brunes huileuses sur feuilles, fruits qui pourrissent en quelques jours. Fortement contagieux par les éclaboussures de pluie. Une fois installé, irréversible. Seule la prévention est efficace.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Phytophthora_infestans_on_potato.jpg/480px-Phytophthora_infestans_on_potato.jpg"
     },
     {
       "term": "Oïdium",
@@ -46,7 +48,8 @@
       "definition": "Maladie cryptogamique reconnaissable au feutrage blanchâtre sur les feuilles. Apparaît par temps chaud (>22°C) avec humidité variable et faible vent. Affecte surtout les Cucurbitacées.",
       "tip": "Pulvériser un mélange lait + eau (1:9) toutes les semaines en préventif.",
       "icon": "⚪",
-      "details": "Multiples espèces selon la plante hôte. Symptômes : feutrage blanc poudreux sur le dessus des feuilles, qui jaunissent puis sèchent. Les feuilles peuvent toujours photosynthétiser légèrement, donc la plante survit mais produit moins. Affaiblit les plantes qui deviennent vulnérables à d'autres maladies."
+      "details": "Multiples espèces selon la plante hôte. Symptômes : feutrage blanc poudreux sur le dessus des feuilles, qui jaunissent puis sèchent. Les feuilles peuvent toujours photosynthétiser légèrement, donc la plante survit mais produit moins. Affaiblit les plantes qui deviennent vulnérables à d'autres maladies.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Erysiphe_betae_on_Beta_vulgaris.JPG/480px-Erysiphe_betae_on_Beta_vulgaris.JPG"
     },
     {
       "term": "Bouillie bordelaise",
@@ -54,7 +57,8 @@
       "definition": "Fongicide à base de sulfate de cuivre et de chaux, autorisé en agriculture biologique. Utilisé en pulvérisation pour prévenir mildiou et autres maladies fongiques sur tomates, pommes de terre, vignes et arbres fruitiers.",
       "tip": "Toujours pulvériser par temps sec, en soirée, à dose modérée (l'excès de cuivre nuit au sol).",
       "icon": "💧",
-      "details": "Inventée à Bordeaux en 1885 contre le mildiou de la vigne. Mélange : 100g de sulfate de cuivre + 70g de chaux dans 10L d'eau. Action préventive uniquement (forme un film protecteur). Le cuivre s'accumule dans le sol et devient phytotoxique au-delà de 100mg/kg : ne pas dépasser 4kg/ha/an en bio."
+      "details": "Inventée à Bordeaux en 1885 contre le mildiou de la vigne. Mélange : 100g de sulfate de cuivre + 70g de chaux dans 10L d'eau. Action préventive uniquement (forme un film protecteur). Le cuivre s'accumule dans le sol et devient phytotoxique au-delà de 100mg/kg : ne pas dépasser 4kg/ha/an en bio.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Spraying_grapevines_in_M%C3%A2con%2C_France.jpg/480px-Spraying_grapevines_in_M%C3%A2con%2C_France.jpg"
     },
     {
       "term": "Paillage",
@@ -62,7 +66,8 @@
       "definition": "Couche de matière organique (paille, copeaux, feuilles, BRF) ou minérale étalée sur le sol autour des plantes. Réduit l'évaporation, limite les adventices, protège de l'érosion et nourrit le sol en se décomposant.",
       "tip": "5-8 cm d'épaisseur idéal. Renouveler en cours de saison si le sol redevient nu.",
       "icon": "🌾",
-      "details": "Imite le fonctionnement de la litière forestière. Bénéfices multiples : économie d'eau (jusqu'à 70%), suppression des adventices (95%), régulation thermique (sol plus frais en été, plus chaud en hiver), nourriture des vers de terre (qui aèrent le sol gratuitement). Inconvénient : peut abriter les limaces, surveiller au printemps."
+      "details": "Imite le fonctionnement de la litière forestière. Bénéfices multiples : économie d'eau (jusqu'à 70%), suppression des adventices (95%), régulation thermique (sol plus frais en été, plus chaud en hiver), nourriture des vers de terre (qui aèrent le sol gratuitement). Inconvénient : peut abriter les limaces, surveiller au printemps.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Mulching_with_straw.jpg/480px-Mulching_with_straw.jpg"
     },
     {
       "term": "Compost",
@@ -70,7 +75,8 @@
       "definition": "Matière organique décomposée par fermentation aérobie (avec oxygène). Constitué d'un mélange équilibré de matières azotées (épluchures, tontes) et carbonées (feuilles mortes, paille). Apport d'engrais naturel et amendement du sol.",
       "tip": "3-5 cm de compost mûr étalés en surface chaque printemps revitalisent durablement le sol.",
       "icon": "♻️",
-      "details": "Le compostage chaud (>60°C) tue les graines d'adventices et pathogènes en 6-8 semaines. Le compostage froid (température ambiante) est plus lent (6-12 mois) mais préserve la biodiversité microbienne. Ratio idéal C/N : 25-30 pour 1 (3 parts brun pour 1 part vert). Un compost mûr sent l'humus de forêt."
+      "details": "Le compostage chaud (>60°C) tue les graines d'adventices et pathogènes en 6-8 semaines. Le compostage froid (température ambiante) est plus lent (6-12 mois) mais préserve la biodiversité microbienne. Ratio idéal C/N : 25-30 pour 1 (3 parts brun pour 1 part vert). Un compost mûr sent l'humus de forêt.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Compost_pile.jpg/480px-Compost_pile.jpg"
     },
     {
       "term": "Engrais vert",
@@ -78,7 +84,8 @@
       "definition": "Plante semée non pour récolte mais pour enrichir et protéger le sol pendant l'inter-saison. Phacélie, trèfle, moutarde, vesce sont les plus courants. On les fauche et enfouit avant floraison comme engrais naturel.",
       "tip": "Semer en septembre sur les planches libérées pour passer l'hiver. Enfouir au printemps.",
       "icon": "🌿",
-      "details": "Phacélie : excellente mellifère, racines fines qui aèrent. Trèfle incarnat : fixe 80-150 kg N/ha, attire les abeilles. Moutarde : effet biofumigant contre nématodes et fusariose. Vesce : champion de la fixation d'azote (200 kg/ha). À couper en pleine floraison pour bénéfice maximal."
+      "details": "Phacélie : excellente mellifère, racines fines qui aèrent. Trèfle incarnat : fixe 80-150 kg N/ha, attire les abeilles. Moutarde : effet biofumigant contre nématodes et fusariose. Vesce : champion de la fixation d'azote (200 kg/ha). À couper en pleine floraison pour bénéfice maximal.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Phacelia_tanacetifolia_field.jpg/480px-Phacelia_tanacetifolia_field.jpg"
     },
     {
       "term": "Adventices",
@@ -126,7 +133,8 @@
       "definition": "Action de ramener de la terre au pied des plantes pour favoriser leur enracinement et la formation de tubercules (pommes de terre) ou protéger du soleil (poireau blanchi).",
       "tip": "Butter les pommes de terre 2 à 3 fois pendant la saison, dès que les plants atteignent 20 cm.",
       "icon": "⛰️",
-      "details": "Pour pomme de terre : multiplie la production (les tubercules se forment sur les tiges enterrées). Pour poireau : blanchit le fût (plus tendre, plus doux). Pour céleri : empêche le verdissement. Outil : binette ou houe. Faire après une pluie quand la terre est meuble."
+      "details": "Pour pomme de terre : multiplie la production (les tubercules se forment sur les tiges enterrées). Pour poireau : blanchit le fût (plus tendre, plus doux). Pour céleri : empêche le verdissement. Outil : binette ou houe. Faire après une pluie quand la terre est meuble.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Potato_field_with_hilling.jpg/480px-Potato_field_with_hilling.jpg"
     },
     {
       "term": "Pincement",
@@ -206,7 +214,8 @@
       "definition": "Champignons microscopiques en symbiose avec les racines des plantes. Ils étendent la zone d'absorption (jusqu'à 100×) et fournissent eau et nutriments en échange de sucres. Présents naturellement dans un sol vivant.",
       "tip": "Le travail du sol intensif (motoculteur) détruit les mycorhizes. Préférer la grelinette.",
       "icon": "🍄",
-      "details": "Symbiose présente chez 80% des plantes vasculaires. Le champignon donne : eau (étend zone d'absorption x100), phosphore (rend disponible), protection contre certains pathogènes racinaires. La plante donne : sucres (jusqu'à 20% de sa photosynthèse). Plus présentes dans sols pauvres : fertilisation excessive les fait régresser."
+      "details": "Symbiose présente chez 80% des plantes vasculaires. Le champignon donne : eau (étend zone d'absorption x100), phosphore (rend disponible), protection contre certains pathogènes racinaires. La plante donne : sucres (jusqu'à 20% de sa photosynthèse). Plus présentes dans sols pauvres : fertilisation excessive les fait régresser.",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Mycorrhizal_root_tips_amanita.jpg/480px-Mycorrhizal_root_tips_amanita.jpg"
     },
     {
       "term": "BRF",
@@ -223,6 +232,238 @@
       "tip": "Test simple : citron sur sol = mousse → calcaire (pH élevé).",
       "icon": "🧪",
       "details": "Mesurable avec test pH (pharmacie, magasin de jardinage, ~10€). Pour augmenter (sol trop acide) : chaux, cendres de bois (max 1kg/m²/an). Pour baisser (sol trop alcalin) : compost de feuilles (acide), engrais d'origine animale, soufre. Les modifications sont lentes (mois à années)."
+    },
+    {
+      "term": "Bise",
+      "category": "Météo",
+      "icon": "🌬️",
+      "definition": "Vent froid et sec du nord-est qui souffle régulièrement sur le plateau suisse, surtout en hiver et au printemps. Assèche rapidement le sol et stresse les jeunes plants.",
+      "tip": "Protéger les semis de printemps avec un voile P17 dès qu'une bise modérée (>30 km/h) est annoncée.",
+      "details": "Particulièrement marquée à Vullierens et autour du lac de Neuchâtel. Peut faire chuter le ressenti de 5-10°C et abaisser fortement l'hygrométrie. Associée aux gels tardifs en avril-mai, elle accentue le risque de dégâts sur les fleurs de fruitiers."
+    },
+    {
+      "term": "Foehn",
+      "category": "Météo",
+      "icon": "♨️",
+      "definition": "Vent chaud et sec descendant du versant nord des Alpes après avoir perdu son humidité au sud. Peut faire grimper la température de 10-15°C en quelques heures.",
+      "tip": "Lors d'épisodes de foehn, arroser le matin et pailler épais — l'évaporation peut tripler en une journée.",
+      "details": "Effet rare mais marqué à Vullierens (~430m). Responsable de plusieurs records de chaleur précoce au printemps en Suisse romande. Stresse fortement les jeunes plants et peut casser les tuteurs."
+    },
+    {
+      "term": "Gel blanc",
+      "category": "Météo",
+      "icon": "🥶",
+      "definition": "Givre superficiel qui se dépose sur les feuilles par temps clair et calme, lorsque la température au sol descend en-dessous de 0°C alors que l'air ambiant reste positif.",
+      "tip": "Brumiser les plantations à 4h du matin avant le lever du soleil — l'eau gelant libère de la chaleur (effet \"glaçon protecteur\").",
+      "details": "Très fréquent en mars-avril dans les fonds de vallée et les cuvettes. Endommage particulièrement les bourgeons floraux des fruitiers. À distinguer de la \"gelée noire\" (sans humidité, plus destructrice)."
+    },
+    {
+      "term": "Rosée",
+      "category": "Météo",
+      "icon": "💧",
+      "definition": "Eau qui se condense sur les feuilles au petit matin lorsque la température nocturne descend sous le point de rosée. Hydrate naturellement les cultures.",
+      "tip": "Récolter feuilles et fruits après évaporation de la rosée (vers 9-10h) — moins de risque de transmettre les champignons.",
+      "details": "Bénéfique en été (apporte 0,1-0,5 mm d'eau par nuit), problématique en automne (favorise le mildiou)."
+    },
+    {
+      "term": "Stratus",
+      "category": "Météo",
+      "icon": "☁️",
+      "definition": "Brouillard bas typique des hivers en plaine suisse (octobre-février). Peut persister plusieurs jours sans soleil.",
+      "tip": "Sous stratus prolongé, ne pas arroser les cultures sous serre — sol froid + faible évaporation = risque de pourriture racinaire.",
+      "details": "À Vullierens, généralement présent jusqu'à 700-800m d'altitude. Au-dessus, soleil et températures positives. Cause une chute de 80% du rayonnement utile pour les plantes."
+    },
+    {
+      "term": "Microclimat",
+      "category": "Climat",
+      "icon": "🌍",
+      "definition": "Conditions climatiques particulières d'une petite zone (jardin, mur exposé sud, fond de vallée), différentes du climat général environnant.",
+      "tip": "Identifier les microclimats de votre jardin (mur sud chauffant, coin venté, creux humide) pour adapter les espèces : tomates au mur sud, salades au creux frais.",
+      "details": "Un mur exposé sud peut gagner 3-5°C, ouvrant la culture de figuiers, vignes ou tomates en zone froide. Un fond humide retient le gel 1-2 semaines de plus au printemps."
+    },
+    {
+      "term": "Exposition",
+      "category": "Climat",
+      "icon": "🧭",
+      "definition": "Orientation d'une parcelle par rapport au soleil. Détermine le rayonnement reçu et donc les espèces cultivables.",
+      "tip": "Sud = légumes-fruits gourmands en chaleur ; Est = matinées douces idéales pour les salades ; Nord = plantes d'ombre (rhubarbe, oseille).",
+      "details": "À 46° de latitude (Vullierens), un sol exposé sud reçoit ~30% de rayonnement en plus qu'un sol exposé nord en été. En hiver, l'écart monte à 100% — le nord reste à l'ombre 4 mois."
+    },
+    {
+      "term": "Altitude potager",
+      "category": "Climat",
+      "icon": "⛰️",
+      "definition": "Hauteur au-dessus du niveau de la mer du jardin. Influence fortement la durée de saison de croissance et les espèces possibles.",
+      "tip": "Compter ~10 jours de retard par 100m d'altitude. À Vullierens (430m), saison ~2 semaines plus courte que sur les rives du Léman (370m).",
+      "details": "Au-delà de 800m, certaines variétés tardives (potirons gros calibre, tomates anciennes) ne mûrissent plus en pleine terre et nécessitent une serre."
+    },
+    {
+      "term": "Drainage",
+      "category": "Sol",
+      "icon": "💦",
+      "definition": "Capacité du sol à évacuer l'excès d'eau. Un bon drainage évite l'asphyxie des racines et la pourriture.",
+      "tip": "Test simple : creuser un trou de 30 cm, remplir d'eau. Doit se vider en moins de 4h pour un bon drainage.",
+      "details": "Sols argileux drainent mal — corriger avec sable grossier et compost. En cas de drainage très mauvais, créer une butte surélevée de 20-30 cm pour les légumes sensibles (carottes, oignons)."
+    },
+    {
+      "term": "Humus",
+      "category": "Sol",
+      "icon": "🟫",
+      "definition": "Matière organique stable issue de la décomposition des végétaux. Donne au sol sa fertilité, sa structure et sa capacité de rétention d'eau.",
+      "tip": "Apporter 3-5 kg/m² de compost mûr chaque printemps suffit à maintenir le taux d'humus.",
+      "details": "Un sol fertile contient 4-8% d'humus. Sous l'effet du climat, l'humus se minéralise (perd) chaque année — il faut le renouveler. Les engrais verts et le paillage sont les meilleurs alliés."
+    },
+    {
+      "term": "Sol vivant",
+      "category": "Sol",
+      "icon": "🪱",
+      "definition": "Sol riche en organismes (vers, bactéries, champignons, insectes) qui décomposent la matière organique et nourrissent les plantes naturellement.",
+      "tip": "Indicateur clé : un sol vivant abrite 100-300 vers de terre par m². En compter moins = sol appauvri à régénérer.",
+      "details": "Pour favoriser : compost régulier, paillage permanent, zéro labour profond, zéro pesticide. En 2-3 ans, un sol mort se réveille."
+    },
+    {
+      "term": "Pralinage",
+      "category": "Plantation",
+      "icon": "🥣",
+      "definition": "Tremper les racines des plants à racines nues dans une boue à base d'argile, bouse et eau avant plantation. Améliore la reprise.",
+      "tip": "Recette simple : 1/3 argile, 1/3 compost, 1/3 eau. Tremper les racines puis planter immédiatement.",
+      "details": "Particulièrement utile pour fruitiers, rosiers, fraisiers et poireaux à racines nues. Réduit le choc de transplantation et les pertes."
+    },
+    {
+      "term": "Stratification",
+      "category": "Plantation",
+      "icon": "❄️",
+      "definition": "Exposition de graines au froid humide pendant plusieurs semaines pour lever leur dormance. Indispensable pour de nombreuses vivaces et arbres.",
+      "tip": "Méthode simple : graines mélangées à du sable humide dans un sachet, placé au frigo 4-8 semaines.",
+      "details": "Concerne notamment : pommiers, cerisiers, ail des ours, lavande, rhubarbe. Sans stratification, le taux de germination tombe souvent à 0-10%."
+    },
+    {
+      "term": "Marcotte",
+      "category": "Plantation",
+      "icon": "🌿",
+      "definition": "Multiplication d'une plante en faisant prendre racine une tige encore reliée au pied-mère. Méthode très fiable et naturelle.",
+      "tip": "Au printemps, courber une tige basse, l'enterrer sous 5 cm de terre humide, attendre 6-12 mois puis sevrer.",
+      "details": "Idéal pour groseilliers, framboisiers, cassissiers, vigne, romarin, lavande. Aucun matériel nécessaire, taux de réussite >90%."
+    },
+    {
+      "term": "Effeuillage",
+      "category": "Entretien",
+      "icon": "🍃",
+      "definition": "Suppression des feuilles inutiles ou âgées sur les plants (surtout tomates, vigne) pour aérer, éclairer les fruits et limiter les maladies.",
+      "tip": "Sur tomates : ôter toutes les feuilles sous le 1er bouquet de fruits dès qu'ils sont formés.",
+      "details": "À pratiquer par temps sec uniquement. Ne pas effeuiller plus de 1/3 du feuillage à la fois — la plante a besoin de feuilles pour la photosynthèse."
+    },
+    {
+      "term": "Désherbage thermique",
+      "category": "Entretien",
+      "icon": "🔥",
+      "definition": "Élimination des adventices par choc thermique (flamme ou eau bouillante) sans produit chimique. Détruit la plante en éclatant les cellules.",
+      "tip": "Eau bouillante salée sur les pavés et bordures : efficace, gratuit, sans danger pour le sol.",
+      "details": "Désherbeurs à gaz disponibles en jardinerie (~80-150 CHF). Très efficace au stade jeune (2-3 feuilles), inefficace sur plantes vivaces établies (chiendent, liseron)."
+    },
+    {
+      "term": "Palissage",
+      "category": "Entretien",
+      "icon": "📐",
+      "definition": "Action de fixer une plante grimpante (vigne, tomate, framboisier) à un support pour l'aider à pousser à la verticale et exposer ses fruits.",
+      "tip": "Utiliser des liens souples (raphia, chaussette en tissu) plutôt que du fil dur qui blesse les tiges.",
+      "details": "Différent du tuteurage (un seul tuteur vertical). Le palissage organise plusieurs branches sur un treillis ou des fils horizontaux."
+    },
+    {
+      "term": "Pourriture grise",
+      "category": "Maladies",
+      "icon": "🍓",
+      "definition": "Maladie fongique (Botrytis cinerea) qui attaque fleurs, fruits et tiges par temps humide et frais. Reconnaissable au duvet gris caractéristique.",
+      "tip": "Aérer les cultures, espacer les plants, supprimer rapidement les fruits et fleurs malades.",
+      "details": "Très fréquente sur fraises, framboises, salades, tomates en serre. Apparaît dès 15°C en humidité >85%. Préventif : décoction de prêle 1×/semaine."
+    },
+    {
+      "term": "Tavelure",
+      "category": "Maladies",
+      "icon": "🍎",
+      "definition": "Maladie cryptogamique du pommier et du poirier provoquée par Venturia. Taches brunes liégeuses sur feuilles et fruits.",
+      "tip": "Variétés résistantes (Topaz, Reinette grise) + ramassage automnal des feuilles tombées (qui hébergent le champignon).",
+      "details": "En verger bio, traitement à base de soufre ou bouillie bordelaise au stade bouton rose. Climat humide du printemps suisse particulièrement favorable au pathogène."
+    },
+    {
+      "term": "Rouille",
+      "category": "Maladies",
+      "icon": "🟠",
+      "definition": "Maladie fongique reconnaissable à des pustules orange/brunes sur le revers des feuilles. Affaiblit la plante et réduit la récolte.",
+      "tip": "Arrosage au pied (pas de feuilles mouillées), espacement suffisant, et purin d'ortie en préventif.",
+      "details": "Touche surtout poireaux, ail, oignons, haricots, rosiers. Champignon spécifique à chaque culture. Aérer le feuillage et brûler les parties atteintes."
+    },
+    {
+      "term": "Fonte des semis",
+      "category": "Maladies",
+      "icon": "🌱",
+      "definition": "Pourriture du collet des jeunes plantules due à un excès d'humidité et de chaleur. Les semis tombent comme \"fauchés\".",
+      "tip": "Semer dans un terreau bien drainant, ne jamais détremper, aérer dès la levée. Une pincée de cannelle en surface est antifongique.",
+      "details": "Causée par Pythium et Rhizoctonia. Frappe surtout en intérieur (mini-serres trop confinées). Semer plus tardivement quand le terreau est à 20°C+."
+    },
+    {
+      "term": "Cloque du pêcher",
+      "category": "Maladies",
+      "icon": "🍑",
+      "definition": "Maladie fongique précoce du pêcher (Taphrina deformans). Feuilles déformées, boursouflées, virant au rouge puis tombant.",
+      "tip": "Traitement bouillie bordelaise dès la chute des feuilles en novembre, et au stade bouton rose en mars.",
+      "details": "Une fois les symptômes visibles, il est trop tard pour traiter — défoliation possible jusqu'à 100%. Les variétés résistantes (Bénédicte, Amsden) limitent fortement les attaques."
+    },
+    {
+      "term": "Purin d'ortie",
+      "category": "Traitements",
+      "icon": "🌿",
+      "definition": "Macération fermentée d'orties fraîches dans l'eau. Excellent stimulant de croissance et répulsif contre pucerons.",
+      "tip": "Recette : 1 kg d'orties dans 10 L d'eau, 10-15 jours à l'abri du soleil. Diluer à 10% pour pulvérisation, 20% en arrosage.",
+      "details": "Riche en azote, fer, magnésium et silice. Favorise la résistance des plantes. Odeur très forte — préférer un récipient hermétique avec couvercle ajouré."
+    },
+    {
+      "term": "Décoction de prêle",
+      "category": "Traitements",
+      "icon": "🌾",
+      "definition": "Préparation à base de prêle des champs riche en silice, qui renforce la résistance des plantes contre champignons (mildiou, oïdium, rouille).",
+      "tip": "100 g de prêle séchée dans 1 L d'eau, bouillir 30 min, diluer à 20%. Pulvériser tous les 15 jours en préventif.",
+      "details": "Agrément bio. La silice durcit la cuticule des feuilles, créant une barrière physique aux champignons. Particulièrement efficace sur tomates et vigne."
+    },
+    {
+      "term": "Savon noir",
+      "category": "Traitements",
+      "icon": "🫧",
+      "definition": "Solution savonneuse à base d'huile végétale qui asphyxie les insectes à corps mou (pucerons, cochenilles, aleurodes).",
+      "tip": "Mélanger 5 cl de savon noir liquide dans 1 L d'eau tiède, pulvériser le soir sur les insectes (action de contact).",
+      "details": "Sans danger pour les plantes, les abeilles et les coccinelles adultes (mais nocif pour leurs larves — pulvériser localement). Renouveler après pluie."
+    },
+    {
+      "term": "Bacillus thuringiensis (BT)",
+      "category": "Traitements",
+      "icon": "🦠",
+      "definition": "Bactérie naturelle (souche \"kurstaki\") sélective : tue les chenilles (piéride du chou, carpocapse) sans nuire aux autres insectes.",
+      "tip": "Pulvériser dès l'apparition des premières chenilles, le soir (UV-sensible). Renouveler après pluie.",
+      "details": "Utilisable en bio. Vendu sous forme de poudre à diluer (Délfin, Dipel). Inoffensif pour les abeilles, oiseaux, mammifères. Spécifique aux lépidoptères."
+    },
+    {
+      "term": "Macération d'ail",
+      "category": "Traitements",
+      "icon": "🧄",
+      "definition": "Préparation antifongique et insectifuge à base d'ail haché et d'eau. Repousse pucerons, acariens et limite mildiou.",
+      "tip": "100 g d'ail écrasé dans 1 L d'eau, macérer 24h, filtrer. Pulvériser pur ou dilué à 50% sur les plantes.",
+      "details": "Action allélopathique due à l'allicine. Effet rapide mais courte durée — renouveler tous les 3-5 jours. Combinable avec savon noir pour effet décuplé."
+    },
+    {
+      "term": "Nœud lunaire",
+      "category": "Calendrier lunaire",
+      "icon": "🌑",
+      "definition": "Point où la trajectoire de la lune croise l'écliptique. Considéré comme défavorable aux travaux du potager (jour \"sans\").",
+      "tip": "Ne pas semer ni planter aux nœuds lunaires (consulter un calendrier biodynamique).",
+      "details": "Tradition issue de l'agriculture biodynamique de Rudolf Steiner. Sceptique scientifiquement, mais beaucoup de jardiniers expérimentés respectent ces dates."
+    },
+    {
+      "term": "Apogée / Périgée",
+      "category": "Calendrier lunaire",
+      "icon": "🌌",
+      "definition": "Apogée = point le plus éloigné de la lune par rapport à la Terre ; périgée = le plus proche. Influences supposées sur la vitalité des plantes.",
+      "tip": "Tradition : éviter de semer 12h avant et après ces points. À l'apogée plutôt récolter ; au périgée plutôt planter.",
+      "details": "Cycle d'environ 27,5 jours. Marqué dans les calendriers lunaires (Rustica, Maria Thun)."
     }
   ]
 }

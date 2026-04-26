@@ -1,0 +1,636 @@
+{
+  "plans": [
+    {
+      "id": "aromates_cuisine",
+      "name": "Aromates de cuisine",
+      "emoji": "🌿",
+      "description": "Les indispensables aromatiques pour la cuisine de tous les jours. Idéal pour une petite zone (1-2 m²) ou un coin ensoleillé près de la maison.",
+      "level": "easy",
+      "min_area_m2": 1.0,
+      "season_start": [
+        3,
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 3,
+          "variety": "Grand Vert"
+        },
+        {
+          "vegetable_name": "Persil",
+          "quantity": 4,
+          "variety": "Plat (italien)"
+        },
+        {
+          "vegetable_name": "Ciboulette",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Thym",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Romarin",
+          "quantity": 1
+        },
+        {
+          "vegetable_name": "Menthe",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "mini_potager_famille",
+      "name": "Mini potager famille (6 m²)",
+      "emoji": "👨‍👩‍👧‍👦",
+      "description": "Un potager équilibré pour une famille de 4 personnes : tomates pour les salades d'été, salades pour la fraîcheur, carottes et radis pour les enfants, plus quelques aromates compagnons.",
+      "level": "easy",
+      "min_area_m2": 4.0,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 4,
+          "variety": "Cœur de bœuf"
+        },
+        {
+          "vegetable_name": "Salade",
+          "quantity": 8,
+          "variety": "Batavia"
+        },
+        {
+          "vegetable_name": "Carotte",
+          "quantity": 30,
+          "variety": "Nantaise"
+        },
+        {
+          "vegetable_name": "Radis",
+          "quantity": 20,
+          "variety": "18 jours"
+        },
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 4,
+          "variety": "Grand Vert"
+        },
+        {
+          "vegetable_name": "Oignon",
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "id": "debutant_salade_radis",
+      "name": "Débutant : salade + radis",
+      "emoji": "🥬",
+      "description": "Le combo idéal pour démarrer le jardinage : pousse vite, peu d'entretien, échec quasi impossible. Récolte en 4-6 semaines pour les radis, 6-8 pour les salades.",
+      "level": "easy",
+      "min_area_m2": 1.0,
+      "season_start": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Salade",
+          "quantity": 6,
+          "variety": "Feuille de Chêne"
+        },
+        {
+          "vegetable_name": "Radis",
+          "quantity": 30,
+          "variety": "18 jours"
+        },
+        {
+          "vegetable_name": "Roquette",
+          "quantity": 6
+        }
+      ]
+    },
+    {
+      "id": "compagnonnage_classique",
+      "name": "Compagnonnage classique",
+      "emoji": "🤝",
+      "description": "Quatre cultures qui se protègent mutuellement : tomate + basilic (anti-pucerons), carotte + oignon (anti-mouches respectives). Une démonstration du compagnonnage en action.",
+      "level": "medium",
+      "min_area_m2": 3.0,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 3,
+          "variety": "Marmande"
+        },
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 3,
+          "variety": "Grand Vert"
+        },
+        {
+          "vegetable_name": "Carotte",
+          "quantity": 24,
+          "variety": "Touchon"
+        },
+        {
+          "vegetable_name": "Oignon",
+          "quantity": 12,
+          "variety": "Stuttgart"
+        }
+      ]
+    },
+    {
+      "id": "trois_soeurs",
+      "name": "Les Trois Sœurs (amérindien)",
+      "emoji": "🌽",
+      "description": "Association ancestrale précolombienne : maïs + haricot grimpant + courge. Le maïs sert de tuteur au haricot qui fixe l'azote pour la courge dont les feuilles couvrent le sol contre les adventices.",
+      "level": "medium",
+      "min_area_m2": 4.0,
+      "season_start": [
+        5,
+        6
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Maïs",
+          "quantity": 12,
+          "variety": "Doux Golden Bantam"
+        },
+        {
+          "vegetable_name": "Haricot",
+          "quantity": 12,
+          "variety": "Phénomène"
+        },
+        {
+          "vegetable_name": "Potiron",
+          "quantity": 2,
+          "variety": "Butternut"
+        }
+      ]
+    },
+    {
+      "id": "serre_ete",
+      "name": "Serre d'été",
+      "emoji": "🏠",
+      "description": "Cultures gourmandes en chaleur, idéales sous serre vitrée : tomates, poivrons, basilic, concombre. Démarrage après les Saints de Glace.",
+      "level": "medium",
+      "min_area_m2": 4.0,
+      "season_start": [
+        5
+      ],
+      "needs_roof": true,
+      "plantings": [
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 6,
+          "variety": "Cœur de bœuf"
+        },
+        {
+          "vegetable_name": "Poivron",
+          "quantity": 4,
+          "variety": "California Wonder"
+        },
+        {
+          "vegetable_name": "Concombre",
+          "quantity": 2,
+          "variety": "Marketmore"
+        },
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 6,
+          "variety": "Grand Vert"
+        }
+      ]
+    },
+    {
+      "id": "racines_hiver",
+      "name": "Légumes racines pour l'hiver",
+      "emoji": "🥕",
+      "description": "Stockage facile, peu d'entretien après semis. Carottes, betteraves, panais, oignons et ail pour passer l'hiver avec ses propres légumes.",
+      "level": "easy",
+      "min_area_m2": 3.0,
+      "season_start": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Carotte",
+          "quantity": 40,
+          "variety": "Chantenay"
+        },
+        {
+          "vegetable_name": "Betterave",
+          "quantity": 16,
+          "variety": "Crapaudine"
+        },
+        {
+          "vegetable_name": "Panais",
+          "quantity": 16
+        },
+        {
+          "vegetable_name": "Oignon",
+          "quantity": 20,
+          "variety": "Jaune Paille"
+        },
+        {
+          "vegetable_name": "Ail",
+          "quantity": 12,
+          "variety": "Blanc"
+        }
+      ]
+    },
+    {
+      "id": "balcon_pots",
+      "name": "Balcon en pots (terrasse)",
+      "emoji": "🪴",
+      "description": "Variétés qui réussissent en pots et bacs sur balcon ou terrasse : tomates cerise, salades à couper, fraises, herbes aromatiques. Penser à arroser souvent.",
+      "level": "easy",
+      "min_area_m2": 0.5,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 2,
+          "variety": "Cerise"
+        },
+        {
+          "vegetable_name": "Salade",
+          "quantity": 6,
+          "variety": "Mesclun"
+        },
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 2,
+          "variety": "Grand Vert"
+        },
+        {
+          "vegetable_name": "Ciboulette",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Thym",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "pizza_garden",
+      "name": "Jardin à pizza",
+      "emoji": "🍕",
+      "description": "Tout ce qu'il faut pour la garniture d'une pizza maison : tomate, basilic, origan, oignon, et même poivron. Idéal en zone ensoleillée de 4-6 m².",
+      "level": "easy",
+      "min_area_m2": 4.0,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 4,
+          "variety": "San Marzano"
+        },
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 2,
+          "variety": "Cerise"
+        },
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 4,
+          "variety": "Grand Vert"
+        },
+        {
+          "vegetable_name": "Origan",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Oignon",
+          "quantity": 8
+        },
+        {
+          "vegetable_name": "Poivron",
+          "quantity": 2,
+          "variety": "Doux long des Landes"
+        }
+      ]
+    },
+    {
+      "id": "ratatouille_provencale",
+      "name": "Ratatouille provençale",
+      "emoji": "🍆",
+      "description": "Les 5 légumes de la ratatouille traditionnelle. Demande chaleur et soleil — parfait pour une zone sud bien exposée de 6-8 m².",
+      "level": "medium",
+      "min_area_m2": 6.0,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 4,
+          "variety": "Roma"
+        },
+        {
+          "vegetable_name": "Aubergine",
+          "quantity": 3,
+          "variety": "Violette longue"
+        },
+        {
+          "vegetable_name": "Courgette",
+          "quantity": 2,
+          "variety": "Verte de Milan"
+        },
+        {
+          "vegetable_name": "Poivron",
+          "quantity": 3,
+          "variety": "Doux des Landes"
+        },
+        {
+          "vegetable_name": "Oignon",
+          "quantity": 6
+        },
+        {
+          "vegetable_name": "Basilic",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Thym",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "carre_anti_pucerons",
+      "name": "Carré anti-pucerons",
+      "emoji": "🐞",
+      "description": "Plantes qui repoussent ou piègent les pucerons + fleurs qui attirent leurs prédateurs (coccinelles, syrphes). À planter en bordure du potager principal.",
+      "level": "easy",
+      "min_area_m2": 2.0,
+      "season_start": [
+        4,
+        5,
+        6
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Capucine",
+          "quantity": 5
+        },
+        {
+          "vegetable_name": "Souci",
+          "quantity": 8
+        },
+        {
+          "vegetable_name": "Bourrache",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Cosmos",
+          "quantity": 5
+        },
+        {
+          "vegetable_name": "Lavande",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Sauge",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "soupe_dautomne",
+      "name": "Soupe d'automne",
+      "emoji": "🥣",
+      "description": "Légumes pour soupes et veloutés réconfortants : potiron, carotte, panais, poireau, céleri. Récolte octobre-décembre.",
+      "level": "medium",
+      "min_area_m2": 6.0,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Potiron",
+          "quantity": 2,
+          "variety": "Butternut"
+        },
+        {
+          "vegetable_name": "Carotte",
+          "quantity": 25
+        },
+        {
+          "vegetable_name": "Panais",
+          "quantity": 12
+        },
+        {
+          "vegetable_name": "Poireau",
+          "quantity": 15,
+          "variety": "Bleu de Solaise"
+        },
+        {
+          "vegetable_name": "Céleri-branche",
+          "quantity": 4
+        },
+        {
+          "vegetable_name": "Persil",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "id": "salade_complete",
+      "name": "Salade complète été",
+      "emoji": "🥗",
+      "description": "De quoi composer des grandes salades estivales mêlant légumes-feuilles, légumes-fruits et aromates. Récoltes échelonnées de juin à septembre.",
+      "level": "easy",
+      "min_area_m2": 4.0,
+      "season_start": [
+        3,
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Salade",
+          "quantity": 12,
+          "variety": "Feuille de chêne"
+        },
+        {
+          "vegetable_name": "Salade",
+          "quantity": 8,
+          "variety": "Reine de mai"
+        },
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 3,
+          "variety": "Cerise"
+        },
+        {
+          "vegetable_name": "Concombre",
+          "quantity": 2
+        },
+        {
+          "vegetable_name": "Roquette",
+          "quantity": 10
+        },
+        {
+          "vegetable_name": "Radis",
+          "quantity": 30
+        },
+        {
+          "vegetable_name": "Ciboulette",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "pollinisateurs_paradis",
+      "name": "Paradis des pollinisateurs",
+      "emoji": "🐝",
+      "description": "Mélange de fleurs mellifères pour attirer abeilles, bourdons, papillons et syrphes. Indispensable pour un potager productif voisin.",
+      "level": "easy",
+      "min_area_m2": 3.0,
+      "season_start": [
+        3,
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Phacélie",
+          "quantity": 15
+        },
+        {
+          "vegetable_name": "Bourrache",
+          "quantity": 5
+        },
+        {
+          "vegetable_name": "Tournesol",
+          "quantity": 5
+        },
+        {
+          "vegetable_name": "Cosmos",
+          "quantity": 8
+        },
+        {
+          "vegetable_name": "Souci",
+          "quantity": 10
+        },
+        {
+          "vegetable_name": "Lavande",
+          "quantity": 3
+        },
+        {
+          "vegetable_name": "Mélisse",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "potager_montagne",
+      "name": "Potager d'altitude / climat froid",
+      "emoji": "⛰️",
+      "description": "Légumes rustiques qui supportent les nuits fraîches et la saison courte. Adapté à Vullierens et plus haut (jusqu'à 1000m).",
+      "level": "medium",
+      "min_area_m2": 5.0,
+      "season_start": [
+        4,
+        5
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Pomme de terre",
+          "quantity": 12,
+          "variety": "Charlotte"
+        },
+        {
+          "vegetable_name": "Chou",
+          "quantity": 6,
+          "variety": "Pointu"
+        },
+        {
+          "vegetable_name": "Bette à carde",
+          "quantity": 6
+        },
+        {
+          "vegetable_name": "Carotte",
+          "quantity": 20,
+          "variety": "Nantaise"
+        },
+        {
+          "vegetable_name": "Mâche",
+          "quantity": 25
+        },
+        {
+          "vegetable_name": "Épinard",
+          "quantity": 15
+        },
+        {
+          "vegetable_name": "Fève",
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "id": "premier_potager_enfant",
+      "name": "Premier potager pour enfant",
+      "emoji": "👶",
+      "description": "Sélection de légumes à croissance rapide et visuels, parfaits pour initier un enfant. Récoltes en 30-60 jours pour ne pas perdre patience.",
+      "level": "easy",
+      "min_area_m2": 1.5,
+      "season_start": [
+        4,
+        5,
+        6
+      ],
+      "plantings": [
+        {
+          "vegetable_name": "Radis",
+          "quantity": 30,
+          "variety": "18 jours"
+        },
+        {
+          "vegetable_name": "Salade",
+          "quantity": 6,
+          "variety": "Feuille de chêne"
+        },
+        {
+          "vegetable_name": "Tomate",
+          "quantity": 2,
+          "variety": "Cerise"
+        },
+        {
+          "vegetable_name": "Tournesol",
+          "quantity": 4
+        },
+        {
+          "vegetable_name": "Capucine",
+          "quantity": 4
+        }
+      ]
+    }
+  ]
+}

@@ -60,6 +60,9 @@
       <a href="/rotation" class="nav-item {% if '/rotation' in request.path %}active{% endif %}">
         <i class="bi bi-arrow-repeat"></i> Plan rotation
       </a>
+      <a href="/plans" class="nav-item {% if '/plans' in request.path %}active{% endif %}">
+        <i class="bi bi-clipboard2-check"></i> Plans pré-faits
+      </a>
       <a href="/glossaire" class="nav-item {% if '/glossaire' in request.path %}active{% endif %}">
         <i class="bi bi-book"></i> Glossaire
       </a>
@@ -252,6 +255,9 @@
   </a>
   <a href="/rotation" class="mobile-menu-item {% if '/rotation' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-arrow-repeat"></i> Plan rotation
+  </a>
+  <a href="/plans" class="mobile-menu-item {% if '/plans' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
+    <i class="bi bi-clipboard2-check"></i> Plans pré-faits
   </a>
   <a href="/glossaire" class="mobile-menu-item {% if '/glossaire' in request.path %}active{% endif %}" onclick="closeMobileMenu()">
     <i class="bi bi-book"></i> Glossaire
@@ -769,6 +775,42 @@ document.getElementById('confirm-ok').addEventListener('click', () => {
 document.getElementById('confirm-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeConfirm();
 });
+
+// ── Helpers de confirmation uniformes ───────────────────
+// Suppression standard (rouge) — appel depuis onsubmit d'un form :
+//   onsubmit="return confirmDelete(event, this, 'l’élément X', 'Texte additionnel.')"
+function confirmDelete(ev, form, target, extra) {
+  ev.preventDefault();
+  showConfirm({
+    title: 'Confirmer la suppression',
+    body:  `Voulez-vous vraiment supprimer ${target} ?${extra ? '\n\n' + extra : ''}`,
+    okLabel: 'Supprimer',
+    okClass: 'confirm-danger',
+    icon: 'bi-trash3-fill',
+    iconClass: '',
+  }, () => form.submit());
+  return false;
+}
+
+// Reset annuel du jardin (orange — action lourde mais réversible via archives)
+function confirmResetGarden(ev, form) {
+  ev.preventDefault();
+  const confirmInput = form.querySelector('input[name="confirm"]');
+  if (!confirmInput || (confirmInput.value || '').trim().toUpperCase() !== 'RESET') {
+    showToast('Tapez RESET en majuscules pour confirmer', 'warning');
+    if (confirmInput) confirmInput.focus();
+    return false;
+  }
+  showConfirm({
+    title: 'Démarrer une nouvelle année',
+    body:  'Les plantations actives seront archivées (historique préservé).\nLes zones reprendront leurs dimensions par défaut.\n\nCette action est irréversible côté zones.',
+    okLabel: 'Tout réinitialiser',
+    okClass: 'confirm-warning',
+    icon: 'bi-arrow-counterclockwise',
+    iconClass: 'warning',
+  }, () => form.submit());
+  return false;
+}
 </script>
 
 {% block scripts %}{% endblock %}

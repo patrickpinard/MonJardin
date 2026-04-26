@@ -290,15 +290,19 @@ def edit_planting(planting_id: int):
         except ValueError:
             new_qty = None
         if new_qty is not None and new_qty >= 1:
-            actives = (Planting.query
-                       .filter_by(zone_id=p.zone_id,
-                                  vegetable_name=p.vegetable_name,
-                                  status="active")
-                       .order_by(Planting.id.desc()).all())
+            # Filtrer par espèce ET variété : permet de différencier
+            # 'Tomate Cœur de bœuf' vs 'Tomate Cerise' (chacune sa quantité)
+            target_variety = (p.variety or "").strip()
+            actives_all = (Planting.query
+                           .filter_by(zone_id=p.zone_id,
+                                      vegetable_name=p.vegetable_name,
+                                      status="active")
+                           .order_by(Planting.id.desc()).all())
+            actives = [a for a in actives_all if (a.variety or "").strip() == target_variety]
             current_count = len(actives)
             diff = new_qty - current_count
             if diff > 0:
-                # Créer N copies du planting édité
+                # Créer N copies du planting édité (même variété)
                 for _ in range(diff):
                     db.session.add(Planting(
                         zone_id=p.zone_id,
@@ -311,7 +315,7 @@ def edit_planting(planting_id: int):
                         notes=p.notes,
                     ))
             elif diff < 0:
-                # Supprimer les plus récents en épargnant celui édité
+                # Supprimer les plus récents de la même variété (en épargnant l'édité)
                 removed = 0
                 for other in actives:
                     if other.id == p.id:
