@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Plan rotation{% endblock %}
+
+{% block head %}
+<style>
+.rot-grid {
+  display: grid;
+  grid-template-columns: 140px repeat({{ years | length }}, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+.rot-head {
+  background: var(--bg-secondary);
+  padding: 12px 14px;
+  font-size: 12px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: .5px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.rot-head.zone { text-align: left; }
+.rot-zone {
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.rot-zone-name { font-size: 14px; font-weight: 700; }
+.rot-zone-id   { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+.rot-cell {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  min-height: 80px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.rot-cell:last-child, .rot-grid > div:last-child { border-right: none; }
+.rot-grid > div:nth-last-child(-n+{{ years | length + 1 }}) { border-bottom: none; }
+.fam-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: var(--r-pill);
+  font-size: 11px; font-weight: 600;
+  border: 1px solid;
+  background: rgba(255,255,255,.04);
+  margin-right: 4px; margin-bottom: 4px;
+}
+.fam-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.fam-names {
+  font-size: 10px; color: var(--text-tertiary); margin-top: 2px;
+}
+.rot-empty {
+  font-size: 11px; color: var(--text-disabled); font-style: italic;
+}
+
+/* Légende familles */
+.fam-legend {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  font-size: 11px;
+}
+.legend-item {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 9px; background: var(--bg-secondary);
+  border-radius: var(--r-pill); border: 1px solid var(--border);
+}
+@media (max-width: 768px) {
+  .rot-grid { grid-template-columns: 110px repeat({{ years | length }}, 1fr); }
+  .rot-cell { padding: 8px; min-height: 70px; }
+  .rot-zone { padding: 10px; }
+  .rot-zone-name { font-size: 12px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1 class="page-title">🔄 Plan de rotation</h1>
+      <div class="page-subtitle">Historique des familles botaniques sur 3 ans · respect de la rotation</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-body" style="display:flex;flex-direction:column;gap:18px;">
+
+  <!-- Bandeau pédagogique -->
+  <div class="card" style="border-left:4px solid var(--green);">
+    <div style="display:flex;align-items:flex-start;gap:14px;">
+      <div style="font-size:28px;flex-shrink:0;">🌱</div>
+      <div>
+        <div style="font-weight:700;margin-bottom:4px;">Pourquoi la rotation des cultures ?</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">
+          Replanter la même <strong>famille botanique</strong> au même endroit chaque année épuise le sol
+          et favorise les maladies. La règle d'or : attendre <strong>au moins 3 ans</strong> avant de
+          revenir avec la même famille. Cette page vous aide à visualiser et planifier vos rotations.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grille zones × années -->
+  <div class="card">
+    <div class="card-title"><i class="bi bi-table"></i> Grille de rotation — 3 années</div>
+    <div class="rot-grid">
+      <div class="rot-head zone">Zone</div>
+      {% for y in years %}
+      <div class="rot-head">{{ y }}{% if loop.first %} <small style="font-weight:500;text-transform:none;">(actuel)</small>{% endif %}</div>
+      {% endfor %}
+
+      {% for row in rotation_grid %}
+      <div class="rot-zone">
+        <div class="rot-zone-name">{{ row.zone.name }}</div>
+        <div class="rot-zone-id">Zone {{ row.zone.zone_id }}{% if row.zone.has_roof %} · serre{% endif %}</div>
+      </div>
+      {% for yc in row.years %}
+      <div class="rot-cell">
+        {% if yc.families %}
+          {% for f in yc.families %}
+          {% set color = family_colors.get(f.family, '#6b7280') %}
+          <div>
+            <span class="fam-chip" style="border-color:{{ color }}66;color:{{ color }};">
+              <span class="fam-dot" style="background:{{ color }};"></span>
+              {{ f.family }}
+            </span>
+            <div class="fam-names">{{ f.names | join(', ') }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <span class="rot-empty">— rien —</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Légende familles -->
+  {% if family_colors %}
+  <div class="card">
+    <div class="card-title"><i class="bi bi-palette"></i> Familles botaniques</div>
+    <div class="fam-legend">
+      {% for family, color in family_colors.items() %}
+        {% if family != 'Inconnue' %}
+        <span class="legend-item">
+          <span class="fam-dot" style="background:{{ color }};"></span>
+          <span style="color:{{ color }};font-weight:600;">{{ family }}</span>
+        </span>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
+      <i class="bi bi-info-circle"></i>
+      Au moment de planter dans une zone, le modal Quick-Plant affichera un avertissement
+      si la famille du légume choisi a déjà été cultivée dans cette zone récemment, et
+      suggérera la meilleure zone alternative.
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

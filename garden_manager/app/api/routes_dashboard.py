@@ -1069,6 +1069,68 @@ def admin_delete_user(uid):
     return redirect("/admin")
 
 
+@dashboard_bp.get("/rotation")
+def rotation_page():
+    """Vue Plan de rotation des cultures : zones × années."""
+    advisor = current_app.extensions.get("rotation_advisor")
+    zones = Zone.query.order_by(Zone.zone_id).all()
+    plantings = Planting.query.all()
+
+    today = date.today()
+    years = [today.year, today.year - 1, today.year - 2]
+
+    # Famille → couleur stable (pour rendu visuel)
+    FAMILY_COLORS = {
+        "Solanacées":      "#ef4444",
+        "Cucurbitacées":   "#f59e0b",
+        "Brassicacées":    "#8b5cf6",
+        "Apiacées":        "#22c55e",
+        "Alliacées":       "#0ea5e9",
+        "Légumineuses":    "#16a34a",
+        "Astéracées":      "#14b8a6",
+        "Chénopodiacées":  "#a855f7",
+        "Lamiacées":       "#84cc16",
+        "Poacées":         "#eab308",
+        "Valérianacées":   "#06b6d4",
+        "Rosacées":        "#ec4899",
+        "Boraginacées":    "#6366f1",
+        "Tropaeolacées":   "#f97316",
+        "Hydrophyllacées": "#94a3b8",
+        "Asparagacées":    "#10b981",
+        "Polygonacées":    "#d946ef",
+        "Inconnue":        "#6b7280",
+    }
+
+    # Construire la grille : zones × années
+    rotation_grid = []
+    for zone in zones:
+        per_year = advisor.get_zone_rotation_history_by_year(plantings, zone.zone_id, years=3) if advisor else {}
+        row = {"zone": zone, "years": []}
+        for y in years:
+            cells = per_year.get(y, [])
+            row["years"].append({
+                "year": y,
+                "families": cells,  # list of {family, names}
+            })
+        rotation_grid.append(row)
+
+    # Famille active dans chaque zone (plantations actives)
+    current_families_by_zone = {}
+    for p in plantings:
+        if p.status != "active":
+            continue
+        fam = advisor.family_of(p.vegetable_name) if advisor else "Inconnue"
+        current_families_by_zone.setdefault(p.zone_id, set()).add(fam)
+
+    return render_template(
+        "rotation.html",
+        rotation_grid=rotation_grid,
+        years=years,
+        family_colors=FAMILY_COLORS,
+        current_families_by_zone={k: sorted(v) for k, v in current_families_by_zone.items()},
+    )
+
+
 @dashboard_bp.get("/conseils")
 def conseils():
     advisor = current_app.extensions["planting_advisor"]

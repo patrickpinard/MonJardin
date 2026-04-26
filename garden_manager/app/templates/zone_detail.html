@@ -911,6 +911,19 @@
           <i class="bi bi-lightbulb" style="color:var(--orange);"></i> <span id="qp-tip-text"></span>
         </div>
 
+        <!-- Rotation des cultures (alerte famille botanique) -->
+        <div id="qp-rotation-info" style="margin-top:10px;display:none;font-size:12px;line-height:1.5;">
+          <div id="qp-rotation-row" style="padding:7px 10px;border-radius:var(--r-sm);">
+            <i class="bi bi-arrow-repeat" style="margin-right:4px;"></i>
+            <strong>Rotation</strong> — <span id="qp-rotation-msg"></span>
+          </div>
+          <div id="qp-best-zone-row" style="display:none;margin-top:6px;padding:6px 10px;background:rgba(48,209,88,.08);border:1px dashed rgba(48,209,88,.3);border-radius:var(--r-sm);color:var(--green);">
+            <i class="bi bi-arrow-right-circle"></i>
+            Meilleur emplacement : <a id="qp-best-zone-link" href="#" style="color:var(--green);font-weight:700;text-decoration:underline;"></a>
+            — <span id="qp-best-zone-reason" style="color:var(--text-secondary);"></span>
+          </div>
+        </div>
+
         <!-- Compagnonnage live -->
         <div id="qp-companion-info" style="margin-top:10px;display:none;font-size:12px;line-height:1.5;">
           <div id="qp-bad-row" style="display:none;padding:6px 10px;background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.3);border-radius:var(--r-sm);color:var(--red);margin-bottom:6px;">
@@ -1359,6 +1372,46 @@ function qpSelectVeg(btn) {
 
   document.getElementById('qp-selection').style.display = '';
   document.getElementById('qp-submit').disabled = false;
+
+  // ── Vérification rotation des cultures (asynchrone) ──
+  qpCheckRotation(name);
+}
+
+async function qpCheckRotation(vegName) {
+  const zoneId = {{ zone.zone_id }};
+  const info = document.getElementById('qp-rotation-info');
+  const row  = document.getElementById('qp-rotation-row');
+  const best = document.getElementById('qp-best-zone-row');
+  if (!info) return;
+  info.style.display = 'none';
+  best.style.display = 'none';
+  try {
+    const r = await fetch(`/api/rotation/${zoneId}/${encodeURIComponent(vegName)}`);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data.conflict) {
+      const lvl = data.conflict.level;
+      info.style.display = '';
+      if (lvl === 'danger') {
+        row.style.background = 'rgba(255,69,58,.1)';
+        row.style.border = '1px solid rgba(255,69,58,.3)';
+        row.style.color = 'var(--red)';
+      } else {
+        row.style.background = 'rgba(255,159,10,.08)';
+        row.style.border = '1px solid rgba(255,159,10,.25)';
+        row.style.color = 'var(--orange)';
+      }
+      document.getElementById('qp-rotation-msg').textContent = data.conflict.message;
+      // Suggestion de meilleure zone
+      if (data.best_zone) {
+        best.style.display = '';
+        const link = document.getElementById('qp-best-zone-link');
+        link.textContent = data.best_zone.zone_name;
+        link.href = `/zones/${data.best_zone.zone_id}`;
+        document.getElementById('qp-best-zone-reason').textContent = data.best_zone.reason;
+      }
+    }
+  } catch (e) { /* silencieux */ }
 }
 function qpAdjustQty(delta) {
   const inp = document.getElementById('qp-qty');

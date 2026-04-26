@@ -817,3 +817,34 @@ def purge_journal():
 
     total = n_irr + n_roof + n_sys
     return jsonify({"ok": True, "deleted": {"irrigation": n_irr, "roof": n_roof, "system": n_sys}, "total": total})
+
+
+@api_bp.get("/rotation/<int:zone_id>/<path:vegetable_name>")
+def rotation_check(zone_id: int, vegetable_name: str):
+    """Vérifie le conflit de rotation pour un légume dans une zone donnée.
+
+    Retourne :
+    - conflict : null OU {level, family, previous, days_ago, message}
+    - best_zone : suggestion de meilleure zone (alternative si conflict)
+    """
+    advisor = current_app.extensions.get("rotation_advisor")
+    if advisor is None:
+        return jsonify({"conflict": None, "best_zone": None})
+
+    plantings = Planting.query.all()
+    conflict = advisor.check_conflict(plantings, zone_id, vegetable_name)
+
+    best = None
+    if conflict and conflict.get("level") == "danger":
+        zones = Zone.query.order_by(Zone.zone_id).all()
+        best = advisor.suggest_best_zone(plantings, zones, vegetable_name)
+        # N'afficher que si la suggestion est différente et meilleure
+        if best and (best["zone_id"] == zone_id or not best.get("is_safe")):
+            best = None
+    return jsonify({
+        "zone_id": zone_id,
+        "vegetable_name": vegetable_name,
+        "family": advisor.family_of(vegetable_name),
+        "conflict": conflict,
+        "best_zone": best,
+    })
