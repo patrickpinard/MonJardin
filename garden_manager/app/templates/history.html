@@ -1,45 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Graphiques{% endblock %}
 
-{% block head %}
-<style>
-.hist-controls {
-  display: flex; flex-direction: column; gap: 10px;
-  margin-bottom: 18px;
-}
-.hist-control-row {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-}
-.hist-control-label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  color: var(--text-tertiary); letter-spacing: .5px;
-  flex-shrink: 0;
-}
-.hist-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 7px 13px; border-radius: var(--r-pill);
-  background: var(--bg-secondary); color: var(--text-secondary);
-  border: 1px solid var(--border);
-  font-size: 12.5px; font-weight: 600;
-  font-family: inherit; cursor: pointer;
-  transition: background var(--t), color var(--t), border-color var(--t), transform .1s;
-  -webkit-tap-highlight-color: transparent;
-}
-.hist-chip:hover  { background: var(--bg-tertiary); color: var(--text-primary); }
-.hist-chip:active { transform: scale(.96); }
-.hist-chip.active {
-  background: var(--green); color: #fff; border-color: var(--green);
-}
-.hist-chip.active:hover { background: var(--green); color: #fff; }
-
-/* Couleur subtile des puces zone (visible quand non actives) */
-.hist-chip[data-zone="1"]:not(.active) { color: #30d158; }
-.hist-chip[data-zone="2"]:not(.active) { color: #8BC34A; }
-.hist-chip[data-zone="3"]:not(.active) { color: #0a84ff; }
-.hist-chip[data-zone="4"]:not(.active) { color: #bf5af2; }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="page-header">
   <div class="page-header-row">

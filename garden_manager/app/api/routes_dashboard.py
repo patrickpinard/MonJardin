@@ -716,9 +716,13 @@ def zone_detail(zone_id: int):
             })
         photos_by_month.append((month_label, days_list))
 
+    # Liste de toutes les zones pour le sélecteur de l'onglet Graphiques
+    all_zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
+
     return render_template(
         "zone_detail.html",
         zone=zone,
+        all_zones=all_zones,
         plantings=plantings,
         compatibility_warnings=compatibility_warnings,
         harvest_forecast=harvest_forecast,

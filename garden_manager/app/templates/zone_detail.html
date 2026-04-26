@@ -225,19 +225,36 @@
 
 
   <!-- ══════════════════════════════════════════════════════
-       TAB 2 : GRAPHIQUES — 3 graphiques séparés (style page Graphiques)
+       TAB 2 : GRAPHIQUES — même mise en forme que la page /history
        ══════════════════════════════════════════════════════ -->
   <div id="tab-graphiques" style="display:none;">
 
-    <!-- Sélecteur de période — chips style Conseils, ligne dédiée -->
-    <div class="hist-control-row" style="margin-bottom:14px;">
-      <span class="hist-control-label">Période</span>
-      <button class="hist-chip active" data-period="24"
-              onclick="switchCombinedTab(this, {{ zone.zone_id }}, 24)">24 h</button>
-      <button class="hist-chip" data-period="168"
-              onclick="switchCombinedTab(this, {{ zone.zone_id }}, 168)">7 jours</button>
-      <button class="hist-chip" data-period="720"
-              onclick="switchCombinedTab(this, {{ zone.zone_id }}, 720)">30 jours</button>
+    <!-- Bandeau de contrôles : Zones + Période (identique à /history) -->
+    <div class="hist-controls">
+      <div class="hist-control-row">
+        <span class="hist-control-label">Zones</span>
+        {% for z in (all_zones | default([zone])) %}
+        <a href="/zones/{{ z.zone_id }}#graphiques"
+           class="hist-chip {% if z.zone_id == zone.zone_id %}active{% endif %}"
+           data-zone="{{ z.zone_id }}"
+           style="text-decoration:none;">
+          {% if z.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+          {% elif z.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+          {% elif z.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+          {% else %}<i class="bi bi-flower3"></i>{% endif %}
+          {{ z.name }}
+        </a>
+        {% endfor %}
+      </div>
+      <div class="hist-control-row">
+        <span class="hist-control-label">Période</span>
+        <button class="hist-chip active" data-period="24"
+                onclick="switchCombinedTab(this, {{ zone.zone_id }}, 24)">24 h</button>
+        <button class="hist-chip" data-period="168"
+                onclick="switchCombinedTab(this, {{ zone.zone_id }}, 168)">7 jours</button>
+        <button class="hist-chip" data-period="720"
+                onclick="switchCombinedTab(this, {{ zone.zone_id }}, 720)">30 jours</button>
+      </div>
     </div>
 
     <div class="card mb-3">
