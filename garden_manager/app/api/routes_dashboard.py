@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone, date
 from pathlib import Path
 
 from flask import Blueprint, current_app, render_template, send_from_directory, \
-    request, session, redirect, flash
+    request, session, redirect, flash, url_for
 
 from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog, AdminUser, AlertRecipient, ALERT_TYPES, db
 
@@ -1298,6 +1298,80 @@ def rotation_page():
     )
 
 
+@dashboard_bp.get("/plans")
+def garden_plans_page():
+    """Galerie de plans pré-faits applicables à une zone."""
+    plans_path = Path(current_app.root_path).parent / "data" / "garden_plans.json"
+    try:
+        with open(plans_path, encoding="utf-8") as f:
+            plans = json.load(f).get("plans", [])
+    except Exception as e:
+        log.warning("Plans non chargés : %s", e)
+        plans = []
+    # Enrichir chaque planting avec emoji
+    plants_db = _load_plants_db()
+    emoji_map = {p["name"]: p.get("emoji", "🌱") for p in plants_db}
+    for plan in plans:
+        for p in plan.get("plantings", []):
+            p["emoji"] = emoji_map.get(p["vegetable_name"], "🌱")
+    zones = Zone.query.order_by(Zone.zone_id).all()
+    return render_template("plans.html", plans=plans, zones=zones)
+
+
+@dashboard_bp.post("/plans/apply")
+def garden_plans_apply():
+    """Applique un plan pré-fait à une zone : crée toutes les plantations."""
+    plan_id = request.form.get("plan_id", "")
+    zone_id = request.form.get("zone_id", type=int)
+    if not plan_id or not zone_id:
+        flash("Plan ou zone manquant.", "danger")
+        return redirect("/plans")
+
+    zone = Zone.query.get(zone_id)
+    if not zone:
+        flash("Zone introuvable.", "danger")
+        return redirect("/plans")
+
+    plans_path = Path(current_app.root_path).parent / "data" / "garden_plans.json"
+    try:
+        with open(plans_path, encoding="utf-8") as f:
+            plans = json.load(f).get("plans", [])
+    except Exception:
+        plans = []
+    plan = next((p for p in plans if p["id"] == plan_id), None)
+    if not plan:
+        flash("Plan introuvable.", "danger")
+        return redirect("/plans")
+
+    advisor = current_app.extensions["planting_advisor"]
+    today = date.today()
+    created = 0
+    for entry in plan.get("plantings", []):
+        veg_name = entry["vegetable_name"]
+        veg = advisor.get_vegetable(veg_name)
+        qty = max(1, min(50, int(entry.get("quantity", 1))))
+        variety = entry.get("variety", "")
+        for _ in range(qty):
+            db.session.add(Planting(
+                zone_id=zone_id,
+                vegetable_name=veg_name,
+                variety=variety,
+                planted_date=today,
+                expected_harvest_date=None,
+                water_need=(veg.get("water_need") if veg else "medium"),
+                status="active",
+                notes=f"Ajouté via le plan « {plan['name']} »",
+            ))
+            created += 1
+    db.session.add(JournalEntry(
+        level="info",
+        message=f"📋 Plan « {plan['name']} » appliqué à {zone.name} : {created} plant(s) créé(s)",
+    ))
+    db.session.commit()
+    flash(f"Plan « {plan['name']} » appliqué : {created} plantation(s) ajoutée(s) dans {zone.name}.", "success")
+    return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+
+
 @dashboard_bp.get("/glossaire")
 def glossary_page():
     """Glossaire des termes horticoles utilisés dans MonJardin."""
@@ -1309,16 +1383,21 @@ def glossary_page():
     except Exception as e:
         log.warning("Glossaire non chargé : %s", e)
         terms = []
-    # Tri par catégorie puis terme
-    terms.sort(key=lambda t: (t.get("category", ""), t.get("term", "")))
-    # Grouper par catégorie
-    from collections import defaultdict as _dd
-    by_cat = _dd(list)
+    # Ordre éditorial des catégories (de la plus générale à la plus pointue)
+    CAT_ORDER = ["Météo", "Climat", "Sol", "Plantation", "Entretien",
+                 "Maladies", "Traitements", "Calendrier lunaire"]
+    def _cat_rank(c):
+        try:    return CAT_ORDER.index(c)
+        except ValueError: return len(CAT_ORDER)
+    terms.sort(key=lambda t: (_cat_rank(t.get("category", "")), t.get("term", "")))
+    # Grouper par catégorie en préservant l'ordre
+    from collections import OrderedDict
+    by_cat = OrderedDict()
     for t in terms:
-        by_cat[t.get("category", "Divers")].append(t)
+        by_cat.setdefault(t.get("category", "Divers"), []).append(t)
     return render_template(
         "glossary.html",
-        glossary_by_category=dict(by_cat),
+        glossary_by_category=by_cat,
         total_terms=len(terms),
     )
 

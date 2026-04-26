@@ -2495,8 +2495,10 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   background: rgba(255,69,58,.12); color: var(--red);
 }
 .modal-icon.warning { background: rgba(255,159,10,.12); color: var(--orange); }
+.modal-icon.success { background: rgba(48,209,88,.12);  color: var(--green); }
+.modal-icon.info    { background: rgba(56,189,248,.12); color: var(--blue, #38bdf8); }
 .modal-title { font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-.modal-body { font-size: 14px; color: var(--text-secondary); line-height: 1.55; padding-bottom: 20px; }
+.modal-body { font-size: 14px; color: var(--text-secondary); line-height: 1.55; padding-bottom: 20px; white-space: pre-line; }
 .modal-actions {
   display: flex; border-top: 1px solid var(--border);
 }
@@ -2509,8 +2511,9 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .modal-btn:hover { background: var(--bg-secondary); }
 .modal-btn + .modal-btn { border-left: 1px solid var(--border); }
 .modal-btn.cancel { color: var(--text-secondary); }
-.modal-btn.confirm-danger { color: var(--red); }
+.modal-btn.confirm-danger  { color: var(--red); }
 .modal-btn.confirm-warning { color: var(--orange); }
+.modal-btn.confirm-primary { color: var(--green); }
 
 /* ── Zone cards grid ──────────────────────────────────── */
 .zones-grid {

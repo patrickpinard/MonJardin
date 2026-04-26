@@ -56,8 +56,8 @@
 /* ── Carte terme ── */
 .gloss-card {
   flex: 0 0 320px;
-  min-height: 380px;
-  max-height: 520px;
+  min-height: 420px;
+  max-height: 580px;
   background: var(--bg-primary); border: 1px solid var(--border);
   border-radius: var(--r-lg); overflow: hidden;
   display: flex; flex-direction: column;
@@ -68,12 +68,16 @@
   transform: translateY(-2px);
 }
 .gloss-card-hero {
-  height: 100px;
+  height: 130px;
   background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
   display: flex; align-items: center; justify-content: center;
   font-size: 56px; line-height: 1;
   position: relative; overflow: hidden;
   font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+}
+.gloss-card-hero-img { padding: 0; }
+.gloss-card-hero-img img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
 .gloss-card-hero::before {
   content: ""; position: absolute; inset: 0;
@@ -106,23 +110,7 @@
   padding: 8px 11px; background: var(--bg-secondary);
   border-radius: var(--r-sm);
   border-left: 2px solid var(--border-md);
-  max-height: 0; overflow: hidden;
-  transition: max-height .3s var(--ease), padding .2s, margin .2s;
-  margin: 0;
 }
-.gloss-card.expanded .gloss-card-details {
-  max-height: 400px;
-  padding: 8px 11px;
-  margin-top: 4px;
-}
-.gloss-card-details-toggle {
-  align-self: flex-start;
-  background: none; border: none; color: var(--green);
-  font-size: 11px; font-weight: 700; cursor: pointer;
-  padding: 4px 0; font-family: inherit;
-  display: inline-flex; align-items: center; gap: 3px;
-}
-.gloss-card-details-toggle:hover { text-decoration: underline; }
 .gloss-card-tip {
   font-size: 12px; color: var(--text-tertiary); line-height: 1.5;
   padding: 8px 11px; background: rgba(48,209,88,.06);
@@ -213,18 +201,20 @@
                data-term="{{ t.term | lower }}"
                data-def="{{ t.definition | lower }}"
                data-details="{{ (t.get('details') or '') | lower }}">
-            <div class="gloss-card-hero">
+            <div class="gloss-card-hero {% if t.get('image_url') %}gloss-card-hero-img{% endif %}">
               <span class="gloss-card-cat">{{ category }}</span>
+              {% if t.get('image_url') %}
+              <img src="{{ t.image_url }}" alt="{{ t.term }}" loading="lazy"
+                   onerror="this.parentElement.classList.remove('gloss-card-hero-img');this.replaceWith(document.createTextNode('{{ t.get('icon') or '📖' }}'));">
+              {% else %}
               {{ t.get('icon') or '📖' }}
+              {% endif %}
             </div>
             <div class="gloss-card-body">
               <div class="gloss-card-title">{{ t.term }}</div>
               <div class="gloss-card-def">{{ t.definition }}</div>
               {% if t.get('details') %}
               <div class="gloss-card-details">{{ t.details }}</div>
-              <button class="gloss-card-details-toggle" onclick="toggleDetails(this)">
-                <i class="bi bi-plus-circle"></i> En savoir plus
-              </button>
               {% endif %}
               {% if t.get('tip') %}
               <div class="gloss-card-tip">
@@ -265,16 +255,6 @@ function glossNext(catSlug) {
 }
 function glossPrev(catSlug) {
   glossGoTo(catSlug, (GLOSS_STATE[catSlug] || 0) - 1);
-}
-
-// Toggle "En savoir plus" sur une carte
-function toggleDetails(btn) {
-  const card = btn.closest('.gloss-card');
-  if (!card) return;
-  const expanded = card.classList.toggle('expanded');
-  btn.innerHTML = expanded
-    ? '<i class="bi bi-dash-circle"></i> Moins de détails'
-    : '<i class="bi bi-plus-circle"></i> En savoir plus';
 }
 
 // Filtre recherche
