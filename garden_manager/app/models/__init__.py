@@ -6,6 +6,7 @@ from .irrigation_log import IrrigationLog, RoofLog, JournalEntry
 from .planting import Planting, WeatherCache
 from .admin_user import AdminUser
 from .alert_recipient import AlertRecipient, ALERT_TYPES, ALERT_TYPE_IDS
+from .zone_photo import ZonePhoto
 
 __all__ = [
     "db",
@@ -20,4 +21,5 @@ __all__ = [
     "AlertRecipient",
     "ALERT_TYPES",
     "ALERT_TYPE_IDS",
+    "ZonePhoto",
 ]

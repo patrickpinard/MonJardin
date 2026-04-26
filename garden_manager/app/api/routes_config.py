@@ -1,9 +1,25 @@
 """Routes de configuration : zones, plantations, conseils."""
+import logging
+import uuid
 from datetime import date
+from pathlib import Path
 
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
+from flask import (Blueprint, current_app, flash, jsonify, redirect,
+                   render_template, request, send_from_directory, url_for)
 
-from ..models import db, Zone, Planting, JournalEntry
+from ..models import db, Zone, Planting, JournalEntry, ZonePhoto
+
+log = logging.getLogger(__name__)
+
+ALLOWED_PHOTO_EXTS = {"jpg", "jpeg", "png", "heic", "heif", "webp"}
+MAX_PHOTO_SIZE_MB = 12
+
+
+def _photos_dir() -> Path:
+    """Dossier de stockage des photos. Créé au besoin."""
+    p = Path(current_app.root_path).parent / "data" / "uploads" / "zones"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
 
 config_bp = Blueprint("config", __name__)
 
@@ -523,3 +539,82 @@ def zone_compatibility(zone_id: int):
     advisor = current_app.extensions["planting_advisor"]
     warnings = advisor.check_zone_compatibility(zone_id)
     return jsonify({"zone_id": zone_id, "warnings": warnings})
+
+
+# ── Photos d'une zone (upload depuis PWA mobile, vue calendrier) ──────────
+
+@config_bp.post("/zones/<int:zone_id>/photos/upload")
+def upload_zone_photo(zone_id: int):
+    """Upload d'une ou plusieurs photos d'une zone (depuis l'iPhone PWA)."""
+    zone = Zone.query.get_or_404(zone_id)
+    files = request.files.getlist("photos") or [request.files.get("photo")]
+    files = [f for f in files if f and f.filename]
+    if not files:
+        flash("Aucun fichier reçu.", "danger")
+        return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
+
+    target_dir = _photos_dir() / str(zone_id)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    saved = 0
+    for f in files:
+        ext = (f.filename.rsplit(".", 1)[-1] or "").lower()
+        if ext not in ALLOWED_PHOTO_EXTS:
+            flash(f"Format ignoré : {f.filename} (extensions acceptées : {', '.join(sorted(ALLOWED_PHOTO_EXTS))})", "warning")
+            continue
+        # Nom unique pour éviter les collisions
+        name = f"{uuid.uuid4().hex}.{ext}"
+        dest = target_dir / name
+        try:
+            f.save(str(dest))
+            size_kb = dest.stat().st_size // 1024
+            if size_kb > MAX_PHOTO_SIZE_MB * 1024:
+                dest.unlink(missing_ok=True)
+                flash(f"Photo trop lourde ({size_kb // 1024} Mo > {MAX_PHOTO_SIZE_MB} Mo) : {f.filename}", "warning")
+                continue
+            db.session.add(ZonePhoto(
+                zone_id=zone_id,
+                filename=name,
+                caption=request.form.get("caption", "").strip()[:200] or None,
+                file_size_kb=size_kb,
+            ))
+            saved += 1
+        except Exception as e:
+            log.warning("Échec sauvegarde photo : %s", e)
+            flash(f"Échec : {f.filename} ({e})", "danger")
+
+    if saved:
+        db.session.add(JournalEntry(
+            level="info",
+            message=f"📷 {saved} photo(s) ajoutée(s) à {zone.name}",
+        ))
+        db.session.commit()
+        flash(f"{saved} photo(s) enregistrée(s) pour {zone.name}.", "success")
+    return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
+
+
+@config_bp.post("/zones/<int:zone_id>/photos/<int:photo_id>/delete")
+def delete_zone_photo(zone_id: int, photo_id: int):
+    """Supprime une photo (et son fichier sur disque)."""
+    photo = ZonePhoto.query.filter_by(id=photo_id, zone_id=zone_id).first_or_404()
+    fpath = _photos_dir() / str(zone_id) / photo.filename
+    try:
+        if fpath.exists():
+            fpath.unlink()
+    except Exception as e:
+        log.warning("Suppression fichier photo échouée : %s", e)
+    db.session.delete(photo)
+    db.session.add(JournalEntry(
+        level="info",
+        message=f"🗑 Photo supprimée (zone {zone_id}, fichier {photo.filename})",
+    ))
+    db.session.commit()
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": True})
+    flash("Photo supprimée.", "success")
+    return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#photos")
+
+
+@config_bp.get("/zones/<int:zone_id>/photos/<path:filename>")
+def serve_zone_photo(zone_id: int, filename: str):
+    """Sert le fichier image d'une photo (auth requise via before_request)."""
+    return send_from_directory(_photos_dir() / str(zone_id), filename, max_age=86400)
