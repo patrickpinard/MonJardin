@@ -804,6 +804,18 @@ def settings_sim_profile():
         except Exception:
             pass
 
+    # 4. Log
+    try:
+        from ..models import db as _db
+        _db.session.add(JournalEntry(
+            level="info",
+            message=f"🌦 Profil météo de simulation changé : {profile}",
+        ))
+        _db.session.commit()
+    except Exception:
+        from ..models import db as _db
+        _db.session.rollback()
+
     return _json({"ok": True, "profile": profile})
 
 
@@ -862,21 +874,50 @@ def login_post():
     username = request.form.get("username", "").strip()
     pin      = request.form.get("pin", "").strip()
     next_url = request.form.get("next_url", "/dashboard")
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "?")
     user = AdminUser.query.filter_by(username=username, enabled=True).first()
+    from ..models import db
     if user and user.check_pin(pin):
-        from datetime import datetime
         user.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
-        from ..models import db
-        db.session.commit()
+        try:
+            db.session.add(JournalEntry(
+                level="info",
+                message=f"🔓 Connexion réussie : {username} ({ip})",
+            ))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            log.warning("Échec log connexion : %s", e)
         session["auth_user"] = username
         session.permanent = True
         return redirect(next_url)
+    # Échec d'authentification
+    try:
+        db.session.add(JournalEntry(
+            level="warning",
+            message=f"🔒 Échec de connexion : utilisateur «{username or 'vide'}» ({ip})",
+        ))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.warning("Échec log tentative connexion : %s", e)
     return render_template("login.html", next_url=next_url, error="Identifiant ou PIN incorrect.")
 
 
 @dashboard_bp.get("/logout")
 def logout():
+    username = session.get("auth_user", "?")
     session.pop("auth_user", None)
+    try:
+        from ..models import db
+        db.session.add(JournalEntry(
+            level="info",
+            message=f"🚪 Déconnexion : {username}",
+        ))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        log.warning("Échec log déconnexion : %s", e)
     return redirect("/login")
 
 

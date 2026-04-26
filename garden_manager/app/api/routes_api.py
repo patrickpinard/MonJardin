@@ -145,6 +145,7 @@ def control_valve(zone_id: int):
 
     persist_warning = None
     auto_stop_min = None
+    action_label = "Ouverture" if state == "open" else "Fermeture"
     if success:
         try:
             db.session.add(IrrigationLog(
@@ -154,7 +155,7 @@ def control_valve(zone_id: int):
             ))
             db.session.add(JournalEntry(
                 level="info",
-                message=f"Zone {zone_id} — vanne {state} (commande manuelle)",
+                message=f"💧 {action_label} vanne {zone.name} (Z{zone_id}) — commande manuelle",
             ))
             db.session.commit()
         except Exception as e:
@@ -241,17 +242,24 @@ def control_roof():
     arduino = current_app.extensions["arduino_client"]
     success = arduino.set_roof(state)
 
+    action_label = "Ouverture" if state == "open" else "Fermeture"
+    action_past  = "ouverte" if state == "open" else "fermée"
     if success:
         try:
             from ..models import RoofLog
-            db.session.add(RoofLog(action=state, trigger_type="manual", reason="Commande manuelle utilisateur"))
-            db.session.add(JournalEntry(level="info", message=f"Lucarne — {state} (commande manuelle)"))
+            db.session.add(RoofLog(
+                action=state, trigger_type="manual",
+                reason=f"Lucarne {action_past} manuellement par l'utilisateur",
+            ))
+            db.session.add(JournalEntry(
+                level="info",
+                message=f"🪟 Lucarne {action_past} manuellement",
+            ))
             db.session.commit()
         except Exception as e:
             db.session.rollback()
             log.error("Erreur persistance commande lucarne : %s", e)
 
-    action_label = "Ouverture" if state == "open" else "Fermeture"
     return jsonify({
         "ok": success,
         "message": f"{action_label} de la lucarne en cours…" if success else "Échec commande Arduino",
@@ -438,6 +446,14 @@ def force_cycle():
     # M8 : lock non-bloquant — rejette les appels concurrents (429)
     if not _cycle_lock.acquire(blocking=False):
         return jsonify({"ok": False, "message": "Un cycle est déjà en cours"}), 429
+    try:
+        db.session.add(JournalEntry(
+            level="info",
+            message="🔄 Cycle d'automatisation forcé manuellement",
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
     from ..services.scheduler import automation_cycle
     app_ref = current_app._get_current_object()
     def _run():

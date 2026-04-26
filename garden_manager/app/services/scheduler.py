@@ -89,7 +89,7 @@ def _run_cycle(app) -> None:
 
 def _emergency_close(app) -> None:
     """Ferme toutes les vannes en cas de perte prolongée de connexion Arduino."""
-    from ..models import db, JournalEntry
+    from ..models import db, JournalEntry, IrrigationLog, RoofLog
     from .arduino_client import ArduinoClient
 
     arduino: ArduinoClient = app.extensions["arduino_client"]
@@ -97,16 +97,32 @@ def _emergency_close(app) -> None:
         ok = arduino.set_valve(zone_id, "close")
         if not ok:
             log.error("FAILSAFE : échec fermeture vanne zone %d", zone_id)
+        else:
+            try:
+                db.session.add(IrrigationLog(
+                    zone_id=zone_id, action="close",
+                    trigger_type="failsafe",
+                    reason="Failsafe — Arduino injoignable, fermeture préventive",
+                ))
+            except Exception:
+                pass
     ok_roof = arduino.set_roof("close")
     if not ok_roof:
         log.error("FAILSAFE : échec fermeture lucarne")
+    else:
+        try:
+            db.session.add(RoofLog(
+                action="close", trigger_type="failsafe",
+                reason="Failsafe — Arduino injoignable, fermeture préventive",
+            ))
+        except Exception:
+            pass
 
     try:
-        entry = JournalEntry(
+        db.session.add(JournalEntry(
             level="warning",
-            message="Failsafe : Arduino injoignable depuis trop longtemps — fermeture de toutes les vannes et de la lucarne",
-        )
-        db.session.add(entry)
+            message="🚨 Failsafe : Arduino injoignable — fermeture de toutes les vannes et de la lucarne",
+        ))
         db.session.commit()
     except Exception as e:
         db.session.rollback()

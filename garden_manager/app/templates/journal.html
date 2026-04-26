@@ -97,12 +97,12 @@
             {% if ev.kind == 'irrigation' %}
             <span class="badge {% if ev.action == 'open' %}badge-valve-open{% else %}badge-valve-close{% endif %}">
               <i class="bi bi-droplet{% if ev.action == 'open' %}-fill{% endif %}"></i>
-              {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
+              Vanne {{ 'ouverte' if ev.action == 'open' else 'fermée' }}
             </span>
             {% else %}
             <span class="badge {% if ev.action == 'open' %}badge-roof-open{% else %}badge-roof-close{% endif %}">
               <i class="bi bi-house{% if ev.action == 'open' %}-door{% endif %}"></i>
-              {{ 'Ouvert' if ev.action == 'open' else 'Fermé' }}
+              Lucarne {{ 'ouverte' if ev.action == 'open' else 'fermée' }}
             </span>
             {% endif %}
           {% endif %}
