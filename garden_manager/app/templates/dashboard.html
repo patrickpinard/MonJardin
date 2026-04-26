@@ -325,9 +325,11 @@
                style="aspect-ratio: {{ zd.zone.length_m }} / {{ zd.zone.width_m }};">
             <div class="plant-grid plant-grid-fill plant-grid-mini">
               {% for s in zd.species_summary %}
-              <a href="/zones/{{ zd.zone.zone_id }}" class="plant-cell" style="text-decoration:none;">
+              <a href="/zones/{{ zd.zone.zone_id }}" class="plant-cell"
+                 title="{{ s.display_name }}" style="text-decoration:none;">
                 <span class="plant-cell-emoji">{{ s.emoji }}</span>
                 <span class="plant-cell-name">{{ s.name }}</span>
+                {% if s.variety %}<span class="plant-cell-variety">{{ s.variety }}</span>{% endif %}
                 {% if s.count > 1 %}<span class="plant-cell-count">{{ s.count }}×</span>{% endif %}
                 {% if s.days_left is not none and s.days_left <= 14 %}
                 <span class="plant-cell-harvest {% if s.days_left < 0 %}late{% elif s.days_left <= 3 %}soon{% endif %}">

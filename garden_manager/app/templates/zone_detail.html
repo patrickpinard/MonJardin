@@ -274,13 +274,16 @@
     <div class="card mb-3">
       <div class="card-title">
         <i class="bi bi-grid-1x2-fill"></i> Plan visuel
-        {% set _occ_color = 'var(--red)' if zone_occupancy_pct >= 90 else ('var(--orange)' if zone_occupancy_pct >= 70 else 'var(--green)') %}
-        <span style="margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;">
+        {% set _occ_color = 'var(--red)' if zone_occupancy_pct > 100 else ('var(--red)' if zone_occupancy_pct >= 90 else ('var(--orange)' if zone_occupancy_pct >= 70 else 'var(--green)')) %}
+        <span style="margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;flex-wrap:wrap;">
           <span style="color:var(--text-tertiary);">{{ active_plantings | length }} plant{{ 's' if active_plantings | length > 1 else '' }}</span>
           <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--border);">
             <span style="width:6px;height:6px;border-radius:50%;background:{{ _occ_color }};"></span>
             <strong style="color:{{ _occ_color }};">{{ zone_occupancy_pct }}%</strong>
             <span style="color:var(--text-tertiary);">occupé</span>
+            {% if zone_occupancy_pct > 100 %}
+            <span style="color:var(--red);font-weight:700;" title="Sur-occupation : les plants sont trop nombreux selon les recommandations d'espacement">⚠ surchargée</span>
+            {% endif %}
           </span>
         </span>
       </div>
@@ -289,9 +292,11 @@
       <div class="plant-grid plant-grid-fill">
         {% for s in plant_species_summary %}
         <div class="plant-cell"
+             title="{{ s.display_name }}"
              onclick="openEditModal({{ s.rep_id }}, '{{ s.name|e }}', '{{ s.variety|e }}', '{{ s.harvest }}', '{{ s.status }}', '{{ s.water_need }}', '{{ s.notes|e }}', 'zone', {{ s.count }})">
           <span class="plant-cell-emoji">{{ s.emoji }}</span>
           <span class="plant-cell-name">{{ s.name }}</span>
+          {% if s.variety %}<span class="plant-cell-variety">{{ s.variety }}</span>{% endif %}
           {% if s.count > 1 %}<span class="plant-cell-count">{{ s.count }}×</span>{% endif %}
           {% if s.days_left is not none and s.days_left <= 14 %}
           <span class="plant-cell-harvest {% if s.days_left < 0 %}late{% elif s.days_left <= 3 %}soon{% endif %}">
