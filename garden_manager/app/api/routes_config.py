@@ -458,6 +458,65 @@ def delete_species_from_zone(zone_id: int, vegetable_name: str):
     return redirect(url_for("config.planting_page"))
 
 
+@config_bp.post("/planting/rotation/clear")
+def clear_rotation_history():
+    """Supprime toutes les plantations non-actives de TOUTES les zones.
+
+    Utilisé pour réinitialiser la grille de rotation (page /rotation).
+    Les plantations 'active' sont préservées, seules celles avec status
+    harvested/removed/archived/planned sont supprimées.
+    """
+    historical = (Planting.query
+                  .filter(Planting.status != "active")
+                  .all())
+    count = len(historical)
+    by_zone = {}
+    for p in historical:
+        by_zone[p.zone_id] = by_zone.get(p.zone_id, 0) + 1
+        db.session.delete(p)
+    detail = ", ".join(f"Z{z}: {n}" for z, n in sorted(by_zone.items()))
+    db.session.add(JournalEntry(
+        level="warning",
+        message=f"🧹 Grille de rotation effacée : {count} plantation(s) historique(s) supprimée(s)"
+                + (f" ({detail})" if detail else ""),
+    ))
+    db.session.commit()
+    if count:
+        flash(f"Grille de rotation effacée : {count} plantation(s) historique(s) supprimée(s).", "success")
+    else:
+        flash("Aucune plantation historique à supprimer.", "info")
+    return redirect(url_for("dashboard.rotation_page"))
+
+
+@config_bp.post("/planting/zone/<int:zone_id>/history/clear")
+def clear_zone_history(zone_id: int):
+    """Supprime toutes les plantations non-actives (récoltées, retirées, archivées)
+    d'une zone. Les plantations 'active' sont préservées.
+    """
+    zone_obj = Zone.query.get_or_404(zone_id)
+    historical = (Planting.query
+                  .filter(Planting.zone_id == zone_id,
+                          Planting.status != "active")
+                  .all())
+    count = len(historical)
+    by_status = {"harvested": 0, "removed": 0, "archived": 0, "planned": 0}
+    for p in historical:
+        by_status[p.status] = by_status.get(p.status, 0) + 1
+        db.session.delete(p)
+    detail = ", ".join(f"{n} {s}" for s, n in by_status.items() if n)
+    db.session.add(JournalEntry(
+        level="warning",
+        message=f"🧹 Historique effacé : {count} plantation(s) supprimée(s) de {zone_obj.name}"
+                + (f" ({detail})" if detail else ""),
+    ))
+    db.session.commit()
+    if count:
+        flash(f"{count} plantation(s) historique(s) supprimée(s) de {zone_obj.name}.", "success")
+    else:
+        flash(f"Aucune plantation historique à supprimer dans {zone_obj.name}.", "info")
+    return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#config")
+
+
 @config_bp.get("/api/planting/compatibility/<int:zone_id>")
 def zone_compatibility(zone_id: int):
     """API JSON pour vérification compatibilité en temps réel."""

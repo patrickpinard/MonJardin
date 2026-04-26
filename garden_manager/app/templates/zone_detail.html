@@ -294,11 +294,11 @@
           </span>
         </span>
       </div>
-      <div class="zone-grid-hint">
-        <i class="bi bi-info-circle"></i>
-        Glissez chaque plant pour le déplacer.
-        Cliquez sur une case <strong>+</strong> pour planter.
-        Pour un semis en ligne (carottes, radis), cliquez puis cochez <em>« Rangée »</em>.
+      <div style="display:flex;justify-content:flex-end;margin:6px 0 8px;">
+        <button type="button" class="btn btn-ghost btn-xs" onclick="openGridHelpModal()"
+                title="Comment utiliser le plan visuel">
+          <i class="bi bi-info-circle"></i> Aide
+        </button>
       </div>
       <!-- Grille fixe — chaque case = 30 cm × 30 cm -->
       <div class="plant-grid-wrap" style="aspect-ratio: {{ grid_cols }} / {{ grid_rows }};">
@@ -348,6 +348,23 @@
       {% if not active_plantings %}
       <div style="text-align:center;padding:12px 16px;font-size:12px;color:var(--text-tertiary);">
         Aucune plantation active. Cliquez sur une case <strong>+</strong> pour planter.
+      </div>
+      {% endif %}
+
+      <!-- Compost : drop d'un plant ici = suppression -->
+      {% if active_plantings %}
+      <div class="plant-compost" id="plant-compost"
+           ondragenter="compostDragOver(event)" ondragover="compostDragOver(event)"
+           ondragleave="compostDragLeave(event)" ondrop="compostDrop(event)"
+           title="Glissez un plant ici pour le composter (suppression définitive)">
+        <div class="plant-compost-icon" aria-hidden="true">
+          <span class="plant-compost-bin">🗑️</span>
+          <span class="plant-compost-leaves">🍂</span>
+        </div>
+        <div class="plant-compost-body">
+          <div class="plant-compost-title">Compost</div>
+          <div class="plant-compost-sub">Glissez un plant ici pour le supprimer définitivement</div>
+        </div>
       </div>
       {% endif %}
 
@@ -785,6 +802,26 @@
         </div>
         {% endif %}
       </div>
+    </div>
+
+    <!-- ── Maintenance : effacer l'historique des plantations de la zone ── -->
+    <div class="card mb-3" style="border-left:4px solid var(--orange);">
+      <div class="card-title">
+        <i class="bi bi-eraser-fill" style="color:var(--orange);"></i>
+        Effacer l'historique des plantations
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px;">
+        Supprime toutes les plantations <strong>récoltées</strong>, <strong>retirées</strong> ou <strong>archivées</strong> de cette zone.
+        Les plantations <strong>actives</strong> (status = active) sont conservées.
+        Cette action est irréversible.
+      </div>
+      <form id="clear-history-form-{{ zone.zone_id }}" method="post"
+            action="{{ url_for('config.clear_zone_history', zone_id=zone.zone_id) }}">
+        <button type="button" class="btn btn-sm" style="background:rgba(255,159,10,.12);color:var(--orange);border:1px solid rgba(255,159,10,.3);"
+                onclick="confirmClearHistory({{ zone.zone_id }}, '{{ zone.name|e }}')">
+          <i class="bi bi-eraser-fill"></i> Effacer l'historique de plantations
+        </button>
+      </form>
     </div>
 
   </div><!-- /#tab-config -->
@@ -1586,6 +1623,62 @@ function qpSetRowLen(btn, n) {
 }
 </script>
 
+<!-- ── Modal d'aide pour le plan visuel ── -->
+<div class="modal-overlay" id="grid-help-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-icon info"><i class="bi bi-info-circle-fill"></i></div>
+      <div class="modal-title">Utiliser le plan visuel</div>
+    </div>
+    <div style="padding:0 22px 16px;font-size:13.5px;color:var(--text-secondary);line-height:1.55;">
+      <p style="margin:0 0 10px;">
+        <strong style="color:var(--text-primary);">Glisser un plant</strong> →
+        le déplacer vers n'importe quelle case libre.
+      </p>
+      <p style="margin:0 0 10px;">
+        <strong style="color:var(--text-primary);">Cliquer une case <kbd style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;font-size:11px;">+</kbd></strong> →
+        ouvrir le modal pour planter à cet endroit précis.
+      </p>
+      <p style="margin:0 0 10px;">
+        <strong style="color:var(--text-primary);">Mode rangée</strong> (semis carottes, radis, oignons) →
+        dans le modal de plantation, activer le toggle « Rangée » et choisir la longueur (2 à 8 cases).
+      </p>
+      <p style="margin:0;">
+        <strong style="color:var(--text-primary);">Compost 🗑️</strong> →
+        glisser un plant sur la zone compost en bas pour le supprimer définitivement.
+      </p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn" style="color:var(--green);" onclick="closeGridHelpModal()">Compris</button>
+    </div>
+  </div>
+</div>
+<script>
+function openGridHelpModal() {
+  document.getElementById('grid-help-overlay').classList.add('visible');
+}
+function closeGridHelpModal() {
+  document.getElementById('grid-help-overlay').classList.remove('visible');
+}
+document.getElementById('grid-help-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeGridHelpModal();
+});
+
+// ── Effacer l'historique de plantations d'une zone ────────
+function confirmClearHistory(zoneId, zoneName) {
+  showConfirm({
+    title: 'Effacer l\'historique de plantations ?',
+    body: `Toutes les plantations récoltées, retirées ou archivées de la zone « ${zoneName} » seront supprimées définitivement.\n\nLes plantations actives sont conservées.`,
+    okLabel: 'Effacer l\'historique',
+    okClass: 'confirm-warning',
+    icon: 'bi-eraser-fill',
+    iconClass: 'warning',
+  }, () => {
+    document.getElementById(`clear-history-form-${zoneId}`).submit();
+  });
+}
+</script>
+
 <!-- ── Drag & drop case-par-case (HTML5 natif) ── -->
 <script>
 (function() {
@@ -1611,6 +1704,64 @@ function qpSetRowLen(btn, n) {
   window.cellDragLeave = function(ev) {
     ev.currentTarget.classList.remove('drop-hover');
   };
+  // ── Compost (drop = suppression définitive) ──────────────
+  // _pendingDelete : on capture le plant déposé AVANT que dragend ne nettoie _draggedEl
+  let _pendingDelete = null;
+  window.compostDragOver = function(ev) {
+    ev.preventDefault();              // requis pour autoriser le drop
+    ev.stopPropagation();
+    ev.dataTransfer.dropEffect = 'move';
+    ev.currentTarget.classList.add('plant-compost-hover');
+  };
+  window.compostDragLeave = function(ev) {
+    ev.currentTarget.classList.remove('plant-compost-hover');
+  };
+  window.compostDrop = function(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    ev.currentTarget.classList.remove('plant-compost-hover');
+    // Capture immédiate (avant que dragend ne mette _draggedEl à null)
+    if (_draggedEl) {
+      _pendingDelete = {
+        id:    parseInt(_draggedEl.dataset.id, 10),
+        label: _draggedEl.getAttribute('title') || 'ce plant',
+      };
+    }
+    // Le dragend s'occupe d'invoquer la confirmation, mais on peut aussi
+    // déclencher tout de suite (defer pour laisser dragend se terminer)
+    setTimeout(() => {
+      if (!_pendingDelete || isNaN(_pendingDelete.id)) return;
+      const {id, label} = _pendingDelete;
+      _pendingDelete = null;
+      if (typeof showConfirm === 'function') {
+        showConfirm({
+          title: 'Composter ce plant ?',
+          body:  `${label}\n\nLe plant sera supprimé définitivement de la zone.`,
+          okLabel: 'Composter',
+          okClass: 'confirm-danger',
+          icon: 'bi-trash3-fill',
+        }, () => _deletePlant(id));
+      } else if (confirm(`Composter ${label} ?`)) {
+        _deletePlant(id);
+      }
+    }, 0);
+  };
+  function _deletePlant(plantId) {
+    const fd = new FormData();
+    fd.append('redirect_to', 'zone');
+    fetch(`/planting/${plantId}/delete`, {method:'POST', body: fd})
+      .then(r => {
+        if (r.ok || r.redirected) {
+          showToast('Plant composté 🪴', 'success');
+          try { history.replaceState(null, '', '#plants'); } catch (e) {}
+          setTimeout(() => location.reload(), 250);
+        } else {
+          showToast('Erreur ' + r.status, 'error');
+        }
+      })
+      .catch(e => showToast('Erreur réseau : ' + e.message, 'error'));
+  }
+
   window.cellDrop = function(ev) {
     ev.preventDefault();
     ev.currentTarget.classList.remove('drop-hover');

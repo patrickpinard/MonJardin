@@ -549,6 +549,60 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   letter-spacing: .2px;
 }
 
+/* Compost (drop zone pour suppression définitive) */
+.plant-compost {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 14px; padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(139,105,20,.08), rgba(48,209,88,.05));
+  border: 2px dashed rgba(139,105,20,.35);
+  border-radius: var(--r-md);
+  transition: background var(--t), border-color var(--t), transform .15s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--font);
+}
+.plant-compost-icon {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 14px;
+  font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+}
+.plant-compost-bin {
+  font-size: 38px; line-height: 1;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.4));
+}
+.plant-compost-leaves {
+  position: absolute; bottom: -2px; right: -3px;
+  font-size: 22px; line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.4));
+  transform: rotate(15deg);
+}
+.plant-compost-body {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.plant-compost-title {
+  font-size: 15px; font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -.2px;
+}
+.plant-compost-sub {
+  font-size: 12.5px; color: var(--text-tertiary);
+  font-weight: 500; line-height: 1.4;
+}
+.plant-compost-hover {
+  background: linear-gradient(135deg, rgba(255,69,58,.18), rgba(139,105,20,.18)) !important;
+  border-color: var(--red) !important;
+  border-style: solid !important;
+  transform: scale(1.02);
+}
+.plant-compost-hover .plant-compost-title { color: var(--red); }
+.plant-compost-hover .plant-compost-sub   { color: var(--red); }
+.plant-compost-hover .plant-compost-icon  { background: rgba(255,69,58,.15); border-color: rgba(255,69,58,.4); }
+
 .zone-grid-hint {
   display: flex; align-items: flex-start; gap: 8px;
   font-size: 11.5px; color: var(--text-tertiary);

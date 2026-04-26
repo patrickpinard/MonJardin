@@ -1,5 +1,7 @@
 # MonJardin — Guide projet pour Claude
 
+> Version courante : **4.0** (avril 2026). Voir `CHANGELOG.md` pour l'historique.
+
 ## Vue d'ensemble
 
 Système complet de gestion automatisée d'un jardin potager à **Vullierens, Vaud, Suisse** (zone USDA 7b, ~430m).
@@ -77,16 +79,19 @@ Pour basculer en production : `SIMULATION_MODE=false` + `ARDUINO_API_URL` → ad
 - **Pas de Flask-WTF** — validation manuelle dans les routes
 
 ### Base de données (SQLite)
-| Table | Rôle |
+| Table | Colonnes notables |
 |---|---|
-| `zone` | Configuration des 4 zones (seuils, mode, has_roof) |
-| `sensor_reading` | Historique capteurs (humidité, température) indexé sur timestamp+zone_id |
-| `irrigation_log` | Événements arrosage (open/close, trigger_type, raison) |
+| `zones` | `zone_id`, `name`, `has_roof`, `length_m`, `width_m`, `irrigation_mode`, seuils, **`display_order` (v4.0)** |
+| `sensor_readings` | `timestamp`, `zone_id`, `soil_moisture_pct`, `temperature_c`, `temp_serre_c` |
+| `irrigation_log` | Événements arrosage (`open`/`close`, `trigger_type`, `reason`) |
 | `roof_log` | Événements toit serre |
-| `planting` | Plants actifs/planifiés par zone |
-| `journal_entry` | Journal système (décisions moteur, alertes) |
-| `admin_user` | Comptes admin (1 seul en pratique) |
-| `alert_recipient` | Emails pour alertes arrosage |
+| `plantings` | `vegetable_name`, `variety`, `status`, **`display_order`, `grid_row`, `grid_col`, `grid_w`, `grid_h` (v4.0)** |
+| `journal_entries` | `timestamp` UTC, `level`, `message` (français + emojis) |
+| `admin_users` | Comptes admin (PIN haché) |
+| `alert_recipients` | Emails pour alertes arrosage |
+| `weather_cache` | `forecast_json`, `source`, `valid_until` (TTL 30 min) |
+
+> Migration automatique au démarrage : `_migrate_db()` dans `app/__init__.py` ajoute les nouvelles colonnes avec `ALTER TABLE` sans perte de données. Les plantings existants sont auto-placés sur la grille (row-major) au premier démarrage v4.0.
 
 ### Moteur de décision irrigation (`irrigation_engine.py`)
 Règles de priorité (ordre strict) :
@@ -114,20 +119,35 @@ Règles de priorité (ordre strict) :
 
 ---
 
-## Interface web
+## Interface web (v4.0)
 
-### Dashboard principal (`/dashboard`)
-- 4 cartes de zone : humidité (jauge), état vanne/lucarne, plants actifs
-- Graphiques Plotly (historique humidité + température)
-- Refresh automatique toutes les 30s
-- Onglets : Zones | Météo | Récoltes | Journal
+### Dashboard principal (`/dashboard`) — Option A
+- Hero "Aujourd'hui" + Pulse Score + bandeau météo 24h en tête (toujours visibles)
+- 2 onglets : **Vue d'ensemble** (par défaut, agrège alertes + prévisions 7j + tâches + récoltes) et **Mes zones** (grille drag&drop)
+- Bouton « Réorganiser » sur Mes zones → mode SortableJS pour réordonner les cartes
+- Carte de bienvenue fermable (`POST /setup/skip` → flag `.setup_skipped`)
+- Refresh capteurs/actuators toutes les 30 s
+
+### Page Zone détail (`/zones/<id>`)
+- 5 onglets : Temps réel · Graphiques · **Plants** · Événements · Configuration
+- Plan visuel **case-par-case** (30 cm/case) avec drag & drop natif HTML5
+- Toutes les cases visibles (cliquables pour planter à l'endroit voulu)
+- Multi-cases pour semis (toggle "Rangée" 2-8 cases dans modal Quick-Plant)
+- Compost (drop zone) en bas pour suppression définitive
+- Récapitulatif compact des plants par espèce/variété
+- 3 graphiques séparés dans l'onglet Graphiques (mêmes que /history)
+- Persistance d'onglet via hash URL (`#plants`, `#config`, …)
 
 ### Pages secondaires
-- `/zones/<id>` — détail zone : graphique + historique + gestion plants + contrôles manuels
-- `/planting` — gestion plantations + compagnonnage
-- `/history` — historique global
-- `/settings` — configuration seuils, mode irrigation, dimension zones
-- `/admin/*` — alertes email, logs système
+- `/planting` — gestion globale des plantations (toutes zones)
+- `/conseils` — 9 catégories carrousel + filtre saison + recherche
+- `/glossaire` — 57 termes horticoles avec images Wikimedia
+- `/plans` — 16 plans pré-faits (compatibilité de compagnonnage vérifiée), application avec auto-distribution sur la grille
+- `/rotation` — historique par zone et année
+- `/setup` — wizard d'onboarding (réutilisable depuis Administration)
+- `/history` — 3 graphiques séparés (humidité · températures · arrosages) avec filtre par zone/période
+- `/settings` — configuration seuils, mode irrigation, dimensions zones
+- `/admin/*` — utilisateurs, alertes email, logs, reset annuel
 
 ---
 
@@ -141,10 +161,14 @@ Règles de priorité (ordre strict) :
 | `/api/control/valve/<zone_id>` | POST | Commande manuelle vanne `{"action":"open"}` |
 | `/api/control/roof` | POST | Commande manuelle lucarne |
 | `/api/control/zone/<zone_id>/mode` | POST | Changer mode auto/manual/disabled |
+| **`/api/zones/reorder` (v4.0)** | POST | Drag & drop ordre des zones `{"order":[2,1,4,3]}` |
+| **`/api/zones/<id>/plants/reorder` (v4.0)** | POST | Réordonner les groupes d'espèces |
+| **`/api/zones/<id>/plants/<id>/move` (v4.0)** | POST | Déplacer un plant vers `{"row":r,"col":c}` |
 | `/api/weather/current` | GET | Météo actuelle |
-| `/api/weather/forecast` | GET | Prévisions 48h |
+| `/api/weather/forecast` | GET | Prévisions (7 jours v4.0) |
 | `/api/system/force_cycle` | POST | Forcer cycle automation immédiatement |
 | `/api/system/health` | GET | Statut système |
+| `/setup/skip` | POST | Masquer la bannière de bienvenue (v4.0) |
 
 ---
 
@@ -175,6 +199,7 @@ Serveur Flask sur `:8081` qui simule exactement l'API de l'Arduino réel :
 
 ### Python
 - `datetime.now(timezone.utc).replace(tzinfo=None)` — jamais `datetime.utcnow()` (déprécié Python 3.12+)
+- Affichage des heures : utiliser les filtres Jinja **`localtime` / `localdate` / `localhour`** (conversion UTC → Europe/Zurich) — jamais `strftime` direct sur un timestamp DB
 - Flash messages Flask pour feedback utilisateur (pas de redirect silencieux)
 - Validation email : regex `^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`
 - Pas de `innerHTML` avec données issues de la DB → `textContent` ou `createElement`
@@ -184,11 +209,15 @@ Serveur Flask sur `:8081` qui simule exactement l'API de l'Arduino réel :
 - Stocker les `setInterval` dans une variable et `clearInterval` sur `beforeunload`
 - Bannière d'erreur rouge fixe si fetch échoue (pas silencieux)
 - `querySelectorAll` pour les attributs `data-zone-text` (plusieurs éléments par zone)
+- **Modals uniformes** : utiliser `showConfirm({title, body, okLabel, okClass, icon, iconClass}, callback)` ; helpers `confirmDelete(target)`, `confirmResetGarden`, `confirmApplyPlan` — jamais `confirm()` natif
+- **Persistance d'onglet** : `location.hash = '#tabname'` via `history.replaceState` ; au chargement, `_restoreTabFromHash` réactive l'onglet
+- **Drag & drop natif HTML5** pour les plants (zone_detail) ; **SortableJS** (CDN) pour la grille des cartes du dashboard
 
 ### CSS
 - Thème dark Apple-inspired : `--bg-app: #000`, `--bg-primary: #1c1c1e`
 - Toujours ajouter `-webkit-` prefix pour `backdrop-filter` et propriétés flex critiques
-- Classes `zc-*` pour les nouvelles cartes du dashboard (remplace l'ancienne `zone-card`)
+- Classes `zc-*` pour les cartes du dashboard ; `plant-cell-filled` / `plant-cell-slot` pour la grille zone ; `plant-compost` pour le drop de suppression
+- Cache-buster global : variable `static_v` injectée par le context_processor — bumper à chaque modif CSS/JS (actuellement v76)
 
 ---
 
@@ -196,9 +225,12 @@ Serveur Flask sur `:8081` qui simule exactement l'API de l'Arduino réel :
 
 - **Safari** : nécessite `SESSION_COOKIE_SAMESITE = 'Lax'` dans config (déjà configuré) — rafraîchir avec Cmd+Shift+R si la session est perdue
 - **SECRET_KEY** : doit être défini dans `.env` sinon sessions invalidées au redémarrage
-- **MétéoSuisse** : URL VQHA80.json change périodiquement → fallback automatique vers Open-Meteo
+- **MétéoSuisse** : URL VQHA80.json change périodiquement → fallback automatique vers Open-Meteo (qui fournit aussi les prévisions 7 jours utilisées par le dashboard v4.0)
 - **db.create_all()** : doit être appelé APRÈS l'import explicite de tous les modèles dans `__init__.py`
+- **Migrations DB** : `_migrate_db()` gère l'ajout des colonnes manquantes via `ALTER TABLE` au démarrage. Pour ajouter une colonne, ajouter un test `if "colname" not in cols` puis `_autoplace_plantings_initial()` ou similaire si peuplement requis
 - **Port** : l'app tourne sur 5001 (défini dans `.env`), pas 5000
+- **Plants drag & drop** : 1 plant = 1 case de 30 cm × 30 cm. Le contrôle de collision est côté serveur (`/api/zones/<id>/plants/<id>/move` retourne 409 si la case est occupée)
+- **Plans pré-faits** : la compatibilité de compagnonnage est vérifiée à l'application (`bad_companions` dans `plants_database.json`). Auto-distribution sur la grille en row-major
 
 ---
 

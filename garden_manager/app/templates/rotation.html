@@ -105,7 +105,20 @@
 
   <!-- Grille zones × années -->
   <div class="card">
-    <div class="card-title"><i class="bi bi-table"></i> Grille de rotation — 3 années</div>
+    <div class="card-title">
+      <i class="bi bi-table"></i> Grille de rotation — 3 années
+      <div class="card-actions" style="display:flex;gap:6px;">
+        <button type="button" class="btn btn-ghost btn-xs" onclick="location.reload()" title="Recharger les données actuelles des zones">
+          <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+        </button>
+        <form id="rotation-clear-form" method="post" action="{{ url_for('config.clear_rotation_history') }}" style="display:inline;">
+          <button type="button" class="btn btn-sm" style="background:rgba(255,159,10,.12);color:var(--orange);border:1px solid rgba(255,159,10,.3);font-size:11.5px;padding:4px 10px;"
+                  onclick="confirmClearRotation()">
+            <i class="bi bi-eraser-fill"></i> Effacer la grille
+          </button>
+        </form>
+      </div>
+    </div>
     <div class="rot-grid">
       <div class="rot-head zone">Zone</div>
       {% for y in years %}
@@ -163,4 +176,19 @@
   {% endif %}
 
 </div>
+
+<script>
+function confirmClearRotation() {
+  showConfirm({
+    title: 'Effacer la grille de rotation ?',
+    body: 'Toutes les plantations historiques (récoltées, retirées, archivées) de TOUTES les zones seront supprimées définitivement.\n\nLes plantations actives sont conservées.',
+    okLabel: 'Effacer la grille',
+    okClass: 'confirm-warning',
+    icon: 'bi-eraser-fill',
+    iconClass: 'warning',
+  }, () => {
+    document.getElementById('rotation-clear-form').submit();
+  });
+}
+</script>
 {% endblock %}

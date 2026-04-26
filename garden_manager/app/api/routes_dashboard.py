@@ -1421,13 +1421,63 @@ def garden_plans_apply():
 
     advisor = current_app.extensions["planting_advisor"]
     today = date.today()
+
+    # ── Vérifier les compatibilités de compagnonnage avant d'appliquer ──
+    # Détecte les paires incompatibles à l'intérieur du plan ; n'arrête pas
+    # mais avertit l'utilisateur via flash messages.
+    plan_species = [e["vegetable_name"] for e in plan.get("plantings", [])]
+    bad_pairs = []
+    seen = set()
+    for sp in plan_species:
+        veg = advisor.get_vegetable(sp) or {}
+        bad_companions = set(veg.get("bad_companions", []))
+        for other in plan_species:
+            if other == sp:
+                continue
+            pair = tuple(sorted([sp, other]))
+            if pair in seen:
+                continue
+            if other in bad_companions:
+                bad_pairs.append(pair)
+                seen.add(pair)
+    if bad_pairs:
+        for a, b in bad_pairs:
+            flash(f"⚠️ {a} et {b} sont incompatibles (mauvais voisinage)", "warning")
+
+    # ── Auto-distribution sur la grille (case-par-case) ──
+    # Récupère les cases déjà occupées par les plants actifs existants.
+    CELL_CM = 30
+    grid_cols = max(4, int((zone.length_m or 2.0) * 100 / CELL_CM))
+    grid_rows = max(2, int((zone.width_m  or 1.0) * 100 / CELL_CM))
+    occupied = set()
+    for op in Planting.query.filter_by(zone_id=zone_id, status="active").all():
+        ow, oh = max(1, op.grid_w or 1), max(1, op.grid_h or 1)
+        for dr in range(oh):
+            for dc in range(ow):
+                occupied.add(((op.grid_row or 0) + dr, (op.grid_col or 0) + dc))
+    # Itérateur de cases libres en row-major
+    def _next_free():
+        for r in range(grid_rows):
+            for c in range(grid_cols):
+                if (r, c) not in occupied:
+                    yield (r, c)
+
+    free_iter = _next_free()
     created = 0
+    skipped = 0
     for entry in plan.get("plantings", []):
         veg_name = entry["vegetable_name"]
         veg = advisor.get_vegetable(veg_name)
         qty = max(1, min(50, int(entry.get("quantity", 1))))
         variety = entry.get("variety", "")
         for _ in range(qty):
+            try:
+                r, c = next(free_iter)
+            except StopIteration:
+                # Plus de case libre : on stoppe les ajouts de cette espèce
+                skipped += qty - (created % qty if qty else 0)
+                break
+            occupied.add((r, c))
             db.session.add(Planting(
                 zone_id=zone_id,
                 vegetable_name=veg_name,
@@ -1437,15 +1487,21 @@ def garden_plans_apply():
                 water_need=(veg.get("water_need") if veg else "medium"),
                 status="active",
                 notes=f"Ajouté via le plan « {plan['name']} »",
+                grid_row=r, grid_col=c, grid_w=1, grid_h=1,
             ))
             created += 1
+
     db.session.add(JournalEntry(
         level="info",
-        message=f"📋 Plan « {plan['name']} » appliqué à {zone.name} : {created} plant(s) créé(s)",
+        message=f"📋 Plan « {plan['name']} » appliqué à {zone.name} : {created} plant(s) placé(s)"
+                + (f" ({skipped} ignoré(s) — zone pleine)" if skipped else ""),
     ))
     db.session.commit()
-    flash(f"Plan « {plan['name']} » appliqué : {created} plantation(s) ajoutée(s) dans {zone.name}.", "success")
-    return redirect(url_for("dashboard.zone_detail", zone_id=zone_id))
+    msg = f"Plan « {plan['name']} » appliqué : {created} plantation(s) ajoutée(s) dans {zone.name}."
+    if skipped:
+        msg += f" {skipped} plant(s) ignoré(s) car la zone est pleine."
+    flash(msg, "success")
+    return redirect(url_for("dashboard.zone_detail", zone_id=zone_id) + "#plants")
 
 
 @dashboard_bp.get("/glossaire")
