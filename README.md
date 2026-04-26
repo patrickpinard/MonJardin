@@ -1,4 +1,4 @@
-# 🌱 MonJardin — Version 4.5
+# 🌱 MonJardin — Version 5.0
 
 Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite
 
@@ -73,6 +73,17 @@ MonJardin gère automatiquement l'arrosage et l'ouverture du toit de serre de 4 
 | 2 | Soleil | Exposition plein sud |
 | 3 | Mi-ombre | Exposition partielle |
 | 4 | Aromates | Seuils d'arrosage réduits |
+
+---
+
+## Nouveautés version 5.0
+
+Cette release consolide les apports v4.5 et finalise l'**uniformisation visuelle** de toute l'application :
+
+- **UI unifiée** — toutes les barres de filtres suivent désormais le même modèle (modèle Encyclopédie) : `filter-bar > filter-section > filter-row > filter-chip`. Les onglets actifs utilisent partout le même vert plein.
+- **Alignement parfait** des filtres : sections strictement à la même hauteur (`label height: 16px`, `chip height: 30px`, `min-height` sur la row).
+- **Header simplifié** : ancien badge « SIM ×50 🌸 Printemps » remplacé par une pastille « S » compacte qui redirige vers `/admin?tab=simulation`.
+- **Centralisation de la version** : variable Jinja `app_version` dans le context_processor → un seul endroit à modifier (sidebar, login, about, footer).
 
 ---
 
@@ -493,4 +504,4 @@ Tout le texte de l'interface est en **français** : messages du journal, raisons
 
 ---
 
-*Version 4.5 · Avril 2026 · Patrick Pinard · Vullierens, Vaud · Suisse*
+*Version 5.0 · Avril 2026 · Patrick Pinard · Vullierens, Vaud · Suisse*
