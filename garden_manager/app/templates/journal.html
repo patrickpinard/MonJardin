@@ -89,8 +89,8 @@
         <div class="ev-row1">
           <i class="bi {{ kicon }}" style="color:{{ kcolor }};font-size:13px;flex-shrink:0;"></i>
           <span class="ev-time">
-            <span class="ev-date">{{ ev.ts.strftime('%d.%m.%y') }}</span>
-            <span class="ev-hour">{{ ev.ts.strftime('%H:%M') }}</span>
+            <span class="ev-date">{{ ev.ts | localdate('%d.%m.%y') }}</span>
+            <span class="ev-hour">{{ ev.ts | localhour }}</span>
           </span>
           {% if ev.zone_id %}<span class="badge badge-plant">Z{{ ev.zone_id }}</span>{% endif %}
           {% if ev.action %}

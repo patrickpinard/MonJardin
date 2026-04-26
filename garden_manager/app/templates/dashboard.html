@@ -33,14 +33,21 @@
 <div class="page-body">
 
   <!-- Bandeau "Première utilisation : faire le wizard" -->
-  {% if not setup_done %}
-  <div class="card mb-3" style="background:linear-gradient(135deg,rgba(48,209,88,.08),rgba(132,204,22,.04));border-left:4px solid var(--green);">
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+  {% if not setup_done and not setup_skipped %}
+  <div class="card mb-3" style="position:relative;background:linear-gradient(135deg,rgba(48,209,88,.08),rgba(132,204,22,.04));border-left:4px solid var(--green);">
+    <button type="button" onclick="dismissSetupCard()" title="Masquer cette carte"
+            style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:var(--text-tertiary);font-size:16px;cursor:pointer;padding:6px 8px;line-height:1;border-radius:50%;transition:background .2s, color .2s;"
+            onmouseover="this.style.background='rgba(255,255,255,.08)';this.style.color='var(--text-primary)';"
+            onmouseout="this.style.background='transparent';this.style.color='var(--text-tertiary)';">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:32px;">
       <div style="font-size:32px;">🌱</div>
       <div style="flex:1;min-width:200px;">
         <div style="font-weight:700;font-size:14px;">Bienvenue dans MonJardin !</div>
         <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;line-height:1.5;">
           Configurez votre potager en quelques minutes pour personnaliser votre expérience.
+          (Vous pourrez relancer la configuration depuis la page <strong>Administration</strong>.)
         </div>
       </div>
       <a href="/setup" class="btn btn-primary btn-sm" style="flex-shrink:0;">
@@ -182,31 +189,23 @@
   </div>
   {% endif %}
 
-  <!-- Tab bar -->
+  <!-- Tab bar — Option A : Vue d'ensemble (défaut) | Mes zones -->
   <div class="time-tabs mb-3" id="dash-tabs">
-    <button class="time-tab active" onclick="switchDashTab(this,'zones')">
-      <i class="bi bi-grid-1x2-fill"></i> Zones
-    </button>
-    <button class="time-tab" onclick="switchDashTab(this,'taches')">
-      <i class="bi bi-calendar3-event-fill"></i> Tâches
-      {% set _badge_count = (monthly_tasks | length) + (disease_alerts | length) %}
+    <button class="time-tab active" onclick="switchDashTab(this,'apercu')">
+      <i class="bi bi-house-heart-fill"></i> Vue d'ensemble
+      {% set _badge_count = (monthly_tasks | length) + (disease_alerts | length) + (harvest_list | length) %}
       {% if _badge_count %}
       <span class="badge" style="margin-left:4px;font-size:10px;background:{% if disease_alerts | selectattr('level','eq','danger') | list %}rgba(255,69,58,.25);color:var(--red){% elif disease_alerts %}rgba(255,159,10,.25);color:var(--orange){% else %}rgba(48,209,88,.2);color:var(--green){% endif %};">{{ _badge_count }}</span>
       {% endif %}
     </button>
-    <button class="time-tab" onclick="switchDashTab(this,'meteo')">
-      <i class="bi bi-cloud-sun-fill"></i> Météo
-    </button>
-    <button class="time-tab" onclick="switchDashTab(this,'recoltes')">
-      <i class="bi bi-basket2-fill"></i> Récoltes
-      {% if harvest_list %}
-      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ harvest_list | length }}</span>
-      {% endif %}
+    <button class="time-tab" onclick="switchDashTab(this,'zones')">
+      <i class="bi bi-grid-1x2-fill"></i> Mes zones
+      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(255,255,255,.08);color:var(--text-secondary);">{{ zones_data | length }}</span>
     </button>
   </div>
 
   <!-- ── TAB ZONES ── -->
-  <div id="tab-zones">
+  <div id="tab-zones" style="display:none;">
     <div class="zones-reorder-bar">
       <div class="zones-reorder-hint" id="zones-reorder-hint">
         <i class="bi bi-info-circle"></i> Glissez les cartes pour les réorganiser — l'ordre est sauvegardé.
@@ -279,7 +278,7 @@
             </div>
             <div class="zc-last-irr">
               <i class="bi bi-clock"></i>
-              {% if zd.last_irrigation %}{{ zd.last_irrigation.timestamp.strftime('%d.%m %H:%M') }}{% else %}Jamais arrosé{% endif %}
+              {% if zd.last_irrigation %}{{ zd.last_irrigation.timestamp | localtime('%d.%m %H:%M') }}{% else %}Jamais arrosé{% endif %}
             </div>
             <div class="zc-temp-row">
               <span class="zc-temp-item"><i class="bi bi-thermometer-half"></i>{{ temperature_c }}°C</span>
@@ -384,7 +383,7 @@
   </div>
 
   <!-- ── TAB TÂCHES ── -->
-  <div id="tab-taches" style="display:none;">
+  <div id="tab-taches">
 
     <!-- Risques sanitaires (alertes contextuelles maladies/parasites) -->
     {% if disease_alerts %}
@@ -489,7 +488,7 @@
 
   <!-- ── TAB MÉTÉO ── -->
   {% set forecast_by_day = forecast_by_day if forecast_by_day is defined else [] %}
-  <div id="tab-meteo" style="display:none;">
+  <div id="tab-meteo">
 
     <!-- Risque gel (si applicable) -->
     {% if weather.frost_risk %}
@@ -593,7 +592,7 @@
   </div>
 
   <!-- ── TAB PROCHAINES RÉCOLTES ── -->
-  <div id="tab-recoltes" style="display:none;">
+  <div id="tab-recoltes">
     {% if harvest_list %}
     <div class="card">
       <div class="card-title"><i class="bi bi-basket2-fill"></i> Prochaines récoltes — 60 jours</div>
@@ -705,13 +704,41 @@
   // Si DOM déjà prêt (script chargé après)
   if (document.readyState !== 'loading') _applyTaskStates();
 
+  // Mapping logique : "apercu" agrège plusieurs sections de l'ancien dashboard
+  const DASH_TABS_MAP = {
+    'apercu': ['taches', 'meteo', 'recoltes'],
+    'zones':  ['zones'],
+  };
   function switchDashTab(btn, tab) {
     document.querySelectorAll('#dash-tabs .time-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    ['zones','taches','meteo','recoltes'].forEach(t => {
-      const el = document.getElementById('tab-' + t);
-      if (el) el.style.display = (t === tab) ? '' : 'none';
-    });
+    for (const [t, ids] of Object.entries(DASH_TABS_MAP)) {
+      const visible = (t === tab);
+      ids.forEach(id => {
+        const el = document.getElementById('tab-' + id);
+        if (el) el.style.display = visible ? '' : 'none';
+      });
+    }
+  }
+
+  // Masque la carte de bienvenue (persistance côté serveur)
+  function dismissSetupCard() {
+    fetch('/setup/skip', {method: 'POST'})
+      .then(() => {
+        const card = document.querySelector('.page-body > .card');
+        if (card) {
+          card.style.transition = 'opacity .25s, transform .25s';
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(-6px)';
+          setTimeout(() => card.remove(), 260);
+        }
+        if (typeof showToast === 'function') {
+          showToast('Bannière masquée. Reactivable depuis Administration.', 'info');
+        }
+      })
+      .catch(() => {
+        if (typeof showToast === 'function') showToast('Erreur réseau', 'error');
+      });
   }
 
 </script>
