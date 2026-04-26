@@ -15,6 +15,7 @@
 {% set pulse_components = pulse_components if pulse_components is defined else {} %}
 {% set forecast_24h = forecast_24h if forecast_24h is defined else [] %}
 {% set disease_alerts = disease_alerts if disease_alerts is defined else [] %}
+{% set setup_done = setup_done if setup_done is defined else true %}
 <div class="page-header">
   <div class="page-header-row">
     <div>
@@ -30,6 +31,24 @@
 </div>
 
 <div class="page-body">
+
+  <!-- Bandeau "Première utilisation : faire le wizard" -->
+  {% if not setup_done %}
+  <div class="card mb-3" style="background:linear-gradient(135deg,rgba(48,209,88,.08),rgba(132,204,22,.04));border-left:4px solid var(--green);">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div style="font-size:32px;">🌱</div>
+      <div style="flex:1;min-width:200px;">
+        <div style="font-weight:700;font-size:14px;">Bienvenue dans MonJardin !</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;line-height:1.5;">
+          Configurez votre potager en quelques minutes pour personnaliser votre expérience.
+        </div>
+      </div>
+      <a href="/setup" class="btn btn-primary btn-sm" style="flex-shrink:0;">
+        <i class="bi bi-magic"></i> Configuration initiale
+      </a>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- ══════════════════════════════════════════════════════
        HERO — "Aujourd'hui" + Pulse Score

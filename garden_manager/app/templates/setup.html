@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Configuration initiale{% endblock %}
+
+{% block head %}
+<style>
+.setup-hero {
+  text-align: center; padding: 30px 20px 20px;
+}
+.setup-hero h1 {
+  font-size: 36px; font-weight: 800; letter-spacing: -1px;
+  margin: 8px 0 4px;
+  background: linear-gradient(135deg, var(--green), #84cc16);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.setup-hero p {
+  font-size: 14px; color: var(--text-secondary); max-width: 480px;
+  margin: 6px auto 0; line-height: 1.5;
+}
+.setup-section {
+  background: var(--bg-primary); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 18px 22px; margin-bottom: 14px;
+}
+.setup-section-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 16px; font-weight: 700; margin-bottom: 14px;
+}
+.setup-section-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--green); color: #fff; font-weight: 800; font-size: 13px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.zone-config {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr auto;
+  gap: 10px; padding: 10px 0; align-items: end;
+}
+.zone-config + .zone-config { border-top: 1px solid var(--border); }
+.zone-config label {
+  font-size: 11px; color: var(--text-tertiary); font-weight: 600;
+  display: block; margin-bottom: 4px;
+}
+.zone-config input[type=text], .zone-config input[type=number] {
+  width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-md);
+  border-radius: var(--r-sm); color: var(--text-primary); padding: 8px 10px;
+  font-size: 13px; font-family: var(--font);
+}
+.zone-config-roof {
+  display: flex; align-items: center; gap: 6px; padding-bottom: 8px;
+  font-size: 12px;
+}
+.zone-config-roof input { width: 16px; height: 16px; accent-color: var(--green); }
+@media (max-width: 700px) {
+  .zone-config { grid-template-columns: 1fr 1fr; }
+  .zone-config-roof { grid-column: 1 / -1; }
+}
+.preset-cities {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+}
+.preset-city {
+  padding: 5px 11px; background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--r-pill); font-size: 11px; cursor: pointer;
+  font-family: inherit; color: var(--text-secondary);
+}
+.preset-city:hover { border-color: var(--green); color: var(--green); }
+.setup-finish {
+  text-align: center; padding: 20px 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-body" style="max-width:780px;margin:0 auto;">
+
+  <div class="setup-hero">
+    <div style="font-size:50px;">🌱</div>
+    <h1>Bienvenue dans MonJardin</h1>
+    <p>Configurons votre potager en quelques minutes. Vous pourrez tout modifier plus tard depuis Paramètres.</p>
+  </div>
+
+  <form method="post" action="{{ url_for('dashboard.setup_save') }}">
+
+    <!-- 1. Identité -->
+    <div class="setup-section">
+      <div class="setup-section-title">
+        <span class="setup-section-num">1</span>
+        Votre jardin
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Nom du jardin</label>
+          <input type="text" name="garden_name" value="{{ garden_name }}"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Votre prénom</label>
+          <input type="text" name="garden_owner" value="{{ garden_owner }}" placeholder="Jean Dupont"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);margin-top:4px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Localisation -->
+    <div class="setup-section">
+      <div class="setup-section-title">
+        <span class="setup-section-num">2</span>
+        Localisation
+        <span style="font-size:11px;font-weight:500;color:var(--text-tertiary);margin-left:auto;">(pour la météo)</span>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Ville / Lieu</label>
+        <input type="text" name="garden_location" value="{{ garden_location }}"
+          style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);margin-top:4px;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+        <div>
+          <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Latitude</label>
+          <input type="number" step="0.001" name="latitude" value="{{ latitude }}" id="setup-lat"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Longitude</label>
+          <input type="number" step="0.001" name="longitude" value="{{ longitude }}" id="setup-lon"
+            style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);margin-top:4px;">
+        </div>
+      </div>
+      <div class="preset-cities">
+        <span style="font-size:11px;color:var(--text-tertiary);align-self:center;margin-right:4px;">Préréglages :</span>
+        <button type="button" class="preset-city" onclick="setLoc('Vullierens, Vaud',46.546,6.488)">Vullierens</button>
+        <button type="button" class="preset-city" onclick="setLoc('Lausanne',46.520,6.633)">Lausanne</button>
+        <button type="button" class="preset-city" onclick="setLoc('Genève',46.204,6.143)">Genève</button>
+        <button type="button" class="preset-city" onclick="setLoc('Berne',46.948,7.447)">Berne</button>
+        <button type="button" class="preset-city" onclick="setLoc('Zurich',47.376,8.541)">Zurich</button>
+        <button type="button" class="preset-city" onclick="setLoc('Yverdon',46.778,6.641)">Yverdon</button>
+      </div>
+    </div>
+
+    <!-- 3. Zones -->
+    <div class="setup-section">
+      <div class="setup-section-title">
+        <span class="setup-section-num">3</span>
+        Vos zones de culture
+        <span style="font-size:11px;font-weight:500;color:var(--text-tertiary);margin-left:auto;">{{ zones | length }} zones par défaut</span>
+      </div>
+      {% for z in zones %}
+      <div class="zone-config">
+        <div>
+          <label>Nom de la zone</label>
+          <input type="text" name="zone_{{ z.zone_id }}_name" value="{{ z.name }}" maxlength="40">
+        </div>
+        <div>
+          <label>Longueur (m)</label>
+          <input type="number" step="0.1" min="0.1" max="50" name="zone_{{ z.zone_id }}_length" value="{{ z.length_m or 2.0 }}">
+        </div>
+        <div>
+          <label>Largeur (m)</label>
+          <input type="number" step="0.1" min="0.1" max="50" name="zone_{{ z.zone_id }}_width" value="{{ z.width_m or 1.0 }}">
+        </div>
+        <div class="zone-config-roof">
+          <input type="checkbox" id="zone_{{ z.zone_id }}_roof" name="zone_{{ z.zone_id }}_has_roof" {% if z.has_roof %}checked{% endif %}>
+          <label for="zone_{{ z.zone_id }}_roof" style="margin:0;color:var(--text-primary);">🏠 Serre</label>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- 4. Ce que vous voulez planter (info) -->
+    {% if easy_plants %}
+    <div class="setup-section">
+      <div class="setup-section-title">
+        <span class="setup-section-num">4</span>
+        Idées pour démarrer
+        <span style="font-size:11px;font-weight:500;color:var(--text-tertiary);margin-left:auto;">légumes faciles</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;">
+        {% for v in easy_plants %}
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--r-sm);">
+          <span style="font-size:24px;">{{ v.get('emoji','🌱') }}</span>
+          <span style="font-size:11px;font-weight:600;text-align:center;">{{ v.name }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--r-sm);font-size:11px;color:var(--text-tertiary);line-height:1.5;">
+        <i class="bi bi-info-circle"></i>
+        Vous ajouterez vos plantations zone par zone après la configuration, depuis l'onglet <strong>Plants</strong> de chaque zone.
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Bouton final -->
+    <div class="setup-finish">
+      <button type="submit" class="btn btn-primary" style="font-size:15px;padding:14px 32px;border-radius:var(--r-pill);">
+        <i class="bi bi-check2-circle"></i> Démarrer mon jardin
+      </button>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-tertiary);">
+        Vous pourrez tout modifier plus tard depuis Paramètres.
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function setLoc(name, lat, lon) {
+  const inp = document.querySelector('input[name=garden_location]');
+  if (inp && !inp.value) inp.value = name;
+  document.getElementById('setup-lat').value = lat;
+  document.getElementById('setup-lon').value = lon;
+}
+</script>
+{% endblock %}

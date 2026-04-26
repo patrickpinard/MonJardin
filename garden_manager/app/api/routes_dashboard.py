@@ -8,7 +8,7 @@ from pathlib import Path
 from flask import Blueprint, current_app, render_template, send_from_directory, \
     request, session, redirect
 
-from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog, AdminUser, AlertRecipient, ALERT_TYPES
+from ..models import Zone, SensorReading, JournalEntry, Planting, IrrigationLog, RoofLog, AdminUser, AlertRecipient, ALERT_TYPES, db
 
 dashboard_bp = Blueprint("dashboard", __name__)
 log = logging.getLogger(__name__)
@@ -403,9 +403,13 @@ def dashboard():
             log.warning("Disease advisor échec : %s", e)
             disease_alerts = []
 
+    # Détection : configuration initiale faite ?
+    setup_done = _setup_done_path().exists()
+
     return render_template(
         "dashboard.html",
         zones_data=zones_data,
+        setup_done=setup_done,
         temperature_c=round(temp, 1),
         temp_serre_c=round(temp_serre, 1) if temp_serre is not None else None,
         roof_state=actuator_status.get("roof_state", "close"),
@@ -1084,6 +1088,88 @@ def admin_delete_user(uid):
     db.session.delete(user)
     db.session.commit()
     return redirect("/admin")
+
+
+def _setup_done_path():
+    """Fichier flag pour savoir si l'onboarding est terminé."""
+    from pathlib import Path
+    return Path(current_app.root_path).parent / "data" / ".setup_done"
+
+
+@dashboard_bp.get("/setup")
+def setup_wizard():
+    """Wizard d'onboarding au premier lancement."""
+    advisor = current_app.extensions.get("planting_advisor")
+    plants_db = _load_plants_db()
+    # Top 12 légumes faciles + populaires pour débutants
+    easy_plants = sorted(
+        [p for p in plants_db if p.get("difficulty") == "easy"],
+        key=lambda p: p["name"],
+    )[:18]
+    zones = Zone.query.order_by(Zone.zone_id).all()
+    return render_template(
+        "setup.html",
+        easy_plants=easy_plants,
+        zones=zones,
+        garden_name=current_app.config.get("GARDEN_NAME", "MonJardin"),
+        garden_location=current_app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
+        garden_owner=current_app.config.get("GARDEN_OWNER", ""),
+        latitude=current_app.config.get("GARDEN_LATITUDE", 46.778),
+        longitude=current_app.config.get("GARDEN_LONGITUDE", 6.641),
+    )
+
+
+@dashboard_bp.post("/setup/save")
+def setup_save():
+    """Enregistre la configuration initiale du wizard."""
+    form = request.form
+    # 1. Identité jardin
+    garden_name = form.get("garden_name", "").strip()
+    garden_location = form.get("garden_location", "").strip()
+    garden_owner = form.get("garden_owner", "").strip()
+    if garden_name:    _update_env_var("GARDEN_NAME", garden_name)
+    if garden_location: _update_env_var("GARDEN_LOCATION", garden_location)
+    if garden_owner:   _update_env_var("GARDEN_OWNER", garden_owner)
+
+    # 2. Coordonnées GPS
+    try:
+        lat = float(form.get("latitude", "46.778"))
+        lon = float(form.get("longitude", "6.641"))
+        _update_env_var("GARDEN_LATITUDE", str(lat))
+        _update_env_var("GARDEN_LONGITUDE", str(lon))
+    except ValueError:
+        pass
+
+    # 3. Configuration des zones
+    for zone in Zone.query.order_by(Zone.zone_id).all():
+        zid = zone.zone_id
+        new_name = form.get(f"zone_{zid}_name", "").strip()
+        if new_name:
+            zone.name = new_name[:40]
+        try:
+            length = float(form.get(f"zone_{zid}_length", zone.length_m or 2.0))
+            width  = float(form.get(f"zone_{zid}_width",  zone.width_m  or 1.0))
+            if 0.1 <= length <= 50: zone.length_m = round(length, 2)
+            if 0.1 <= width  <= 50: zone.width_m  = round(width, 2)
+        except ValueError:
+            pass
+        zone.has_roof = (f"zone_{zid}_has_roof" in form)
+    db.session.add(JournalEntry(
+        level="info",
+        message=f"⚙️ Configuration initiale terminée (wizard) — {garden_name or 'jardin'}",
+    ))
+    db.session.commit()
+
+    # 4. Marquer le wizard comme fait
+    try:
+        flag = _setup_done_path()
+        flag.parent.mkdir(parents=True, exist_ok=True)
+        flag.write_text(datetime.now(timezone.utc).isoformat())
+    except Exception as e:
+        log.warning("Impossible de créer le flag setup_done : %s", e)
+
+    flash("Configuration initiale enregistrée. Bienvenue dans MonJardin !", "success")
+    return redirect("/dashboard")
 
 
 @dashboard_bp.get("/rotation")
