@@ -82,7 +82,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "66",
+            "static_v": "67",
         }
 
     log.info(
@@ -143,6 +143,13 @@ def _migrate_db(app: Flask) -> None:
                 conn.execute(text("UPDATE zones SET display_order = zone_id WHERE display_order = 0"))
                 conn.commit()
                 log.info("Migration DB : colonne display_order ajoutée à zones (init = zone_id)")
+            # plantings : ordre d'affichage dans la grille visuelle
+            p_cols = {c["name"] for c in inspector.get_columns("plantings")}
+            if "display_order" not in p_cols:
+                conn.execute(text("ALTER TABLE plantings ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0"))
+                conn.execute(text("UPDATE plantings SET display_order = id WHERE display_order = 0"))
+                conn.commit()
+                log.info("Migration DB : colonne display_order ajoutée à plantings (init = id)")
 
 
 def _init_services(app: Flask) -> None:

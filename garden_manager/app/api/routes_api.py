@@ -279,6 +279,48 @@ def set_zone_mode(zone_id: int):
     return jsonify({"ok": True, "zone_id": zone_id, "mode": mode})
 
 
+@api_bp.post("/zones/<int:zone_id>/plants/reorder")
+def plants_reorder(zone_id: int):
+    """Réordonne les groupes (espèce + variété) actifs d'une zone via le plan visuel.
+
+    Body : {"order": [rep_id_1, rep_id_2, ...]} où chaque rep_id est l'id du
+    représentant d'un groupe (vegetable_name, variety) — celui retourné dans
+    plant_species_summary[].rep_id.
+
+    Toutes les plantations actives partageant la même (vegetable_name, variety)
+    que le rep_id reçoivent display_order = position dans la liste.
+    """
+    if not Zone.query.get(zone_id):
+        return jsonify({"ok": False, "error": f"Zone {zone_id} inexistante"}), 404
+
+    body = request.get_json(silent=True) or {}
+    order = body.get("order", [])
+    if not isinstance(order, list) or not all(isinstance(x, int) for x in order):
+        return jsonify({"ok": False, "error": "order doit être une liste d'entiers (rep_id)"}), 400
+
+    # Charger toutes les plantations actives de la zone
+    actives = Planting.query.filter_by(zone_id=zone_id, status="active").all()
+    by_id   = {p.id: p for p in actives}
+
+    # Identifier chaque rep_id et son groupe (vegetable_name, variety)
+    seen_groups = set()
+    for idx, rep_id in enumerate(order):
+        rep = by_id.get(rep_id)
+        if rep is None:
+            continue  # rep inconnu (peut arriver si la page a vieilli) — on ignore
+        key = (rep.vegetable_name, (rep.variety or "").strip())
+        if key in seen_groups:
+            continue  # déjà traité
+        seen_groups.add(key)
+        # Tous les plantings du même groupe reçoivent le même display_order
+        for p in actives:
+            if (p.vegetable_name, (p.variety or "").strip()) == key:
+                p.display_order = idx + 1
+
+    db.session.commit()
+    return jsonify({"ok": True, "zone_id": zone_id, "order": order, "groups_updated": len(seen_groups)})
+
+
 @api_bp.post("/zones/reorder")
 def zones_reorder():
     """Réordonne les zones d'après une liste de zone_id (drag & drop dashboard)."""

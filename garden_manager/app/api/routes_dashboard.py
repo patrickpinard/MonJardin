@@ -586,9 +586,14 @@ def zone_detail(zone_id: int):
             key = (p.vegetable_name, (p.variety or "").strip())
             species_map[key].append(p)
 
+    # Tri des groupes par min(display_order) pour respecter l'ordre du drag & drop visuel
+    sorted_groups = sorted(
+        species_map.items(),
+        key=lambda kv: (min((p.display_order or 0) for p in kv[1]), kv[0])
+    )
     plant_species_summary = []
     used_area_cm2 = 0.0
-    for (vname, variety), plist in species_map.items():
+    for (vname, variety), plist in sorted_groups:
         info  = plant_info.get(vname, {})
         space = info.get("space_cm", 30)
         # Inter-rang : pour les semis en ligne (carotte, radis, oignon...).

@@ -15,6 +15,7 @@ class Planting(db.Model):
     water_need = db.Column(db.String(8), default="medium")  # low | medium | high
     status = db.Column(db.String(16), default="active")  # planned | active | harvested | removed
     notes = db.Column(db.Text, nullable=True)
+    display_order = db.Column(db.Integer, default=0, nullable=False)
 
     def to_dict(self) -> dict:
         return {
