@@ -720,7 +720,8 @@ def zone_detail(zone_id: int):
 
 @dashboard_bp.get("/history")
 def history():
-    return render_template("history.html")
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
+    return render_template("history.html", zones=zones)
 
 
 @dashboard_bp.get("/journal")
