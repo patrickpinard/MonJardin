@@ -557,8 +557,14 @@
             <div class="photo-thumb"
                  onclick="openLightbox({{ loop.index0 }}, {{ day.photos | tojson }})"
                  style="background-image: url('{{ url_for('config.serve_zone_photo', zone_id=zone.zone_id, filename=ph.filename) }}');"
-                 title="{{ ph.captured_at }}">
-              <button type="button" class="photo-thumb-del"
+                 title="Cliquer pour agrandir · {{ ph.captured_at }}">
+              <span class="photo-thumb-zoom"><i class="bi bi-zoom-in"></i></span>
+              <button type="button" class="photo-thumb-act photo-thumb-edit"
+                      onclick="event.stopPropagation(); openPhotoEditModal({{ ph.id }}, {{ ph.captured_at | tojson }}, {{ (ph.caption or '') | tojson }})"
+                      title="Modifier la date ou la légende">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button type="button" class="photo-thumb-act photo-thumb-del"
                       onclick="event.stopPropagation(); confirmDeletePhoto({{ ph.id }}, {{ zone.zone_id }})"
                       title="Supprimer cette photo">
                 <i class="bi bi-x-lg"></i>
@@ -1776,6 +1782,55 @@ function confirmClearHistory(zoneId, zoneName) {
     document.getElementById(`clear-history-form-${zoneId}`).submit();
   });
 }
+</script>
+
+<!-- ── Modal édition photo (date + légende) ── -->
+<div class="modal-overlay" id="photo-edit-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-icon" style="background:rgba(48,209,88,.12);color:var(--green);">
+        <i class="bi bi-pencil-fill"></i>
+      </div>
+      <div class="modal-title">Modifier la photo</div>
+    </div>
+    <form id="photo-edit-form" method="post" style="padding:0 22px 18px;">
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px;">
+          Date et heure de prise
+        </label>
+        <input type="datetime-local" name="captured_at" id="pe-captured-at" required
+               style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px;">
+          Légende (optionnel)
+        </label>
+        <input type="text" name="caption" id="pe-caption" maxlength="200" placeholder="ex. Tomates en floraison"
+               style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-md);border-radius:var(--r-sm);color:var(--text-primary);padding:9px 12px;font-size:14px;font-family:var(--font);">
+      </div>
+      <div class="modal-actions" style="margin:14px -22px -18px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <button type="button" class="modal-btn cancel" onclick="closePhotoEditModal()">Annuler</button>
+        <button type="submit" class="modal-btn" style="color:var(--green);">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function openPhotoEditModal(photoId, capturedAtIso, caption) {
+  const form = document.getElementById('photo-edit-form');
+  form.action = `/zones/{{ zone.zone_id }}/photos/${photoId}/edit`;
+  // captured_at est un ISO string — on prend les 16 premiers chars (YYYY-MM-DDTHH:MM)
+  const local = (capturedAtIso || '').slice(0, 16);
+  document.getElementById('pe-captured-at').value = local;
+  document.getElementById('pe-caption').value = caption || '';
+  document.getElementById('photo-edit-overlay').classList.add('visible');
+}
+function closePhotoEditModal() {
+  document.getElementById('photo-edit-overlay').classList.remove('visible');
+}
+document.getElementById('photo-edit-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closePhotoEditModal();
+});
 </script>
 
 <!-- ── Lightbox plein écran pour les photos d'une zone ── -->
