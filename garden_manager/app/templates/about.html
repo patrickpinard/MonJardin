@@ -6,7 +6,7 @@
   <div class="page-header-row">
     <div>
       <h1 class="page-title">À propos</h1>
-      <div class="page-subtitle">MonJardin · Version 3.0 · Avril 2026</div>
+      <div class="page-subtitle">MonJardin · Version {{ app_version }} · {{ app_release_date }}</div>
     </div>
   </div>
 </div>
@@ -30,7 +30,7 @@
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
       <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:4px;">Version</div>
-        <div style="font-size:13px;font-weight:600;">3.0</div>
+        <div style="font-size:13px;font-weight:600;">{{ app_version }}</div>
       </div>
       <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:4px;">Créateur</div>
@@ -38,14 +38,142 @@
       </div>
       <div style="background:var(--bg-secondary);border-radius:var(--r-md);padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:4px;">Release</div>
-        <div style="font-size:13px;font-weight:600;">Avril 2026</div>
+        <div style="font-size:13px;font-weight:600;">{{ app_release_date }}</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Nouveautés version 4.5 ── -->
+  <div class="card">
+    <div class="card-title"><i class="bi bi-stars" style="color:var(--green);"></i> Nouveautés version 4.5</div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-camera-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Photos par zone (PWA mobile)</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Onglet « Photos » sur chaque zone pour prendre des photos depuis l'iPhone (capture caméra arrière) ou depuis la galerie. Vue calendrier groupée par mois (accordéon, 1<sup>er</sup> mois ouvert), lightbox plein écran, édition de la date et de la légende, suppression idempotente (sync multi-appareils).
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Plan visuel case-par-case + drag & drop libre</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Grille fixe (cases de 30 cm × 30 cm), 1 plant = 1 case. Drag & drop natif HTML5 vers n'importe quelle case libre, contrôle de collision côté serveur. Mode rangée pour les semis (carottes, radis : 2 à 8 cases adjacentes). Compost en bas pour suppression définitive.
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-arrows-move"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Drag & drop des cartes zones (Dashboard)</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Bouton « Réorganiser » dans l'onglet Mes zones. Ordre persisté en base et propagé partout (sidebar, dropdowns, automation cycle).
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-house-heart-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Dashboard Option A — page d'accueil épurée</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Réduit de 4 onglets à 2 : <strong>Vue d'ensemble</strong> (alertes + prévisions 7 j + tâches + récoltes) et <strong>Mes zones</strong>. Hero, Pulse Score, météo 24 h restent toujours visibles au-dessus.
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(48,209,88,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-lightbulb-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Conseils refondus en 9 catégories</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Carrousels indépendants par catégorie (Arrosage, Sol, Planification, Plantation, Compagnonnage, <strong>Sous serre</strong>, Observation, Lutte naturelle, Saisonnalité). Filtre par saison + recherche texte. ~57 conseils au total (vs 12 en v3.0).
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,.12);color:#22c55e;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-book-half"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Glossaire enrichi (74 termes)</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            9 catégories dont <strong>17 familles botaniques</strong> (Solanacées, Cucurbitacées, etc.) + Météo, Climat, Sol, Plantation, Entretien, Maladies, Traitements, Calendrier lunaire. Cards toujours déployées, images Wikimedia.
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(132,204,22,.12);color:#84cc16;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-clipboard-check-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">20 plans pré-faits avec 4 filtres</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Compatibilité de compagnonnage 100 % vérifiée (audit auto). Filtres : Niveau (★ à ★★★) · Type (Serre / Plein air) · Saison · Surface. Application automatique avec auto-distribution sur la grille.
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,159,10,.12);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Page Graphiques refondue + 7 jours de prévisions</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            3 graphiques séparés (humidité du sol, températures, événements d'arrosage) avec base de temps commune. Filtre par zone et période en chips. Open-Meteo 7 jours d'horaire (vs 2 j en v3).
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(10,132,255,.12);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-clock-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Heures locales partout (UTC → Europe/Zurich)</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Nouveaux filtres Jinja <code>localtime</code> / <code>localdate</code> / <code>localhour</code>. Plus de décalage 1-2 h dans le journal et les événements.
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(191,90,242,.12);color:#bf5af2;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+          <i class="bi bi-eraser-fill"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Modals uniformes + maintenance simplifiée</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+            Suppression des <code>confirm()</code> natifs au profit de <code>showConfirm()</code> stylisé. Boutons « Effacer historique » par zone et « Effacer la grille de rotation ». Carte de bienvenue masquable. Tab « Nouvelle année » dans Administration.
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <!-- Nouveautés v3.0 -->
   <div class="card">
-    <div class="card-title"><i class="bi bi-stars" style="color:var(--green);"></i> Nouveautés version 3.0</div>
+    <div class="card-title"><i class="bi bi-clock-history"></i> Nouveautés version 3.0</div>
     <div style="display:flex;flex-direction:column;gap:0;">
 
       <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">

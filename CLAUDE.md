@@ -1,6 +1,6 @@
 # MonJardin — Guide projet pour Claude
 
-> Version courante : **4.0** (avril 2026). Voir `CHANGELOG.md` pour l'historique.
+> Version courante : **4.5** (avril 2026). Voir `CHANGELOG.md` pour l'historique.
 
 ## Vue d'ensemble
 
@@ -90,6 +90,7 @@ Pour basculer en production : `SIMULATION_MODE=false` + `ARDUINO_API_URL` → ad
 | `admin_users` | Comptes admin (PIN haché) |
 | `alert_recipients` | Emails pour alertes arrosage |
 | `weather_cache` | `forecast_json`, `source`, `valid_until` (TTL 30 min) |
+| **`zone_photos` (v4.5)** | `id`, `zone_id`, `filename` (UUID), `captured_at`, `caption`, `file_size_kb` |
 
 > Migration automatique au démarrage : `_migrate_db()` dans `app/__init__.py` ajoute les nouvelles colonnes avec `ALTER TABLE` sans perte de données. Les plantings existants sont auto-placés sur la grille (row-major) au premier démarrage v4.0.
 
@@ -119,17 +120,21 @@ Règles de priorité (ordre strict) :
 
 ---
 
-## Interface web (v4.0)
+## Interface web (v4.5)
 
-### Dashboard principal (`/dashboard`) — Option A
-- Hero "Aujourd'hui" + Pulse Score + bandeau météo 24h en tête (toujours visibles)
-- 2 onglets : **Vue d'ensemble** (par défaut, agrège alertes + prévisions 7j + tâches + récoltes) et **Mes zones** (grille drag&drop)
-- Bouton « Réorganiser » sur Mes zones → mode SortableJS pour réordonner les cartes
+### Dashboard principal (`/dashboard`) — 4 onglets en haut
+- **Tab bar en tête de page** (au-dessus du hero) : Accueil · Météo · Tâches · Mes zones
+- **Accueil** (défaut) : hero "Aujourd'hui" + Pulse Score + actions concrètes + alertes + récoltes prévues
+- **Météo** : bandeau riche 24 h + prévisions 7 jours + risque gel + carte dédiée Anémomètre
+- **Tâches** : vigilance sanitaire + tâches du mois avec intro pédagogique + liens vers Conseils/Plans/Rotation/Glossaire
+- **Mes zones** : grille drag&drop (SortableJS) des cartes de zones
+- Onglet actif en **fond vert** (style cohérent avec Conseils)
+- Bouton « Réorganiser » sur Mes zones → mode SortableJS
 - Carte de bienvenue fermable (`POST /setup/skip` → flag `.setup_skipped`)
 - Refresh capteurs/actuators toutes les 30 s
 
 ### Page Zone détail (`/zones/<id>`)
-- 5 onglets : Temps réel · Graphiques · **Plants** · Événements · Configuration
+- 6 onglets : Temps réel · Graphiques · **Plants** · **Photos** (v4.5) · Événements · Configuration
 - Plan visuel **case-par-case** (30 cm/case) avec drag & drop natif HTML5
 - Toutes les cases visibles (cliquables pour planter à l'endroit voulu)
 - Multi-cases pour semis (toggle "Rangée" 2-8 cases dans modal Quick-Plant)
@@ -164,6 +169,12 @@ Règles de priorité (ordre strict) :
 | **`/api/zones/reorder` (v4.0)** | POST | Drag & drop ordre des zones `{"order":[2,1,4,3]}` |
 | **`/api/zones/<id>/plants/reorder` (v4.0)** | POST | Réordonner les groupes d'espèces |
 | **`/api/zones/<id>/plants/<id>/move` (v4.0)** | POST | Déplacer un plant vers `{"row":r,"col":c}` |
+| **`/zones/<id>/photos/upload` (v4.5)** | POST | Upload multi-fichiers (multipart/form-data) |
+| **`/zones/<id>/photos/<id>/delete` (v4.5)** | POST | Suppression idempotente |
+| **`/zones/<id>/photos/<id>/edit` (v4.5)** | POST | Édition date + légende |
+| **`/zones/<id>/photos/<filename>` (v4.5)** | GET | Sert le fichier image (auth requise) |
+| **`/planting/zone/<id>/history/clear` (v4.5)** | POST | Efface l'historique non-actif d'une zone |
+| **`/planting/rotation/clear` (v4.5)** | POST | Efface la grille de rotation (toutes zones) |
 | `/api/weather/current` | GET | Météo actuelle |
 | `/api/weather/forecast` | GET | Prévisions (7 jours v4.0) |
 | `/api/system/force_cycle` | POST | Forcer cycle automation immédiatement |

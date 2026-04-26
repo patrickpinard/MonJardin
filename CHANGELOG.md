@@ -5,6 +5,79 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ---
 
+## [4.5] — 2026-04-26
+
+### Photos par zone (PWA mobile)
+- Nouveau modèle `ZonePhoto` (id, zone_id, filename UUID, captured_at, caption, file_size_kb)
+- Onglet « Photos » sur chaque zone, vue calendrier groupée par mois en accordéon (mois récent ouvert)
+- Capture iPhone via `capture="environment"` (caméra arrière) + sélection multiple depuis la galerie
+- Lightbox plein écran avec navigation prev/next + clavier (Esc / ← / →)
+- Édition de la date (`datetime-local`) et de la légende (200 caractères)
+- Suppression et édition **idempotentes** : gèrent les syncs multi-appareils sans erreur 404
+- Stockage : `data/uploads/zones/<id>/<uuid>.<ext>` (HEIC/JPG/PNG/WEBP, max 12 Mo)
+
+### Dashboard refondu — 4 onglets en haut
+- Onglets **placés en tête** de page (au-dessus du hero) pour visibilité maximale
+- 4 onglets : Accueil · Météo · Tâches · Mes zones (au lieu de 2 en v4.0)
+- Onglet actif en **fond vert** (style cohérent avec Conseils)
+- Mapping JS `DASH_SECTIONS` qui agrège plusieurs sections par onglet logique
+
+### Tab Météo enrichi
+- Carte dédiée **Anémomètre** : comparaison vent prévu (Open-Meteo) vs mesuré (capteur QS-FS01)
+- Bandeau météo riche 24 h déplacé dans le tab Météo
+- Prévisions par jour étendues à 7 jours
+
+### Tab Tâches enrichi
+- Intro pédagogique (différence vigilance sanitaire vs tâches du mois)
+- Section « Pour aller plus loin » avec liens vers Conseils, Plans, Rotation, Glossaire
+
+### Glossaire — nouvelle catégorie « Familles botaniques »
+- 17 nouveaux termes : Solanacées, Cucurbitacées, Brassicacées, Apiacées, Alliacées, Légumineuses, Astéracées, Chénopodiacées, Lamiacées, Poacées, Valérianacées, Rosacées, Boraginacées, Tropaeolacées, Hydrophyllacées, Asparagacées, Polygonacées
+- Chaque entrée : définition + tip + détails (nom scientifique, exemples cultivés)
+- Total Glossaire : **74 termes** (vs 57 en v4.0)
+
+### Plans pré-faits — 20 plans
+- 3 nouveaux plans niveau **★★★ Difficile** :
+  - 🌾 Asperges & Rhubarbe (vivaces, engagement 2-3 ans)
+  - 🥵 Serre tropicale d'été (aubergine, poivron, piment, basilic à ≥18°C)
+  - 🌿 Jardin médicinal & tisanes (hysope, sauge, mélisse, origan, lavande...)
+- **4 groupes de filtres** en chips : Niveau · Type (Serre / Plein air) · Saison · Surface
+
+### UI raffinée
+- **Pastille « S »** orange compacte dans le header (badge simulation) → clic vers `/admin?tab=simulation`
+- **Compost** : drop zone visible sous le plan visuel pour suppression par drag & drop (icône 🗑️ + 🍂 grand format)
+- **Bouton « Aide »** sur le plan visuel ouvre un modal explicatif
+- Boutons « Effacer l'historique » par zone et « Effacer la grille de rotation »
+- Bouton « Rafraîchir » sur la page Plan rotation
+- Carte de bienvenue masquable (réactivable depuis Administration)
+- Tab « Nouvelle année » dans Administration pour reset annuel
+
+### Page Login enrichie
+- Footer affiche désormais **Version + Auteur** (`Version 4.5 · Avril 2026 · Patrick Pinard`)
+- Sidebar version centralisée : variable `app_version` du context_processor
+
+### Photos accordéon
+- Chaque mois est un `<details>`/`<summary>` repliable (HTML5 natif, pas de JS)
+- Mois le plus récent ouvert par défaut, autres pliés → page beaucoup plus compacte
+
+### Bug fixes notables
+- **Édition + zoom photos** : refactor avec data-attributes (le `tojson` dans `onclick=""` cassait le quoting HTML)
+- **UI mobile header zone** : titre + sous-titre + badges ne se chevauchent plus
+- **Plans pré-faits** : audit + corrections de toutes les incompatibilités (17/17 OK avant v4.0, restées validées)
+
+### Endpoints API ajoutés
+- `POST /zones/<id>/photos/upload` — multi-fichiers
+- `POST /zones/<id>/photos/<id>/delete` (idempotent)
+- `POST /zones/<id>/photos/<id>/edit` (idempotent)
+- `GET  /zones/<id>/photos/<filename>` — sert le fichier
+- `POST /planting/zone/<id>/history/clear` — efface l'historique non-actif d'une zone
+- `POST /planting/rotation/clear` — efface la grille de rotation (toutes zones)
+
+### Schéma de base de données (v4.5)
+- Nouvelle table `zone_photos` (id, zone_id, filename, captured_at, caption, file_size_kb, width, height)
+
+---
+
 ## [4.0] — 2026-04-26
 
 ### Plan visuel des plantations — refonte complète

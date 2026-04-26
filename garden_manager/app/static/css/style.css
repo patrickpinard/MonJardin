@@ -2049,8 +2049,34 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
 .time-tab.active[data-tab="plants"]      { background:rgba(40,162,78,.14);  border-color:rgba(40,162,78,.4);  color:var(--brand); }
 .time-tab.active[data-tab="evenements"]  { background:rgba(255,159,10,.14); border-color:rgba(255,159,10,.4); color:var(--orange); }
 .time-tab.active[data-tab="config"]      { background:var(--bg-tertiary);   border-color:var(--border-strong); color:var(--text-primary); }
+
+/* Dashboard tabs (accueil/meteo/taches/zones) + Conseils tabs : actif en vert */
+.time-tab.active[data-tab="accueil"],
+.time-tab.active[data-tab="meteo"],
+.time-tab.active[data-tab="taches"],
+.time-tab.active[data-tab="zones"],
+.time-tab.active[data-tab="apercu"],
+.time-tab.active[data-tab="pratiques"],
+.time-tab.active[data-tab="associations"],
+.time-tab.active[data-tab="calendrier"],
+.time-tab.active[data-tab="plantations"] {
+  background: var(--green); border-color: var(--green); color: #fff;
+}
+.time-tab.active[data-tab="accueil"] .bi,
+.time-tab.active[data-tab="meteo"]   .bi,
+.time-tab.active[data-tab="taches"]  .bi,
+.time-tab.active[data-tab="zones"]   .bi,
+.time-tab.active[data-tab="apercu"]  .bi,
+.time-tab.active[data-tab="pratiques"]    .bi,
+.time-tab.active[data-tab="associations"] .bi,
+.time-tab.active[data-tab="calendrier"]   .bi,
+.time-tab.active[data-tab="plantations"]  .bi {
+  color: #fff !important;
+}
+
 /* Generic active (dashboard tabs without data-tab) */
-.time-tab.active:not([data-tab]) { background:rgba(40,162,78,.14); border-color:rgba(40,162,78,.4); color:var(--brand); }
+.time-tab.active:not([data-tab]) { background: var(--green); border-color: var(--green); color: #fff; }
+.time-tab.active:not([data-tab]) .bi { color: #fff !important; }
 .time-tab.active .bi { opacity: 1; }
 .time-tab:hover:not(.active) { background: var(--bg-hover); border-color: var(--border-strong); color: var(--text-primary); }
 @media (max-width: 600px) {
@@ -2285,6 +2311,28 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   background: rgba(255,255,255,.05); border-radius: var(--r-pill);
   padding: 1px 7px; border: 1px solid var(--border);
 }
+
+/* Pastille compacte "S" → page Administration > Simulation
+   Style "filled" orange (comme le bouton Simulation dans Administration) */
+.top-bar-sim-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 7px;
+  background: var(--orange);
+  color: #1a1100;
+  border: 1px solid var(--orange);
+  font-weight: 800; font-size: 12px; line-height: 1;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(255,159,10,.35);
+  transition: background var(--t), transform .1s, box-shadow var(--t);
+  -webkit-tap-highlight-color: transparent;
+}
+.top-bar-sim-pill:hover {
+  background: #ffb340;
+  color: #1a1100;
+  transform: scale(1.08);
+  box-shadow: 0 2px 6px rgba(255,159,10,.5);
+}
+.top-bar-sim-letter { letter-spacing: .5px; }
 .top-bar-spacer { flex: 1; }
 
 /* Notification bell */

@@ -1,4 +1,4 @@
-# 🌱 MonJardin — Version 4.0
+# 🌱 MonJardin — Version 4.5
 
 Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite
 
@@ -73,6 +73,49 @@ MonJardin gère automatiquement l'arrosage et l'ouverture du toit de serre de 4 
 | 2 | Soleil | Exposition plein sud |
 | 3 | Mi-ombre | Exposition partielle |
 | 4 | Aromates | Seuils d'arrosage réduits |
+
+---
+
+## Nouveautés version 4.5
+
+### Photos par zone (PWA mobile)
+- Onglet **« Photos »** sur chaque zone permet de prendre des photos depuis l'iPhone (capture caméra arrière via `capture="environment"`)
+- Vue **calendrier** groupée par mois en accordéon (mois le plus récent ouvert par défaut)
+- Lightbox plein écran avec navigation prev/next + clavier (Esc/←/→)
+- **Édition** de la date et de la légende d'une photo
+- Suppression **idempotente** (gère les syncs multi-appareils sans erreur 404)
+- Stockage : `data/uploads/zones/<id>/<uuid>.<ext>` (HEIC/JPG/PNG/WEBP, max 12 Mo)
+
+### Dashboard refondu — 4 onglets en haut
+- Onglets **placés en tête de page** pour visibilité maximale
+- **Accueil** (défaut) : hero "Aujourd'hui" + Pulse Score + actions concrètes + alertes + récoltes prévues
+- **Météo** : bandeau riche 24 h + prévisions 7 jours + risque gel + carte dédiée **Anémomètre** (vent prévu vs mesuré)
+- **Tâches** : vigilance sanitaire + tâches du mois avec intro pédagogique et liens vers Conseils/Plans/Rotation/Glossaire
+- **Mes zones** : grille drag&drop des cartes de zones
+- Onglet actif en **fond vert** (style identique à Conseils)
+
+### Glossaire enrichi — 74 termes
+- Nouvelle catégorie **« Familles botaniques »** (17 termes) : Solanacées, Cucurbitacées, Brassicacées, Apiacées, Alliacées, Légumineuses, Astéracées, Chénopodiacées, Lamiacées, Poacées, Valérianacées, Rosacées, Boraginacées, Tropaeolacées, Hydrophyllacées, Asparagacées, Polygonacées
+- Chaque entrée : définition + tip pratique + détails (nom scientifique, exemples cultivés)
+
+### Plans pré-faits — 20 plans avec filtres
+- 3 nouveaux plans niveau **★★★ Difficile** : Asperges & Rhubarbe (vivaces), Serre tropicale d'été, Jardin médicinal & tisanes
+- **4 groupes de filtres** en chips : Niveau · Type (Serre / Plein air) · Saison · Surface
+- Auto-distribution des plants à l'application (placement row-major sur la grille)
+- Compatibilité de compagnonnage **100% vérifiée** (audit auto)
+
+### UI raffinée
+- **Pastille « S »** orange dans le header (badge simulation compact) → clic vers Administration > Simulation
+- **Boutons d'action** sur les zones et la rotation : « Effacer l'historique », « Effacer la grille de rotation », « Rafraîchir »
+- **Compost** : drop zone visible sous le plan visuel pour supprimer un plant en le glissant
+- **Bouton « Aide »** sur le plan visuel ouvre un modal explicatif (au lieu d'un long bandeau qui débordait)
+- **Fix UI mobile** : header de zone (titre + sous-titre + badges) ne se chevauche plus
+
+### Bug fixes notables
+- **Édition + zoom photos** : refactor avec data-attributes (le `tojson` dans les `onclick=""` cassait le quoting)
+- **Idempotence** sur delete/edit photos : gère les cas de sync multi-appareils sans erreur 404
+- **Drag & drop des plants** : retour automatique sur l'onglet Plants après chaque action (hash URL)
+- **Heures journal** déjà fix en v4.0 mais propagation locale à toutes les vues
 
 ---
 
@@ -450,4 +493,4 @@ Tout le texte de l'interface est en **français** : messages du journal, raisons
 
 ---
 
-*Version 4.0 · Avril 2026 · Patrick Pinard · Vullierens, Vaud · Suisse*
+*Version 4.5 · Avril 2026 · Patrick Pinard · Vullierens, Vaud · Suisse*
