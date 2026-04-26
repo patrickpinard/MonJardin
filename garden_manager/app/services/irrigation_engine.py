@@ -140,11 +140,20 @@ def evaluate_zone(zone, moisture: float, temperature: float, weather: dict, now:
     )
 
 
-def execute_decision(decision: IrrigationDecision, arduino_client, db) -> None:
-    """Exécute la décision : commande vanne + log en base."""
+def execute_decision(decision: IrrigationDecision, arduino_client, db,
+                     current_state: str | None = None) -> None:
+    """Exécute la décision : commande vanne + log en base.
+
+    Si current_state correspond déjà à decision.action, ne fait rien
+    (évite de spammer le journal avec des actions redondantes à chaque
+    cycle d'automatisation).
+    """
     from ..models import IrrigationLog, JournalEntry
 
     if decision.action == "skip":
+        return
+    # Pas de changement d'état → no-op (silencieux, évite le spam journal)
+    if current_state is not None and current_state == decision.action:
         return
 
     success = arduino_client.set_valve(decision.zone_id, decision.action)

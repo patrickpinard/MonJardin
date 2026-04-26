@@ -92,12 +92,23 @@ def evaluate_roof(zone1_moisture: float, temperature: float, weather: dict,
     )
 
 
-def execute_roof_decision(decision: RoofDecision, arduino_client, db) -> None:
-    """Exécute la décision toit : commande vérin + log."""
+def execute_roof_decision(decision: RoofDecision, arduino_client, db,
+                          current_state: str | None = None) -> None:
+    """Exécute la décision toit : commande vérin + log.
+
+    Si current_state correspond déjà à decision.action, ne fait rien
+    (évite de spammer le journal avec des actions redondantes à chaque
+    cycle d'automatisation). Si la lucarne est en mouvement ('moving'),
+    on n'agit pas non plus (mouvement précédent en cours).
+    """
     from ..models import RoofLog, JournalEntry
 
     if decision.action == "maintain":
         return
+    if current_state == "moving":
+        return  # mouvement en cours — laisser finir
+    if current_state is not None and current_state == decision.action:
+        return  # déjà dans cet état
 
     success = arduino_client.set_roof(decision.action)
 
