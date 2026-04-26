@@ -136,64 +136,42 @@
     </div>
   </div>
 
-  <!-- ── Filtres ── -->
-  <div class="plans-filters">
-    <div class="plans-filter-row">
-      <span class="plans-filter-label">Niveau</span>
-      <button class="plans-chip active" data-filter="level" data-value="all"   onclick="setPlanFilter(this,'level','all')">
-        <i class="bi bi-stars"></i> Tous
-      </button>
-      <button class="plans-chip" data-filter="level" data-value="easy"   onclick="setPlanFilter(this,'level','easy')">
-        ★ Facile
-      </button>
-      <button class="plans-chip" data-filter="level" data-value="medium" onclick="setPlanFilter(this,'level','medium')">
-        ★★ Moyen
-      </button>
-      <button class="plans-chip" data-filter="level" data-value="hard"   onclick="setPlanFilter(this,'level','hard')">
-        ★★★ Difficile
-      </button>
+  <!-- ── Filtres (modèle Encyclopédie : filter-bar > filter-section > filter-row > filter-chip) ── -->
+  <div class="filter-bar">
+    <div class="filter-section">
+      <div class="filter-section-label"><i class="bi bi-star-fill"></i> Niveau</div>
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="level" data-value="all"    onclick="setPlanFilter(this,'level','all')"><i class="bi bi-stars"></i> Tous</button>
+        <button class="filter-chip"        data-filter="level" data-value="easy"   onclick="setPlanFilter(this,'level','easy')">★ Facile</button>
+        <button class="filter-chip"        data-filter="level" data-value="medium" onclick="setPlanFilter(this,'level','medium')">★★ Moyen</button>
+        <button class="filter-chip"        data-filter="level" data-value="hard"   onclick="setPlanFilter(this,'level','hard')">★★★ Difficile</button>
+      </div>
     </div>
-    <div class="plans-filter-row">
-      <span class="plans-filter-label">Type</span>
-      <button class="plans-chip active" data-filter="zone" data-value="all"     onclick="setPlanFilter(this,'zone','all')">
-        <i class="bi bi-stars"></i> Tous
-      </button>
-      <button class="plans-chip" data-filter="zone" data-value="roof"   onclick="setPlanFilter(this,'zone','roof')">
-        🏠 Serre
-      </button>
-      <button class="plans-chip" data-filter="zone" data-value="open"   onclick="setPlanFilter(this,'zone','open')">
-        🌤 Plein air
-      </button>
+    <div class="filter-section">
+      <div class="filter-section-label"><i class="bi bi-house-door"></i> Type</div>
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="zone" data-value="all"  onclick="setPlanFilter(this,'zone','all')"><i class="bi bi-stars"></i> Tous</button>
+        <button class="filter-chip"        data-filter="zone" data-value="roof" onclick="setPlanFilter(this,'zone','roof')">🏠 Serre</button>
+        <button class="filter-chip"        data-filter="zone" data-value="open" onclick="setPlanFilter(this,'zone','open')">🌤 Plein air</button>
+      </div>
     </div>
-    <div class="plans-filter-row">
-      <span class="plans-filter-label">Saison</span>
-      <button class="plans-chip active" data-filter="season" data-value="all"       onclick="setPlanFilter(this,'season','all')">
-        <i class="bi bi-stars"></i> Toutes
-      </button>
-      <button class="plans-chip" data-filter="season" data-value="printemps" onclick="setPlanFilter(this,'season','printemps')">
-        🌱 Printemps
-      </button>
-      <button class="plans-chip" data-filter="season" data-value="ete"       onclick="setPlanFilter(this,'season','ete')">
-        ☀️ Été
-      </button>
-      <button class="plans-chip" data-filter="season" data-value="automne"   onclick="setPlanFilter(this,'season','automne')">
-        🍂 Automne
-      </button>
+    <div class="filter-section">
+      <div class="filter-section-label"><i class="bi bi-calendar3"></i> Saison</div>
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="season" data-value="all"       onclick="setPlanFilter(this,'season','all')"><i class="bi bi-stars"></i> Toutes</button>
+        <button class="filter-chip"        data-filter="season" data-value="printemps" onclick="setPlanFilter(this,'season','printemps')">🌱 Printemps</button>
+        <button class="filter-chip"        data-filter="season" data-value="ete"       onclick="setPlanFilter(this,'season','ete')">☀️ Été</button>
+        <button class="filter-chip"        data-filter="season" data-value="automne"   onclick="setPlanFilter(this,'season','automne')">🍂 Automne</button>
+      </div>
     </div>
-    <div class="plans-filter-row">
-      <span class="plans-filter-label">Surface</span>
-      <button class="plans-chip active" data-filter="area" data-value="all"    onclick="setPlanFilter(this,'area','all')">
-        <i class="bi bi-stars"></i> Toutes
-      </button>
-      <button class="plans-chip" data-filter="area" data-value="small"  onclick="setPlanFilter(this,'area','small')">
-        📏 ≤ 2 m²
-      </button>
-      <button class="plans-chip" data-filter="area" data-value="medium" onclick="setPlanFilter(this,'area','medium')">
-        📏 2–5 m²
-      </button>
-      <button class="plans-chip" data-filter="area" data-value="large"  onclick="setPlanFilter(this,'area','large')">
-        📏 > 5 m²
-      </button>
+    <div class="filter-section">
+      <div class="filter-section-label"><i class="bi bi-rulers"></i> Surface</div>
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="area" data-value="all"    onclick="setPlanFilter(this,'area','all')"><i class="bi bi-stars"></i> Toutes</button>
+        <button class="filter-chip"        data-filter="area" data-value="small"  onclick="setPlanFilter(this,'area','small')">📏 ≤ 2 m²</button>
+        <button class="filter-chip"        data-filter="area" data-value="medium" onclick="setPlanFilter(this,'area','medium')">📏 2–5 m²</button>
+        <button class="filter-chip"        data-filter="area" data-value="large"  onclick="setPlanFilter(this,'area','large')">📏 &gt; 5 m²</button>
+      </div>
     </div>
   </div>
 

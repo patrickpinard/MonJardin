@@ -3,12 +3,6 @@
 
 {% block head %}
 <style>
-.filter-section { margin-bottom:10px; }
-.filter-section-label {
-  font-size:10px; font-weight:700; color:var(--text-tertiary);
-  text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;
-}
-.filter-row { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
 .plants-count { font-size:13px; color:var(--text-tertiary); }
 .cat-badge {
   display:inline-block; font-size:10px; font-weight:700; padding:2px 7px;
@@ -33,8 +27,8 @@
 
 <div class="page-body">
 
-  <!-- ── Barre de filtres ── -->
-  <div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;margin-bottom:18px;">
+  <!-- ── Barre de filtres (style global .filter-bar) ── -->
+  <div class="filter-bar">
 
     <!-- Recherche -->
     <div class="search-wrap" style="margin-bottom:12px;">

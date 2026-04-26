@@ -229,31 +229,34 @@
        ══════════════════════════════════════════════════════ -->
   <div id="tab-graphiques" style="display:none;">
 
-    <!-- Bandeau de contrôles : Zones + Période (identique à /history) -->
-    <div class="hist-controls">
-      <div class="hist-control-row">
-        <span class="hist-control-label">Zones</span>
-        {% for z in (all_zones | default([zone])) %}
-        <a href="/zones/{{ z.zone_id }}#graphiques"
-           class="hist-chip {% if z.zone_id == zone.zone_id %}active{% endif %}"
-           data-zone="{{ z.zone_id }}"
-           style="text-decoration:none;">
-          {% if z.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
-          {% elif z.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
-          {% elif z.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
-          {% else %}<i class="bi bi-flower3"></i>{% endif %}
-          {{ z.name }}
-        </a>
-        {% endfor %}
+    <!-- Bandeau de contrôles : Zones + Période (modèle Encyclopédie) -->
+    <div class="filter-bar">
+      <div class="filter-section">
+        <div class="filter-section-label"><i class="bi bi-grid-1x2-fill"></i> Zones</div>
+        <div class="filter-row">
+          {% for z in (all_zones | default([zone])) %}
+          <a href="/zones/{{ z.zone_id }}#graphiques"
+             class="filter-chip {% if z.zone_id == zone.zone_id %}active{% endif %}"
+             data-zone="{{ z.zone_id }}">
+            {% if z.zone_id == 1 %}<i class="bi bi-house-door-fill"></i>
+            {% elif z.zone_id == 2 %}<i class="bi bi-sun-fill"></i>
+            {% elif z.zone_id == 3 %}<i class="bi bi-cloud-sun-fill"></i>
+            {% else %}<i class="bi bi-flower3"></i>{% endif %}
+            {{ z.name }}
+          </a>
+          {% endfor %}
+        </div>
       </div>
-      <div class="hist-control-row">
-        <span class="hist-control-label">Période</span>
-        <button class="hist-chip active" data-period="24"
-                onclick="switchCombinedTab(this, {{ zone.zone_id }}, 24)">24 h</button>
-        <button class="hist-chip" data-period="168"
-                onclick="switchCombinedTab(this, {{ zone.zone_id }}, 168)">7 jours</button>
-        <button class="hist-chip" data-period="720"
-                onclick="switchCombinedTab(this, {{ zone.zone_id }}, 720)">30 jours</button>
+      <div class="filter-section">
+        <div class="filter-section-label"><i class="bi bi-clock-history"></i> Période</div>
+        <div class="filter-row">
+          <button class="filter-chip active" data-period="24"
+                  onclick="switchCombinedTab(this, {{ zone.zone_id }}, 24)">24 h</button>
+          <button class="filter-chip" data-period="168"
+                  onclick="switchCombinedTab(this, {{ zone.zone_id }}, 168)">7 jours</button>
+          <button class="filter-chip" data-period="720"
+                  onclick="switchCombinedTab(this, {{ zone.zone_id }}, 720)">30 jours</button>
+        </div>
       </div>
     </div>
 
@@ -1264,7 +1267,7 @@ const _zoneHasRoof = {{ 'true' if zone.has_roof else 'false' }};
 const _zoneName    = {{ zone.name | tojson }};
 
 function switchCombinedTab(btn, zoneId, hours) {
-  document.querySelectorAll('#tab-graphiques .hist-chip').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#tab-graphiques .filter-chip[data-period]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _currentHours = hours;
   loadCombinedChart(zoneId, hours);

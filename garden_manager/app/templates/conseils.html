@@ -249,23 +249,18 @@
         oninput="filterTips()">
     </div>
 
-    <!-- Filtre par saison -->
-    <div class="tips-season-bar">
-      <button class="tips-season-btn active" data-season="all"      onclick="setTipsSeason(this,'all')">
-        <i class="bi bi-stars"></i> Toutes les saisons
-      </button>
-      <button class="tips-season-btn" data-season="printemps" onclick="setTipsSeason(this,'printemps')">
-        🌱 Printemps
-      </button>
-      <button class="tips-season-btn" data-season="ete"       onclick="setTipsSeason(this,'ete')">
-        ☀️ Été
-      </button>
-      <button class="tips-season-btn" data-season="automne"   onclick="setTipsSeason(this,'automne')">
-        🍂 Automne
-      </button>
-      <button class="tips-season-btn" data-season="hiver"     onclick="setTipsSeason(this,'hiver')">
-        ❄️ Hiver
-      </button>
+    <!-- Filtre par saison (modèle Encyclopédie) -->
+    <div class="filter-bar">
+      <div class="filter-section">
+        <div class="filter-section-label"><i class="bi bi-calendar3"></i> Saison</div>
+        <div class="filter-row">
+          <button class="filter-chip active" data-season="all"       onclick="setTipsSeason(this,'all')"><i class="bi bi-stars"></i> Toutes les saisons</button>
+          <button class="filter-chip"        data-season="printemps" onclick="setTipsSeason(this,'printemps')">🌱 Printemps</button>
+          <button class="filter-chip"        data-season="ete"       onclick="setTipsSeason(this,'ete')">☀️ Été</button>
+          <button class="filter-chip"        data-season="automne"   onclick="setTipsSeason(this,'automne')">🍂 Automne</button>
+          <button class="filter-chip"        data-season="hiver"     onclick="setTipsSeason(this,'hiver')">❄️ Hiver</button>
+        </div>
+      </div>
     </div>
 
     <div id="tips-empty" class="tips-empty" style="display:none;">
@@ -913,7 +908,8 @@ function tipsPrev(catSlug) { tipsGoTo(catSlug, (TIPS_STATE[catSlug] || 0) - 1); 
 let CURRENT_SEASON = 'all';
 
 function setTipsSeason(btn, season) {
-  document.querySelectorAll('.tips-season-btn').forEach(b => b.classList.remove('active'));
+  // Désactive tous les chips de saison (anciens .tips-season-btn ET nouveaux .filter-chip[data-season])
+  document.querySelectorAll('.tips-season-btn, .filter-chip[data-season]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   CURRENT_SEASON = season;
   filterTips();
