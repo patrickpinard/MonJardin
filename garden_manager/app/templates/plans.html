@@ -71,6 +71,40 @@
   font-family: inherit;
 }
 .plan-apply-form button:hover { opacity: .9; }
+
+/* ── Filtres style Conseils ── */
+.plans-filters {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-bottom: 18px;
+}
+.plans-filter-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.plans-filter-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  color: var(--text-tertiary); letter-spacing: .5px;
+  flex-shrink: 0; min-width: 60px;
+}
+.plans-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: var(--r-pill);
+  background: var(--bg-secondary); color: var(--text-secondary);
+  border: 1px solid var(--border);
+  font-size: 12px; font-weight: 600;
+  font-family: inherit; cursor: pointer;
+  transition: background var(--t), color var(--t), border-color var(--t), transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.plans-chip:hover  { background: var(--bg-tertiary); color: var(--text-primary); }
+.plans-chip:active { transform: scale(.96); }
+.plans-chip.active {
+  background: var(--green); color: #fff; border-color: var(--green);
+}
+.plans-chip.active:hover { background: var(--green); color: #fff; }
+
+.plans-empty {
+  padding: 40px; text-align: center; color: var(--text-tertiary);
+}
 </style>
 {% endblock %}
 
@@ -102,9 +136,85 @@
     </div>
   </div>
 
-  <div class="plans-grid">
+  <!-- ── Filtres ── -->
+  <div class="plans-filters">
+    <div class="plans-filter-row">
+      <span class="plans-filter-label">Niveau</span>
+      <button class="plans-chip active" data-filter="level" data-value="all"   onclick="setPlanFilter(this,'level','all')">
+        <i class="bi bi-stars"></i> Tous
+      </button>
+      <button class="plans-chip" data-filter="level" data-value="easy"   onclick="setPlanFilter(this,'level','easy')">
+        ★ Facile
+      </button>
+      <button class="plans-chip" data-filter="level" data-value="medium" onclick="setPlanFilter(this,'level','medium')">
+        ★★ Moyen
+      </button>
+      <button class="plans-chip" data-filter="level" data-value="hard"   onclick="setPlanFilter(this,'level','hard')">
+        ★★★ Difficile
+      </button>
+    </div>
+    <div class="plans-filter-row">
+      <span class="plans-filter-label">Type</span>
+      <button class="plans-chip active" data-filter="zone" data-value="all"     onclick="setPlanFilter(this,'zone','all')">
+        <i class="bi bi-stars"></i> Tous
+      </button>
+      <button class="plans-chip" data-filter="zone" data-value="roof"   onclick="setPlanFilter(this,'zone','roof')">
+        🏠 Serre
+      </button>
+      <button class="plans-chip" data-filter="zone" data-value="open"   onclick="setPlanFilter(this,'zone','open')">
+        🌤 Plein air
+      </button>
+    </div>
+    <div class="plans-filter-row">
+      <span class="plans-filter-label">Saison</span>
+      <button class="plans-chip active" data-filter="season" data-value="all"       onclick="setPlanFilter(this,'season','all')">
+        <i class="bi bi-stars"></i> Toutes
+      </button>
+      <button class="plans-chip" data-filter="season" data-value="printemps" onclick="setPlanFilter(this,'season','printemps')">
+        🌱 Printemps
+      </button>
+      <button class="plans-chip" data-filter="season" data-value="ete"       onclick="setPlanFilter(this,'season','ete')">
+        ☀️ Été
+      </button>
+      <button class="plans-chip" data-filter="season" data-value="automne"   onclick="setPlanFilter(this,'season','automne')">
+        🍂 Automne
+      </button>
+    </div>
+    <div class="plans-filter-row">
+      <span class="plans-filter-label">Surface</span>
+      <button class="plans-chip active" data-filter="area" data-value="all"    onclick="setPlanFilter(this,'area','all')">
+        <i class="bi bi-stars"></i> Toutes
+      </button>
+      <button class="plans-chip" data-filter="area" data-value="small"  onclick="setPlanFilter(this,'area','small')">
+        📏 ≤ 2 m²
+      </button>
+      <button class="plans-chip" data-filter="area" data-value="medium" onclick="setPlanFilter(this,'area','medium')">
+        📏 2–5 m²
+      </button>
+      <button class="plans-chip" data-filter="area" data-value="large"  onclick="setPlanFilter(this,'area','large')">
+        📏 > 5 m²
+      </button>
+    </div>
+  </div>
+
+  <div id="plans-empty" class="plans-empty" style="display:none;">
+    <div style="font-size:36px;margin-bottom:8px;">🔍</div>
+    Aucun plan ne correspond à ces filtres.
+  </div>
+
+  <div class="plans-grid" id="plans-grid">
     {% for plan in plans %}
-    <div class="plan-card">
+    {% set _months = plan.season_start | default([]) %}
+    {% set _seasons = [] %}
+    {% if _months | select('in', [3,4,5]) | list %}{% set _ = _seasons.append('printemps') %}{% endif %}
+    {% if _months | select('in', [6,7,8]) | list %}{% set _ = _seasons.append('ete') %}{% endif %}
+    {% if _months | select('in', [9,10,11]) | list %}{% set _ = _seasons.append('automne') %}{% endif %}
+    {% set _area_class = 'small' if plan.min_area_m2 <= 2.0 else ('medium' if plan.min_area_m2 <= 5.0 else 'large') %}
+    <div class="plan-card"
+         data-level="{{ plan.level }}"
+         data-zone="{{ 'roof' if plan.needs_roof else 'open' }}"
+         data-seasons="{{ _seasons | join(',') }}"
+         data-area="{{ _area_class }}">
       <div class="plan-hero">{{ plan.emoji }}</div>
       <div class="plan-body">
         <div class="plan-name">{{ plan.name }}</div>
@@ -152,6 +262,33 @@
 </div>
 
 <script>
+// ── Filtres plans (état + logique combinée) ──
+const PLAN_FILTER_STATE = {level:'all', zone:'all', season:'all', area:'all'};
+
+function setPlanFilter(btn, group, value) {
+  // Désactive les autres chips de la même catégorie, active celle-ci
+  document.querySelectorAll(`.plans-chip[data-filter="${group}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  PLAN_FILTER_STATE[group] = value;
+  applyPlanFilters();
+}
+
+function applyPlanFilters() {
+  const {level, zone, season, area} = PLAN_FILTER_STATE;
+  let visible = 0;
+  document.querySelectorAll('#plans-grid .plan-card').forEach(card => {
+    const okLevel  = (level  === 'all') || card.dataset.level === level;
+    const okZone   = (zone   === 'all') || card.dataset.zone  === zone;
+    const okSeason = (season === 'all') || (card.dataset.seasons || '').split(',').includes(season);
+    const okArea   = (area   === 'all') || card.dataset.area  === area;
+    const show = okLevel && okZone && okSeason && okArea;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  const empty = document.getElementById('plans-empty');
+  if (empty) empty.style.display = (visible === 0) ? '' : 'none';
+}
+
 // Confirme l'application d'un plan via le modal global (showConfirm)
 function confirmApplyPlan(ev, form, planName, speciesCount) {
   ev.preventDefault();
