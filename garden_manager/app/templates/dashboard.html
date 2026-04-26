@@ -207,11 +207,20 @@
 
   <!-- ── TAB ZONES ── -->
   <div id="tab-zones">
-    <div class="zones-grid mb-3">
+    <div class="zones-reorder-bar">
+      <div class="zones-reorder-hint" id="zones-reorder-hint">
+        <i class="bi bi-info-circle"></i> Glissez les cartes pour les réorganiser — l'ordre est sauvegardé.
+      </div>
+      <button class="zones-reorder-toggle" id="zones-reorder-toggle"
+              onclick="toggleZoneReorder()" type="button">
+        <i class="bi bi-arrows-move"></i> <span id="zones-reorder-label">Réorganiser</span>
+      </button>
+    </div>
+    <div class="zones-grid mb-3" id="zones-grid">
       {% for zd in zones_data %}
       {% set mc = zd.mc %}
       {% set dash = (zd.moisture / 100 * 175.9) | round(1) %}
-      <div class="zc-card zc-card-{{ mc }}">
+      <div class="zc-card zc-card-{{ mc }}" data-zone-id="{{ zd.zone.zone_id }}">
 
         <!-- En-tête : icône + nom + statut pilule -->
         <div class="zc-header">
@@ -705,5 +714,70 @@
     });
   }
 
+</script>
+
+<!-- ── Drag & drop des cartes zones (SortableJS) ── -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+(function() {
+  let _zSortable = null;
+  let _zReorderActive = false;
+
+  function _saveZoneOrder(order) {
+    fetch('/api/zones/reorder', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({order: order}),
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) showToast('Nouvel ordre des zones sauvegardé', 'success');
+      else      showToast('Erreur sauvegarde : ' + (d.error || 'inconnue'), 'error');
+    })
+    .catch(e => showToast('Erreur réseau : ' + e.message, 'error'));
+  }
+
+  window.toggleZoneReorder = function() {
+    const grid  = document.getElementById('zones-grid');
+    const label = document.getElementById('zones-reorder-label');
+    const hint  = document.getElementById('zones-reorder-hint');
+    const btn   = document.getElementById('zones-reorder-toggle');
+    if (!grid) return;
+    _zReorderActive = !_zReorderActive;
+    grid.classList.toggle('zones-reorder-mode', _zReorderActive);
+    if (hint) hint.style.display = _zReorderActive ? 'flex' : 'none';
+    if (btn)  btn.classList.toggle('active', _zReorderActive);
+    if (label) label.textContent = _zReorderActive ? 'Terminé' : 'Réorganiser';
+
+    if (_zReorderActive) {
+      if (typeof Sortable === 'undefined') {
+        showToast('Librairie de tri non chargée', 'error');
+        return;
+      }
+      _zSortable = Sortable.create(grid, {
+        animation: 180,
+        delay: 0,
+        ghostClass: 'zc-card-ghost',
+        chosenClass: 'zc-card-chosen',
+        dragClass: 'zc-card-drag',
+        onEnd: () => {
+          const order = Array.from(grid.querySelectorAll('.zc-card[data-zone-id]'))
+                              .map(c => parseInt(c.dataset.zoneId, 10))
+                              .filter(n => !isNaN(n));
+          if (order.length) _saveZoneOrder(order);
+        },
+      });
+    } else if (_zSortable) {
+      _zSortable.destroy();
+      _zSortable = null;
+    }
+  };
+
+  // Hint masqué par défaut (devient visible quand on active le mode réorganiser)
+  document.addEventListener('DOMContentLoaded', () => {
+    const hint = document.getElementById('zones-reorder-hint');
+    if (hint) hint.style.display = 'none';
+  });
+})();
 </script>
 {% endblock %}

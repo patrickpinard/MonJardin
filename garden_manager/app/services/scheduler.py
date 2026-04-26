@@ -69,7 +69,7 @@ def _run_cycle(app) -> None:
     current_roof = actuator_status.get("roof_state", "close")
 
     # 4. Moteur irrigation par zone
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     for zone in zones:
         z_data = zones_data.get(zone.zone_id)
         if z_data is None:

@@ -135,7 +135,7 @@ def _planting_display_items(plantings, sowing_type_map, emoji_map, today):
 @config_bp.get("/planting")
 def planting_page():
     advisor = current_app.extensions["planting_advisor"]
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     current_month = date.today().month
     today = date.today()
     plantings_by_zone = {}

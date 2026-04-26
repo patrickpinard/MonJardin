@@ -47,7 +47,7 @@ def dashboard():
         log.warning("Dashboard : échec lecture journal : %s", e)
         recent_entries = []
     try:
-        zones = Zone.query.order_by(Zone.zone_id).all()
+        zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     except Exception as e:
         log.warning("Dashboard : échec lecture zones : %s", e)
         zones = []
@@ -743,7 +743,7 @@ def plant_detail(name: str):
     if plant is None:
         from flask import abort
         abort(404)
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     today = datetime.today().strftime("%Y-%m-%d")
     days = plant.get("days_to_harvest", 90)
     harvest_default = (datetime.today() + timedelta(days=days)).strftime("%Y-%m-%d")
@@ -768,7 +768,7 @@ def raspberry_pi():
 
 @dashboard_bp.get("/settings")
 def settings():
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     sim_mode = current_app.config.get("SIMULATION_MODE", False)
     weather = current_app.extensions["weather_service"].get_current()
     from simulator.weather_simulator import WeatherSimulator
@@ -1170,7 +1170,7 @@ def setup_wizard():
         [p for p in plants_db if p.get("difficulty") == "easy"],
         key=lambda p: p["name"],
     )[:18]
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     return render_template(
         "setup.html",
         easy_plants=easy_plants,
@@ -1205,7 +1205,7 @@ def setup_save():
         pass
 
     # 3. Configuration des zones
-    for zone in Zone.query.order_by(Zone.zone_id).all():
+    for zone in Zone.query.order_by(Zone.display_order, Zone.zone_id).all():
         zid = zone.zone_id
         new_name = form.get(f"zone_{zid}_name", "").strip()
         if new_name:
@@ -1240,7 +1240,7 @@ def setup_save():
 def rotation_page():
     """Vue Plan de rotation des cultures : zones × années."""
     advisor = current_app.extensions.get("rotation_advisor")
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     plantings = Planting.query.all()
 
     today = date.today()
@@ -1314,7 +1314,7 @@ def garden_plans_page():
     for plan in plans:
         for p in plan.get("plantings", []):
             p["emoji"] = emoji_map.get(p["vegetable_name"], "🌱")
-    zones = Zone.query.order_by(Zone.zone_id).all()
+    zones = Zone.query.order_by(Zone.display_order, Zone.zone_id).all()
     return render_template("plans.html", plans=plans, zones=zones)
 
 
