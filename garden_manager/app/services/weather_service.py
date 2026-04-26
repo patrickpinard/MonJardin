@@ -65,13 +65,28 @@ class WeatherService:
         return self._default_conditions()
 
     def get_forecast_48h(self) -> list[dict]:
-        """Retourne les prévisions sur 48h."""
+        """Compat : prévisions horaires sur 48h (utilisé pour les détections gel/maladies)."""
+        return self.get_forecast_hourly(days=2)
+
+    def get_forecast_hourly(self, days: int = 7) -> list[dict]:
+        """Retourne les prévisions horaires sur N jours (max 7 sur Open-Meteo gratuit)."""
+        days = max(1, min(int(days), 7))
         if self._simulation_mode and self._weather_sim:
-            return self._weather_sim.get_48h_forecast()
+            # Le simulateur ne gère que 48h ; on duplique le pattern si besoin
+            base = self._weather_sim.get_48h_forecast()
+            if days <= 2 or not base:
+                return base
+            # Étendre par cycles de 24h en gardant la même heure de la journée
+            extended = list(base)
+            cycle = base[:24] if len(base) >= 24 else base
+            for d in range(2, days):
+                for h in cycle:
+                    extended.append(dict(h))
+            return extended
         try:
-            return self._fetch_openmeteo_forecast()
+            return self._fetch_openmeteo_forecast(days=days)
         except Exception as e:
-            log.warning("Prévisions 48h indisponibles: %s", e)
+            log.warning("Prévisions %dj indisponibles: %s", days, e)
             if self._weather_sim:
                 return self._weather_sim.get_48h_forecast()
             return []
@@ -128,12 +143,13 @@ class WeatherService:
             "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
         }
 
-    def _fetch_openmeteo_forecast(self) -> list[dict]:
+    def _fetch_openmeteo_forecast(self, days: int = 7) -> list[dict]:
+        days = max(1, min(int(days), 7))
         params = {
             "latitude": self._lat,
             "longitude": self._lon,
             "hourly": "temperature_2m,precipitation_probability,precipitation,wind_speed_10m",
-            "forecast_days": 2,
+            "forecast_days": days,
             "timezone": "Europe/Zurich",
         }
         resp = requests.get(OPENMETEO_URL, params=params, timeout=10)
@@ -145,8 +161,9 @@ class WeatherService:
         probs = hourly.get("precipitation_probability", [])
         precips = hourly.get("precipitation", [])
         winds = hourly.get("wind_speed_10m", [])
+        max_h = days * 24
         forecast = []
-        for i, t in enumerate(times[:48]):
+        for i, t in enumerate(times[:max_h]):
             temp = float(temps[i]) if i < len(temps) else 15.0
             forecast.append({
                 "hour": t,
