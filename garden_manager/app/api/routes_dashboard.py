@@ -685,6 +685,37 @@ def zone_detail(zone_id: int):
     empty_cells = [(r, c) for r in range(grid_rows) for c in range(grid_cols)
                    if (r, c) not in occupied]
 
+    # ── Photos de la zone groupées par mois puis par jour (vue calendrier) ──
+    from .. models import ZonePhoto
+    photos = (ZonePhoto.query
+              .filter_by(zone_id=zone_id)
+              .order_by(ZonePhoto.captured_at.desc())
+              .all())
+    photos_count = len(photos)
+    # Group by month
+    from collections import OrderedDict
+    DAY_NAMES_FR_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+    MONTH_NAMES_FR = ["Janvier","Février","Mars","Avril","Mai","Juin",
+                      "Juillet","Août","Septembre","Octobre","Novembre","Décembre"]
+    by_month = OrderedDict()
+    for ph in photos:
+        d = ph.captured_at.date()
+        month_key = (d.year, d.month)
+        by_month.setdefault(month_key, OrderedDict())
+        by_month[month_key].setdefault(d, []).append(ph)
+    photos_by_month = []
+    for (yr, mo), days in by_month.items():
+        month_label = f"{MONTH_NAMES_FR[mo-1]} {yr}"
+        days_list = []
+        for d, plist in days.items():
+            days_list.append({
+                "day_num":  d.day,
+                "day_name": DAY_NAMES_FR_SHORT[d.weekday()],
+                "count":    len(plist),
+                "photos":   [ph.to_dict() for ph in plist],
+            })
+        photos_by_month.append((month_label, days_list))
+
     return render_template(
         "zone_detail.html",
         zone=zone,
@@ -713,6 +744,8 @@ def zone_detail(zone_id: int):
         grid_rows=grid_rows,
         grid_plantings=grid_plantings,
         empty_cells=empty_cells,
+        photos_count=photos_count,
+        photos_by_month=photos_by_month,
     )
 
 

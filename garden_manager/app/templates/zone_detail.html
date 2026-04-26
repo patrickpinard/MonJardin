@@ -79,6 +79,12 @@
     <button class="time-tab" data-tab="plants" onclick="switchTab(this,'plants')">
       <i class="bi bi-flower2"></i><span class="tab-label"> Plants</span>
     </button>
+    <button class="time-tab" data-tab="photos" onclick="switchTab(this,'photos')">
+      <i class="bi bi-camera-fill"></i><span class="tab-label"> Photos</span>
+      {% if photos_count %}
+      <span class="badge" style="margin-left:4px;font-size:10px;background:rgba(48,209,88,.2);color:var(--green);">{{ photos_count }}</span>
+      {% endif %}
+    </button>
     <button class="time-tab" data-tab="evenements" onclick="switchTab(this,'evenements')">
       <i class="bi bi-clock-history"></i><span class="tab-label"> Évènements</span>
     </button>
@@ -487,7 +493,100 @@
 
 
   <!-- ══════════════════════════════════════════════════════
-       TAB 4 : ÉVÈNEMENTS
+       TAB 4 : PHOTOS — vue calendrier mensuelle (PWA mobile friendly)
+       ══════════════════════════════════════════════════════ -->
+  <div id="tab-photos" style="display:none;">
+
+    <!-- Upload (capture caméra arrière sur iPhone via capture="environment") -->
+    <div class="card mb-3">
+      <div class="card-title">
+        <i class="bi bi-camera-fill" style="color:var(--green);"></i>
+        Photos de la zone
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
+          {{ photos_count or 0 }} photo{{ 's' if (photos_count or 0) > 1 else '' }}
+        </span>
+      </div>
+
+      <form method="post" action="{{ url_for('config.upload_zone_photo', zone_id=zone.zone_id) }}"
+            enctype="multipart/form-data" class="photos-upload" id="photos-upload-form">
+        <label class="photos-upload-btn" for="photos-upload-input">
+          <i class="bi bi-camera-fill"></i>
+          <span>Prendre une photo</span>
+        </label>
+        <input id="photos-upload-input" type="file" name="photos"
+               accept="image/*" capture="environment" multiple
+               style="display:none;"
+               onchange="this.form.submit()">
+
+        <label class="photos-upload-btn photos-upload-btn-secondary" for="photos-pick-input">
+          <i class="bi bi-images"></i>
+          <span>Choisir depuis la galerie</span>
+        </label>
+        <input id="photos-pick-input" type="file" name="photos"
+               accept="image/*" multiple
+               style="display:none;"
+               onchange="this.form.submit()">
+      </form>
+      <div class="photos-help">
+        <i class="bi bi-info-circle"></i>
+        Formats acceptés : JPG, PNG, HEIC, WEBP. Limite : 12 Mo par photo.
+        Les photos sont rangées par date dans le calendrier ci-dessous.
+      </div>
+    </div>
+
+    <!-- Vue calendrier : un bloc par mois avec photos groupées par jour -->
+    {% if photos_by_month %}
+    {% for month_label, days in photos_by_month %}
+    <div class="card mb-3 photos-month">
+      <div class="card-title">
+        <i class="bi bi-calendar3" style="color:var(--green);"></i>
+        {{ month_label }}
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-weight:500;">
+          {{ days | sum(attribute='count') }} photo{{ 's' if days | sum(attribute='count') > 1 else '' }}
+        </span>
+      </div>
+      <div class="photos-day-list">
+        {% for day in days %}
+        <div class="photos-day-row">
+          <div class="photos-day-label">
+            <div class="photos-day-num">{{ day.day_num }}</div>
+            <div class="photos-day-name">{{ day.day_name }}</div>
+          </div>
+          <div class="photos-day-thumbs">
+            {% for ph in day.photos %}
+            <div class="photo-thumb"
+                 onclick="openLightbox({{ loop.index0 }}, {{ day.photos | tojson }})"
+                 style="background-image: url('{{ url_for('config.serve_zone_photo', zone_id=zone.zone_id, filename=ph.filename) }}');"
+                 title="{{ ph.captured_at }}">
+              <button type="button" class="photo-thumb-del"
+                      onclick="event.stopPropagation(); confirmDeletePhoto({{ ph.id }}, {{ zone.zone_id }})"
+                      title="Supprimer cette photo">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="card empty-state" style="padding:40px 20px;text-align:center;">
+      <div style="font-size:42px;margin-bottom:10px;">📷</div>
+      <div style="font-weight:600;color:var(--text-secondary);font-size:14px;">Aucune photo pour cette zone</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-top:6px;line-height:1.5;">
+        Utilisez le bouton « Prendre une photo » ci-dessus depuis votre iPhone.<br>
+        Les photos seront classées automatiquement par date.
+      </div>
+    </div>
+    {% endif %}
+
+  </div><!-- /#tab-photos -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 5 : ÉVÈNEMENTS
        ══════════════════════════════════════════════════════ -->
   <div id="tab-evenements" style="display:none;">
 
@@ -1099,7 +1198,7 @@
 <script src="{{ url_for('static', filename='js/controls.js') }}?v={{ static_v }}"></script>
 <script>
 // ── Tab switching ───────────────────────────────────────
-const ALL_TABS = ['temps-reel','graphiques','plants','evenements','config'];
+const ALL_TABS = ['temps-reel','graphiques','plants','photos','evenements','config'];
 function switchTab(btn, tabName) {
   document.querySelectorAll('#zone-tab-bar .time-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1677,6 +1776,78 @@ function confirmClearHistory(zoneId, zoneName) {
     document.getElementById(`clear-history-form-${zoneId}`).submit();
   });
 }
+</script>
+
+<!-- ── Lightbox plein écran pour les photos d'une zone ── -->
+<div class="photo-lightbox" id="photo-lightbox" onclick="closeLightbox(event)">
+  <button type="button" class="photo-lightbox-close" onclick="closeLightbox(event, true)" title="Fermer">
+    <i class="bi bi-x-lg"></i>
+  </button>
+  <button type="button" class="photo-lightbox-prev" onclick="lightboxPrev(event)" title="Précédente">
+    <i class="bi bi-chevron-left"></i>
+  </button>
+  <button type="button" class="photo-lightbox-next" onclick="lightboxNext(event)" title="Suivante">
+    <i class="bi bi-chevron-right"></i>
+  </button>
+  <img class="photo-lightbox-img" id="photo-lightbox-img" alt="">
+  <div class="photo-lightbox-meta" id="photo-lightbox-meta"></div>
+</div>
+<script>
+const ZONE_ID_FOR_PHOTOS = {{ zone.zone_id }};
+let _lbList = [];
+let _lbIndex = 0;
+
+function openLightbox(idx, photos) {
+  _lbList = photos || [];
+  _lbIndex = idx || 0;
+  _lbShow();
+  document.getElementById('photo-lightbox').classList.add('visible');
+}
+function closeLightbox(ev, force) {
+  // Ferme uniquement si clic sur le fond (pas sur l'image) ou via la croix
+  if (!force && ev && ev.target.closest('.photo-lightbox-img,.photo-lightbox-prev,.photo-lightbox-next')) return;
+  document.getElementById('photo-lightbox').classList.remove('visible');
+}
+function lightboxPrev(ev) { ev && ev.stopPropagation(); _lbIndex = (_lbIndex - 1 + _lbList.length) % _lbList.length; _lbShow(); }
+function lightboxNext(ev) { ev && ev.stopPropagation(); _lbIndex = (_lbIndex + 1) % _lbList.length; _lbShow(); }
+function _lbShow() {
+  if (!_lbList.length) return;
+  const ph = _lbList[_lbIndex];
+  const img = document.getElementById('photo-lightbox-img');
+  img.src = `/zones/${ZONE_ID_FOR_PHOTOS}/photos/${ph.filename}`;
+  img.alt = ph.caption || '';
+  const meta = document.getElementById('photo-lightbox-meta');
+  const dt = ph.captured_at ? new Date(ph.captured_at) : null;
+  const dateStr = dt ? dt.toLocaleString('fr-CH', {day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+  meta.textContent = `${_lbIndex+1} / ${_lbList.length} · ${dateStr}` + (ph.caption ? ` · ${ph.caption}` : '');
+}
+
+// Suppression d'une photo (avec confirmation modale)
+function confirmDeletePhoto(photoId, zoneId) {
+  showConfirm({
+    title: 'Supprimer cette photo ?',
+    body: 'La photo sera supprimée définitivement de la zone.',
+    okLabel: 'Supprimer',
+    okClass: 'confirm-danger',
+    icon: 'bi-trash3-fill',
+  }, () => {
+    const f = document.createElement('form');
+    f.method = 'post';
+    f.action = `/zones/${zoneId}/photos/${photoId}/delete`;
+    f.style.display = 'none';
+    document.body.appendChild(f);
+    f.submit();
+  });
+}
+
+// Navigation clavier dans le lightbox
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('photo-lightbox');
+  if (!lb.classList.contains('visible')) return;
+  if (e.key === 'Escape')      closeLightbox(null, true);
+  else if (e.key === 'ArrowLeft')  lightboxPrev(e);
+  else if (e.key === 'ArrowRight') lightboxNext(e);
+});
 </script>
 
 <!-- ── Drag & drop case-par-case (HTML5 natif) ── -->

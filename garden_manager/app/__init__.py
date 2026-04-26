@@ -35,7 +35,7 @@ def create_app(config: type = Config) -> Flask:
         # Importer tous les modèles pour que create_all les voie
         from .models import (SensorReading, Zone, IrrigationLog, RoofLog,
                              JournalEntry, Planting, WeatherCache, AdminUser,
-                             AlertRecipient)
+                             AlertRecipient, ZonePhoto)
         # Création des tables (y compris admin_users)
         db.create_all()
         # Migrations colonnes manquantes (ALTER TABLE si nécessaire)
@@ -111,7 +111,7 @@ def create_app(config: type = Config) -> Flask:
             "garden_location": app.config.get("GARDEN_LOCATION", "Vullierens, Vaud"),
             "garden_owner":    app.config.get("GARDEN_OWNER", "Patrick Pinard"),
             # Cache-buster global pour TOUS les statiques (CSS + JS)
-            "static_v": "78",
+            "static_v": "79",
         }
 
     log.info(

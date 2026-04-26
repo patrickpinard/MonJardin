@@ -549,6 +549,129 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   letter-spacing: .2px;
 }
 
+/* ── Photos d'une zone (PWA mobile) ──────────────────────── */
+.photos-upload {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.photos-upload-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; border-radius: var(--r-md);
+  background: var(--green); color: #fff;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--t), transform .1s;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+.photos-upload-btn i { font-size: 18px; }
+.photos-upload-btn:hover  { opacity: .9; }
+.photos-upload-btn:active { transform: scale(.97); }
+.photos-upload-btn-secondary {
+  background: var(--bg-secondary); color: var(--text-primary);
+  border: 1px solid var(--border-md);
+}
+.photos-help {
+  margin-top: 12px; padding: 8px 12px;
+  background: var(--bg-secondary); border-radius: var(--r-sm);
+  font-size: 11.5px; color: var(--text-tertiary); line-height: 1.5;
+}
+.photos-help i { color: var(--green); margin-right: 4px; }
+
+.photos-day-list { display: flex; flex-direction: column; gap: 14px; }
+.photos-day-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 4px 0;
+}
+.photos-day-label {
+  flex-shrink: 0; width: 50px; text-align: center;
+  padding: 6px 0;
+  background: var(--bg-secondary); border-radius: var(--r-sm);
+  border-left: 3px solid var(--green);
+}
+.photos-day-num  { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.photos-day-name { font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.photos-day-thumbs {
+  display: grid; gap: 8px; flex: 1;
+  grid-template-columns: repeat(auto-fill, minmax(min(120px, 100%), 1fr));
+}
+.photo-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  background-size: cover; background-position: center;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform var(--t), box-shadow var(--t);
+  overflow: hidden;
+}
+.photo-thumb:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 18px rgba(0,0,0,.4);
+}
+.photo-thumb-del {
+  position: absolute; top: 4px; right: 4px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(0,0,0,.55); color: #fff;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  opacity: 0; transition: opacity var(--t);
+  -webkit-tap-highlight-color: transparent;
+}
+.photo-thumb:hover .photo-thumb-del,
+.photo-thumb-del:focus { opacity: 1; }
+@media (max-width: 768px) {
+  .photo-thumb-del { opacity: .85; }
+  .photos-day-label { width: 44px; }
+  .photos-day-num   { font-size: 18px; }
+  .photos-day-thumbs { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+}
+
+/* Lightbox plein écran */
+.photo-lightbox {
+  position: fixed; inset: 0; z-index: 9500;
+  background: rgba(0,0,0,.93);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.photo-lightbox.visible { opacity: 1; pointer-events: all; }
+.photo-lightbox-img {
+  max-width: 96vw; max-height: 88vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 12px 60px rgba(0,0,0,.6);
+}
+.photo-lightbox-close,
+.photo-lightbox-prev,
+.photo-lightbox-next {
+  position: absolute;
+  background: rgba(0,0,0,.5); color: #fff;
+  border: none; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--t);
+}
+.photo-lightbox-close:hover,
+.photo-lightbox-prev:hover,
+.photo-lightbox-next:hover { background: rgba(0,0,0,.75); }
+.photo-lightbox-close { top: calc(20px + env(safe-area-inset-top, 0px)); right: 16px; }
+.photo-lightbox-prev  { left: 16px;  top: 50%; transform: translateY(-50%); }
+.photo-lightbox-next  { right: 16px; top: 50%; transform: translateY(-50%); }
+.photo-lightbox-meta {
+  position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 16px; right: 16px;
+  text-align: center; color: rgba(255,255,255,.85);
+  font-size: 13px;
+  background: rgba(0,0,0,.5);
+  padding: 6px 14px; border-radius: var(--r-pill);
+  display: inline-block;
+  margin: 0 auto;
+}
+
 /* Compost (drop zone pour suppression définitive) */
 .plant-compost {
   display: flex; align-items: center; gap: 14px;
@@ -2840,14 +2963,39 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   /* Garder titre + bouton sur la même ligne sur mobile */
   .page-header-row {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
+    flex-wrap: wrap;
   }
-  .page-header-row > div:first-child { flex: 1; min-width: 0; }
-  .page-header-row > div:first-child .page-subtitle {
+  .page-header-row > div:first-child { flex: 1; min-width: 0; align-items: flex-start; }
+  .page-header-row > div:first-child .page-title {
+    font-size: 19px; line-height: 1.2;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .page-header-row .btn-icon { flex-shrink: 0; }
+  .page-header-row > div:first-child .page-subtitle {
+    font-size: 12px;
+    /* Permettre l'enroulement propre des badges du sous-titre */
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .page-header-row > div:first-child .page-subtitle > * {
+    flex-shrink: 0;
+  }
+  .page-header-row .btn-icon { flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+  /* Bloc de droite (badges trend + AUTO) : passe en pleine largeur sous le titre */
+  .page-header-row > div:not(:first-child) {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px !important;
+    margin-top: 4px;
+  }
+  .page-header-row > div:not(:first-child) .badge,
+  .page-header-row > div:not(:first-child) .zone-mode-badge {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+  }
 
   /* ── Journal table → mobile 2-line cards (CSS Grid) ── */
   .journal-table-wrap { overflow-x: visible; }
