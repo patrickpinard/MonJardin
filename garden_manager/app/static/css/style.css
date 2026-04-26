@@ -2785,18 +2785,33 @@ body.sidebar-collapsed .sidebar-open-btn { display: flex; align-items: center; }
   border-radius: var(--r-md);
   padding: 14px 16px;
   margin-bottom: 18px;
+  /* Layout flex : les sections peuvent s'aligner sur une même ligne si la
+     place le permet, alignement au TOP pour éviter tout décalage vertical */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 28px;     /* row-gap 14px, col-gap 28px */
+  align-items: flex-start;
 }
-.filter-section { margin-bottom: 10px; }
-.filter-section:last-child { margin-bottom: 0; }
+.filter-section {
+  /* Empile label + chips à l'intérieur de chaque section */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 0;   /* géré par le gap du parent */
+  min-width: 0;       /* autorise wrapping correct des chips */
+}
 .filter-section-label {
   font-size: 10px; font-weight: 700; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: .6px;
-  margin-bottom: 6px;
+  /* Hauteur fixe pour aligner exactement entre sections */
+  height: 16px;
   display: flex; align-items: center; gap: 6px;
 }
-.filter-section-label i { color: var(--text-tertiary); font-size: 12px; }
+.filter-section-label i { color: var(--text-tertiary); font-size: 12px; line-height: 1; }
 .filter-row {
   display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  /* min-height = chip height pour réserver l'espace même si row vide */
+  min-height: 30px;
 }
 .filter-chip {
   /* Box model strict pour aligner <button> et <a> sur la même ligne */
