@@ -62,6 +62,12 @@ def _run_cycle(app) -> None:
     # 3. Météo
     weather = weather_svc.get_current()
 
+    # Récupère l'état actuel des actionneurs (pour éviter les commandes
+    # et logs redondants quand l'état est déjà celui demandé)
+    actuator_status = arduino.get_actuator_status() or {}
+    valve_states = {v["zone_id"]: v["state"] for v in actuator_status.get("valves", [])}
+    current_roof = actuator_status.get("roof_state", "close")
+
     # 4. Moteur irrigation par zone
     zones = Zone.query.order_by(Zone.zone_id).all()
     for zone in zones:
@@ -72,17 +78,21 @@ def _run_cycle(app) -> None:
         moisture = z_data.get("soil_moisture_pct", 50.0)
         decision = irrigation_engine.evaluate_zone(zone, moisture, temp, weather, now)
         if decision.action != "skip":
-            irrigation_engine.execute_decision(decision, arduino, db)
+            irrigation_engine.execute_decision(
+                decision, arduino, db,
+                current_state=valve_states.get(zone.zone_id),
+            )
 
     # 5. Moteur toit (Zone 1 uniquement)
     z1_data = zones_data.get(1)
     if z1_data:
         z1_moisture = z1_data.get("soil_moisture_pct", 50.0)
-        actuator_status = arduino.get_actuator_status() or {}
-        current_roof = actuator_status.get("roof_state", "close")
         roof_decision = roof_engine.evaluate_roof(z1_moisture, temp, weather, now, current_roof)
         if roof_decision.action != "maintain":
-            roof_engine.execute_roof_decision(roof_decision, arduino, db)
+            roof_engine.execute_roof_decision(
+                roof_decision, arduino, db,
+                current_state=current_roof,
+            )
 
     log.debug("Cycle automatisation terminé à %s", now.isoformat())
 
