@@ -1,5 +1,7 @@
 # 🌱 MonJardin — Version 5.0
 
+*Dernière mise à jour : 6 mai 2026*
+
 Système automatisé de gestion de jardin potager · Raspberry Pi 5 + Arduino Edge Control · Flask · SQLite
 
 ---
